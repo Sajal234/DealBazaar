@@ -8,7 +8,7 @@ const generateToken = (id) => {
     throw new Error('JWT_SECRET is not defined in environment variables');
   }
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
+    expiresIn: process.env.JWT_EXPIRE || '30d',
   });
 };
 
@@ -122,7 +122,7 @@ export const getMe = async (req, res) => {
       data: req.user,
     });
   } catch (error) {
-    console.error('[GetMe Error]', error.message);
+    console.error('[GetMe Error]', error);
     return res.status(500).json({ success: false, message: 'Server error during profile fetch' });
   }
 };
