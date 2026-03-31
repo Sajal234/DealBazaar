@@ -73,12 +73,12 @@ const dealSchema = new mongoose.Schema(
 
 // Helper function for the mongoose validator
 function imgArrayLimit(val) {
-  return val.length <= 5;
+  return Array.isArray(val) && val.length <= 5;
 }
 
 // Safety check to ensure arrays align perfectly for Cloudinary cleanup mapping
 dealSchema.pre('save', function (next) {
-  if (this.images.length !== this.imagePublicIds.length) {
+  if ((this.images || []).length !== (this.imagePublicIds || []).length) {
     return next(new Error('Images and imagePublicIds array lengths must match'));
   }
   next();
