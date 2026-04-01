@@ -23,6 +23,12 @@ export const applyForStore = async (req, res) => {
 
     const { name, address, state, city } = req.body;
     const phone = (req.body.phone || '').replace(/\D/g, ''); 
+    if (phone.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number must be exactly 10 digits'
+      });
+    }
 
     const store = await Store.create({
       name: name.trim(),
@@ -63,7 +69,7 @@ export const getStores = async (req, res) => {
 
     // Enable frontend to easily filter stores by city
     if (req.query.city) {
-      query.city = req.query.city.toLowerCase();
+      query.city = req.query.city.toLowerCase().trim();
     }
 
     const stores = await Store.find(query)
