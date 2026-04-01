@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import multer from 'multer';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -34,7 +35,23 @@ app.get('/api/health', (req, res) => {
 // Global Error Handler (basic error logging added here)
 app.use((err, req, res, next) => {
   console.error(`[Global Error Handler]`, err);
-  
+
+  // Multer errors (file too large, too many files)
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      success: false,
+      message: `Upload Error: ${err.message}`,
+    });
+  }
+
+  // File type validation errors
+  if (err.message && err.message.includes('Only JPG')) {
+    return res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal Server Error',
