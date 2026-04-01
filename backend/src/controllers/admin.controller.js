@@ -21,14 +21,17 @@ export const updateStoreStatus = async (req, res) => {
       updatePayload.isVerified = false;
     }
 
-    const store = await Store.findByIdAndUpdate(
-      req.params.id,
+    const store = await Store.findOneAndUpdate(
+      { _id: req.params.id, status: 'pending' },
       updatePayload,
       { new: true, runValidators: true }
     );
 
     if (!store) {
-      return res.status(404).json({ success: false, message: 'Store not found' });
+      return res.status(400).json({
+        success: false,
+        message: 'Store already processed by another admin or does not exist'
+      });
     }
 
     return res.status(200).json({ 
@@ -91,14 +94,17 @@ export const updateDealStatus = async (req, res) => {
       };
     }
 
-    const deal = await Deal.findByIdAndUpdate(
-      req.params.id,
+    const deal = await Deal.findOneAndUpdate(
+      { _id: req.params.id, status: 'pending' },
       updatePayload,
       { new: true }
     );
 
     if (!deal) {
-      return res.status(404).json({ success: false, message: 'Deal not found' });
+      return res.status(400).json({
+        success: false,
+        message: 'Deal already processed by another admin or does not exist'
+      });
     }
 
     return res.status(200).json({ 
