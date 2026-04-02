@@ -21,6 +21,8 @@ const streamUpload = (buffer) => {
 
 const findOwnedStore = async (userId) => Store.findOne({ ownerId: userId });
 const allowedDealStatuses = new Set(['pending', 'active', 'expired', 'rejected']);
+const CLICK_DEDUPE_WINDOW_MS = 30 * 1000;
+const recentDealClickCache = new Map();
 
 const normalizeOwnedDealUpdate = (body) => {
   const updateFields = {};
@@ -58,6 +60,27 @@ const normalizeOwnedDealUpdate = (body) => {
   }
 
   return { updateFields };
+};
+
+const getDealClickCacheKey = (req) => `deal:${req.params.id}:ip:${req.ip || 'unknown'}`;
+
+const hasRecentTrackedClick = (key) => {
+  const expiresAt = recentDealClickCache.get(key);
+
+  if (!expiresAt) {
+    return false;
+  }
+
+  if (expiresAt <= Date.now()) {
+    recentDealClickCache.delete(key);
+    return false;
+  }
+
+  return true;
+};
+
+const markTrackedClick = (key) => {
+  recentDealClickCache.set(key, Date.now() + CLICK_DEDUPE_WINDOW_MS);
 };
 
 // @desc    Create a new deal
@@ -402,6 +425,12 @@ export const resubmitDeal = async (req, res) => {
 // @access  Public
 export const trackDealClick = async (req, res) => {
   try {
+    const cacheKey = getDealClickCacheKey(req);
+
+    if (hasRecentTrackedClick(cacheKey)) {
+      return res.status(204).end();
+    }
+
     const deal = await Deal.findOneAndUpdate(
       {
         _id: req.params.id,
@@ -410,9 +439,6 @@ export const trackDealClick = async (req, res) => {
       },
       {
         $inc: { clicks: 1 },
-      },
-      {
-        new: true,
       }
     );
 
@@ -420,10 +446,9 @@ export const trackDealClick = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Deal not found' });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: 'Deal click tracked successfully',
-    });
+    markTrackedClick(cacheKey);
+
+    return res.status(204).end();
   } catch (error) {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ success: false, message: 'Invalid Deal ID string' });
