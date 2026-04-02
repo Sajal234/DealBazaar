@@ -67,7 +67,7 @@ router.patch(
 // @route   POST /api/deals/:id/click
 // @desc    Track click-through intent on an active deal
 // @access  Public
-router.post('/:id/click', publicRateLimiter, trackDealClick);
+router.post('/:id/click', publicRateLimiter, optionalAuth, trackDealClick);
 
 // @route   GET /api/deals/:id
 // @desc    Get a single deal strictly returning owner-masked metadata

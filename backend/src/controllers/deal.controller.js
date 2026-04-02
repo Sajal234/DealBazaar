@@ -62,7 +62,9 @@ const normalizeOwnedDealUpdate = (body) => {
   return { updateFields };
 };
 
-const getDealClickCacheKey = (req) => `deal:${req.params.id}:ip:${req.ip || 'unknown'}`;
+const getDealClickActor = (req) => req.user?._id?.toString() || `ip:${req.ip || 'unknown'}`;
+
+const getDealClickCacheKey = (req) => `deal:${req.params.id}:actor:${getDealClickActor(req)}`;
 
 const hasRecentTrackedClick = (key) => {
   const expiresAt = recentDealClickCache.get(key);
@@ -81,6 +83,10 @@ const hasRecentTrackedClick = (key) => {
 
 const markTrackedClick = (key) => {
   recentDealClickCache.set(key, Date.now() + CLICK_DEDUPE_WINDOW_MS);
+};
+
+const clearTrackedClick = (key) => {
+  recentDealClickCache.delete(key);
 };
 
 // @desc    Create a new deal
@@ -431,7 +437,10 @@ export const trackDealClick = async (req, res) => {
       return res.status(204).end();
     }
 
-    const deal = await Deal.findOneAndUpdate(
+    // Reserve the dedupe slot before the async DB call to prevent same-process double counts.
+    markTrackedClick(cacheKey);
+
+    const result = await Deal.updateOne(
       {
         _id: req.params.id,
         status: 'active',
@@ -442,14 +451,14 @@ export const trackDealClick = async (req, res) => {
       }
     );
 
-    if (!deal) {
+    if (result.matchedCount === 0) {
+      clearTrackedClick(cacheKey);
       return res.status(404).json({ success: false, message: 'Deal not found' });
     }
 
-    markTrackedClick(cacheKey);
-
     return res.status(204).end();
   } catch (error) {
+    clearTrackedClick(getDealClickCacheKey(req));
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ success: false, message: 'Invalid Deal ID string' });
     }
