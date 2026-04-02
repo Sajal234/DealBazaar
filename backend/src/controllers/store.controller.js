@@ -73,6 +73,7 @@ export const getStores = async (req, res) => {
     }
 
     const stores = await Store.find(query)
+      .select('-ownerId') // Prevent exposing underlying user IDs natively
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -110,14 +111,19 @@ export const getStoreById = async (req, res) => {
     // However, if the store owner is viewing it, allow them to see their 'pending'/'rejected' stats.
     if (store.status !== 'approved') {
       const isOwner = req.user && req.user._id.toString() === store.ownerId.toString();
+      const isAdmin = req.user && req.user.role === 'admin';
       
-      if (!isOwner) {
+      if (!isOwner && !isAdmin) {
         // Masking the actual pending state with a 404 for security
         return res.status(404).json({ success: false, message: 'Store not found or still pending approval' }); 
       }
     }
 
-    return res.status(200).json({ success: true, data: store});
+    // Security: Strip internal ID from DTO before public return
+    const storeDTO = store.toObject();
+    delete storeDTO.ownerId;
+
+    return res.status(200).json({ success: true, data: storeDTO });
   } catch (error) {
     // Handle specific mongoose cast error (invalid ID format gracefully)
     if (error.kind === 'ObjectId') {

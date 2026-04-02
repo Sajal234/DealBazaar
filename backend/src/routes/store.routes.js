@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { applyForStore, getStores, getStoreById } from '../controllers/store.controller.js';
-import { protect } from '../middleware/auth.js';
+import { protect, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -34,6 +34,6 @@ router.get('/', getStores);
 // @route   GET /api/stores/:id
 // @desc    Get single store by ID
 // @access  Public
-router.get('/:id', getStoreById);
+router.get('/:id', optionalAuth, getStoreById);
 
 export default router;

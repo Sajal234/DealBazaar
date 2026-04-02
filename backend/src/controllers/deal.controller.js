@@ -110,6 +110,11 @@ export const createDeal = async (req, res) => {
     });
   } catch (error) {
     console.error('[Deal Creation Error]', error);
+    if (imagePublicIds.length > 0) {
+      await Promise.allSettled(
+        imagePublicIds.map(id => cloudinary.uploader.destroy(id))
+      );
+    }
     return res.status(500).json({ success: false, message: 'Server error during deal creation' });
   }
 };
@@ -143,6 +148,7 @@ export const getDeals = async (req, res) => {
 
     // Utilize optimized `.populate` to safely return store contact metadata without leaking ownerId mapping natively
     const deals = await Deal.find(query)
+      .select('-imagePublicIds -cleanupAt -isDeleted') // DTO stripping
       .populate('storeId', 'name address phone rating isVerified')
       .skip(skip)
       .limit(limit)
@@ -195,7 +201,16 @@ export const getDealById = async (req, res) => {
       }).catch(err => console.error('[View Update Error]', err));
     }
 
-    return res.status(200).json({ success: true, data: deal });
+    const dealDTO = deal.toObject();
+    delete dealDTO.imagePublicIds;
+    delete dealDTO.cleanupAt;
+    delete dealDTO.isDeleted;
+    // Ensure storeId.ownerId is detached from the DTO payload
+    if (dealDTO.storeId) {
+      delete dealDTO.storeId.ownerId;
+    }
+
+    return res.status(200).json({ success: true, data: dealDTO });
   } catch (error) {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ success: false, message: 'Invalid Deal ID string' });

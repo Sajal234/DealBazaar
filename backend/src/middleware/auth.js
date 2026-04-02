@@ -43,7 +43,20 @@ export const protect = async (req, res, next) => {
 };
 
 // Middleware to grant access to specific roles
-// Usage example: router.post('/', protect, authorize('store', 'admin'), createDeal)
+// Middleware for public endpoints that conditionally read user tokens to grant escalated view access (like 'pending' items)
+export const optionalAuth = async (req, res, next) => {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+  if (!token) return next();
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id).select('-password');
+  } catch (err) {}
+  next();
+};
+
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {

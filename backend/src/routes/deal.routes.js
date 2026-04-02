@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import { createDeal, getDeals, getDealById } from '../controllers/deal.controller.js';
-import { protect } from '../middleware/auth.js';
+import { protect, optionalAuth } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
 
 const router = express.Router();
@@ -31,6 +31,6 @@ router.get('/', getDeals);
 // @route   GET /api/deals/:id
 // @desc    Get a single deal strictly returning owner-masked metadata
 // @access  Public
-router.get('/:id', getDealById);
+router.get('/:id', optionalAuth, getDealById);
 
 export default router;
