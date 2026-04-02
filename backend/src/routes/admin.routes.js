@@ -13,9 +13,9 @@ const router = express.Router();
 // Strict Middleware Boundary:
 // Applying `use` here unconditionally enforces that every single route 
 // defined below it MUST successfully pass both JWT verification AND 'admin' role checks.
-router.use(adminRateLimiter);
 router.use(protect);
 router.use(authorize('admin'));
+router.use(adminRateLimiter);
 
 // @route   PATCH /api/admin/stores/:id/status
 // @desc    Approve/Reject Store (Assigns Trust isVerified flag)

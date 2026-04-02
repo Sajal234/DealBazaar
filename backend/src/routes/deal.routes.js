@@ -9,7 +9,7 @@ import {
   resubmitDeal,
 } from '../controllers/deal.controller.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
-import { dealWriteRateLimiter } from '../middleware/rateLimit.js';
+import { dealWriteRateLimiter, publicRateLimiter } from '../middleware/rateLimit.js';
 import upload from '../middleware/upload.js';
 
 const router = express.Router();
@@ -19,8 +19,8 @@ const router = express.Router();
 // @access  Private (Store Owners Only)
 router.post(
   '/',
-  dealWriteRateLimiter,
   protect,                     // 1. Verify standard JWT Authentication
+  dealWriteRateLimiter,
   upload.array('images', 5),   // 2. Explictly trap the payload using your requested Multer array ceiling
   [
     // 3. Stringently validate text fields via express-validator before DB insertion
@@ -35,7 +35,7 @@ router.post(
 // @route   GET /api/deals
 // @desc    Get all active deals with index-supported search filters
 // @access  Public
-router.get('/', getDeals);
+router.get('/', publicRateLimiter, getDeals);
 
 // @route   GET /api/deals/mine
 // @desc    Get deals owned by the authenticated store owner
@@ -45,15 +45,15 @@ router.get('/mine', protect, getMyDeals);
 // @route   PATCH /api/deals/:id/resubmit
 // @desc    Resubmit a rejected or expired deal for moderation
 // @access  Private
-router.patch('/:id/resubmit', dealWriteRateLimiter, protect, resubmitDeal);
+router.patch('/:id/resubmit', protect, dealWriteRateLimiter, resubmitDeal);
 
 // @route   PATCH /api/deals/:id
 // @desc    Update a deal owned by the authenticated store owner
 // @access  Private
 router.patch(
   '/:id',
-  dealWriteRateLimiter,
   protect,
+  dealWriteRateLimiter,
   [
     body('productName').optional().trim().notEmpty().withMessage('Product name cannot be empty'),
     body('description').optional().trim().notEmpty().withMessage('Description cannot be empty'),
@@ -66,6 +66,6 @@ router.patch(
 // @route   GET /api/deals/:id
 // @desc    Get a single deal strictly returning owner-masked metadata
 // @access  Public
-router.get('/:id', optionalAuth, getDealById);
+router.get('/:id', publicRateLimiter, optionalAuth, getDealById);
 
 export default router;

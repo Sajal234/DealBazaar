@@ -2,7 +2,7 @@ import express from 'express';
 import { body } from 'express-validator';
 import { applyForStore, getStores, getMyStore, getStoreById } from '../controllers/store.controller.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
-import { storeWriteRateLimiter } from '../middleware/rateLimit.js';
+import { publicRateLimiter, storeWriteRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -11,8 +11,8 @@ const router = express.Router();
 // @access  Private
 router.post(
   '/',
-  storeWriteRateLimiter,
   protect, // Authentication strictly required
+  storeWriteRateLimiter,
   [
     body('name', 'Store name is strictly required').trim().notEmpty(),
     body('address', 'Physical address is required').trim().notEmpty(),
@@ -31,7 +31,7 @@ router.post(
 // @route   GET /api/stores
 // @desc    Get all active/approved stores
 // @access  Public
-router.get('/', getStores);
+router.get('/', publicRateLimiter, getStores);
 
 // @route   GET /api/stores/me
 // @desc    Get the authenticated user's store
@@ -41,6 +41,6 @@ router.get('/me', protect, getMyStore);
 // @route   GET /api/stores/:id
 // @desc    Get single store by ID
 // @access  Public
-router.get('/:id', optionalAuth, getStoreById);
+router.get('/:id', publicRateLimiter, optionalAuth, getStoreById);
 
 export default router;
