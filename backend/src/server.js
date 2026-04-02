@@ -1,11 +1,9 @@
-import dotenv from 'dotenv';
+// Standard ES Module AST hoisting forces imports to execute before running code.
+// Loading variables via direct side-effect import guarantees strict evaluation order!
+import 'dotenv/config';
+
 import expireDealsJob from './jobs/expireDeals.js';
 import cleanupImagesJob from './jobs/cleanupImages.js';
-
-// Load environment variables immediately before any other imports
-dotenv.config();
-
-
 import app from './app.js';
 import connectDB from './config/db.js';
 
