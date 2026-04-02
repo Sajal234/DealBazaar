@@ -2,6 +2,7 @@ import { validationResult } from 'express-validator';
 import cloudinary from '../config/cloudinary.js';
 import Deal from '../models/Deal.js';
 import Store from '../models/Store.js';
+import { destroyCloudinaryAssets } from '../utils/cloudinaryAssets.js';
 import { serializeDeal } from '../utils/serializers.js';
 
 // Helper function to upload multer memory buffer directly to Cloudinary via stream
@@ -113,9 +114,12 @@ export const createDeal = async (req, res) => {
         });
 
       } catch (err) {
-        await Promise.all(
-          uploaded.map(id => cloudinary.uploader.destroy(id))
-        );
+        const { failures } = await destroyCloudinaryAssets(uploaded);
+        if (failures.length > 0) {
+          console.error('[Deal Upload Rollback Error]', {
+            failures,
+          });
+        }
 
         return res.status(500).json({
           success: false,
@@ -153,9 +157,12 @@ export const createDeal = async (req, res) => {
   } catch (error) {
     console.error('[Deal Creation Error]', error);
     if (imagePublicIds.length > 0) {
-      await Promise.allSettled(
-        imagePublicIds.map(id => cloudinary.uploader.destroy(id))
-      );
+      const { failures } = await destroyCloudinaryAssets(imagePublicIds);
+      if (failures.length > 0) {
+        console.error('[Deal Creation Rollback Error]', {
+          failures,
+        });
+      }
     }
     return res.status(500).json({ success: false, message: 'Server error during deal creation' });
   }

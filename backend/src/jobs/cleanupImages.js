@@ -1,6 +1,6 @@
 import cron from 'node-cron';
-import cloudinary from '../config/cloudinary.js';
 import Deal from '../models/Deal.js';
+import { destroyCloudinaryAssets } from '../utils/cloudinaryAssets.js';
 
 // Setup Cron Job: Runs once a day at 3:00 AM server time (Low Traffic Period)
 const cleanupImagesJob = () => {
@@ -15,7 +15,7 @@ const cleanupImagesJob = () => {
         status: { $in: ['expired', 'rejected'] },
         cleanupAt: { $lt: now },
         isDeleted: false
-      }).select('imagePublicIds _id'); // Massive RAM projection optimization again!
+      }).select('imagePublicIds images _id'); // Massive RAM projection optimization again!
 
       if (dealsToClean.length === 0) {
         console.log('[Cron-Queue-2] Sweep complete. 0 Cloudinary items required deletion.');
@@ -25,36 +25,67 @@ const cleanupImagesJob = () => {
       console.log(`[Cron-Queue-2] Found ${dealsToClean.length} deals passed 72h window. Purging Cloudinary storage...`);
 
       let totalImagesDeleted = 0;
+      let fullyCleanedDeals = 0;
+      let retryQueuedDeals = 0;
       const bulkOps = [];
 
       for (const deal of dealsToClean) {
-        // 1. Strip all images from Cloudinary concurrently for each deal
-        if (deal.imagePublicIds && deal.imagePublicIds.length > 0) {
-          const destroyPromises = deal.imagePublicIds.map(id => cloudinary.uploader.destroy(id));
-          await Promise.allSettled(destroyPromises); // Native Cloudinary SDK deletion
-          totalImagesDeleted += deal.imagePublicIds.length;
+        const { deletedIds, failedIds, failures } = await destroyCloudinaryAssets(deal.imagePublicIds);
+        totalImagesDeleted += deletedIds.length;
+
+        if (failures.length > 0) {
+          console.error('[Cron-Queue-2] Cloudinary deletion failed for some assets. Deal retained for retry.', {
+            dealId: deal._id.toString(),
+            failures,
+          });
         }
 
-        // 2. Prepare the Soft-Delete database transaction honoring your 'isDeleted' architecture
+        if (failedIds.length > 0) {
+          const failedIdSet = new Set(failedIds);
+          const remainingAssets = (deal.imagePublicIds || [])
+            .map((publicId, index) => ({
+              publicId,
+              imageUrl: (deal.images || [])[index],
+            }))
+            .filter((asset) => failedIdSet.has(asset.publicId));
+
+          bulkOps.push({
+            updateOne: {
+              filter: { _id: deal._id },
+              update: {
+                $set: {
+                  images: remainingAssets.map((asset) => asset.imageUrl),
+                  imagePublicIds: remainingAssets.map((asset) => asset.publicId),
+                },
+              },
+            },
+          });
+          retryQueuedDeals += 1;
+          continue;
+        }
+
         bulkOps.push({
           updateOne: {
             filter: { _id: deal._id },
             update: {
               $set: { 
                 isDeleted: true,
-                images: [],          // Clear URLs to save Mongo document sizing bytes
-                imagePublicIds: []   // Completely detach Cloudinary tracking links
+                images: [],
+                imagePublicIds: []
               },
-              $unset: { cleanupAt: 1 } // Stop tracking this deal permanently
+              $unset: { cleanupAt: 1 }
             }
           }
         });
+        fullyCleanedDeals += 1;
       }
 
       // 3. Execute the database transaction in one high-performance shot
       if (bulkOps.length > 0) {
         const result = await Deal.bulkWrite(bulkOps);
-        console.log(`[Cron-Queue-2] Success! Scrubbed ${totalImagesDeleted} Cloudinary files to save bandwidth, and soft-deleted ${result.modifiedCount} deals from active query cycles.`);
+        console.log(
+          `[Cron-Queue-2] Success! Scrubbed ${totalImagesDeleted} Cloudinary files, soft-deleted ${fullyCleanedDeals} deals, and retained ${retryQueuedDeals} deals for retry. Updated ${result.modifiedCount} deal records.`
+        );
       }
 
     } catch (error) {
