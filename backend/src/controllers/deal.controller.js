@@ -575,7 +575,7 @@ export const getDealById = async (req, res) => {
       'name address city phone rating totalRatings isVerified ownerId'
     );
 
-    if (!deal || deal.isDeleted || deal.archivedAt) {
+    if (!deal || deal.isDeleted || deal.archivedAt != null) {
       return res.status(404).json({ success: false, message: 'Deal not found' });
     }
 
