@@ -45,8 +45,7 @@ export const listPendingDeals = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
     const skip = (page - 1) * limit;
-    const query = { status: 'pending', isDeleted: false };
-    query.archivedAt = null;
+    const query = { status: 'pending', isDeleted: false, archivedAt: { $eq: null } };
 
     const deals = await Deal.find(query)
       .select(

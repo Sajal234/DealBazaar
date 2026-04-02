@@ -214,7 +214,7 @@ export const getMyDeals = async (req, res) => {
     const skip = (page - 1) * limit;
     const query = {
       storeId: store._id,
-      archivedAt: null,
+      archivedAt: { $eq: null },
       isDeleted: false,
     };
 
@@ -258,8 +258,7 @@ export const getDeals = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Strict baseline query scope
-    let query = { status: 'active', isDeleted: false };
-    query.archivedAt = null;
+    let query = { status: 'active', isDeleted: false, archivedAt: { $eq: null } };
 
     // Leverage your Compound Index: City
     if (req.query.city) {
@@ -325,7 +324,7 @@ export const updateDeal = async (req, res) => {
     const deal = await Deal.findOne({
       _id: req.params.id,
       storeId: store._id,
-      archivedAt: null,
+      archivedAt: { $eq: null },
       isDeleted: false,
     });
 
@@ -393,7 +392,7 @@ export const resubmitDeal = async (req, res) => {
     const deal = await Deal.findOne({
       _id: req.params.id,
       storeId: store._id,
-      archivedAt: null,
+      archivedAt: { $eq: null },
       isDeleted: false,
     });
 
@@ -445,7 +444,7 @@ export const archiveDeal = async (req, res) => {
     const deal = await Deal.findOne({
       _id: req.params.id,
       storeId: store._id,
-      archivedAt: null,
+      archivedAt: { $eq: null },
       isDeleted: false,
     });
 
@@ -541,7 +540,7 @@ export const trackDealClick = async (req, res) => {
     const result = await Deal.updateOne(
       {
         _id: req.params.id,
-        archivedAt: null,
+        archivedAt: { $eq: null },
         status: 'active',
         isDeleted: false,
       },
@@ -593,7 +592,7 @@ export const getDealById = async (req, res) => {
 
     // Explicit Trust-System architecture: Track metrics completely detached from main read (non-blocking)
     if (deal.status === 'active') {
-      Deal.findByIdAndUpdate(deal._id, {
+      Deal.updateOne({ _id: deal._id }, {
         $inc: { views: 1 }
       }).catch(err => console.error('[View Update Error]', err));
     }

@@ -63,6 +63,7 @@ const dealSchema = new mongoose.Schema(
     },
     archivedAt: {
       type: Date,
+      default: null,
     },
     isDeleted: {
       type: Boolean,
@@ -91,10 +92,9 @@ dealSchema.pre('save', function (next) {
 dealSchema.index({ productName: 'text', description: 'text' });
 dealSchema.index({ city: 1 });
 dealSchema.index({ storeId: 1 });
-dealSchema.index({ status: 1, isDeleted: 1 });
+dealSchema.index({ status: 1, isDeleted: 1, archivedAt: 1 });
 dealSchema.index({ status: 1, expiresAt: 1 });
 dealSchema.index({ cleanupAt: 1 });
-dealSchema.index({ archivedAt: 1 });
 
 const Deal = mongoose.model('Deal', dealSchema);
 
