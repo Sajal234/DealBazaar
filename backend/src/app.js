@@ -4,6 +4,12 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import multer from 'multer';
 
+// Route Imports
+import authRoutes from './routes/auth.routes.js';
+import storeRoutes from './routes/store.routes.js';
+import dealRoutes from './routes/deal.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+
 const app = express();
 app.set('trust proxy', 1);
 
@@ -26,15 +32,26 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ success: true, message: 'DealBazaar API is running' });
 });
 
-// Routes will be mounted here shortly:
-// app.use('/api/auth', authRoutes);
-// app.use('/api/stores', storeRoutes);
-// app.use('/api/deals', dealRoutes);
-// app.use('/api/admin', adminRoutes);
+// Core API Route Mounting
+app.use('/api/auth', authRoutes);
+app.use('/api/stores', storeRoutes);
+app.use('/api/deals', dealRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Global Error Handler (basic error logging added here)
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
+});
+
 app.use((err, req, res, next) => {
-  console.error(`[Global Error Handler]`, err);
+  console.error('[Global Error]', {
+    message: err.message,
+    path: req.originalUrl,
+    method: req.method
+  });
 
   // Multer errors (file too large, too many files)
   if (err instanceof multer.MulterError) {
