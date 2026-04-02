@@ -59,7 +59,7 @@ export const serializeStoreSummary = (store) => {
 };
 
 export const serializeDeal = (deal, options = {}) => {
-  const { includeMetrics = false, includeLifecycle = false } = options;
+  const { includeMetrics = false, includeLifecycle = false, includeImagePublicIds = false } = options;
   const dealObject = toPlainObject(deal);
 
   if (!dealObject) {
@@ -85,6 +85,10 @@ export const serializeDeal = (deal, options = {}) => {
   if (includeMetrics) {
     serialized.views = dealObject.views;
     serialized.clicks = dealObject.clicks;
+  }
+
+  if (includeImagePublicIds) {
+    serialized.imagePublicIds = dealObject.imagePublicIds;
   }
 
   if (includeLifecycle) {
