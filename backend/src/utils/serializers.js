@@ -10,7 +10,7 @@ const removeUndefined = (value) =>
   Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== undefined));
 
 export const serializeStore = (store, options = {}) => {
-  const { includeOwnerId = false } = options;
+  const { includeOwnerId = false, viewerRating } = options;
   const storeObject = toPlainObject(store);
 
   if (!storeObject) {
@@ -34,6 +34,10 @@ export const serializeStore = (store, options = {}) => {
 
   if (includeOwnerId) {
     serialized.ownerId = storeObject.ownerId;
+  }
+
+  if (viewerRating !== undefined) {
+    serialized.myRating = viewerRating;
   }
 
   return removeUndefined(serialized);

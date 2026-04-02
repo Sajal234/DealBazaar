@@ -1,6 +1,36 @@
 import { validationResult } from 'express-validator';
 import Store from '../models/Store.js';
+import StoreRating from '../models/StoreRating.js';
 import { serializeStore } from '../utils/serializers.js';
+
+const syncStoreRatingAggregate = async (storeId) => {
+  // Recompute from source-of-truth ratings to avoid aggregate drift under concurrent writes.
+  const [summary] = await StoreRating.aggregate([
+    { $match: { storeId } },
+    {
+      $group: {
+        _id: '$storeId',
+        averageRating: { $avg: '$rating' },
+        totalRatings: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const rating = summary ? Math.round(summary.averageRating * 10) / 10 : 0;
+  const totalRatings = summary?.totalRatings || 0;
+
+  await Store.updateOne(
+    { _id: storeId },
+    {
+      $set: {
+        rating,
+        totalRatings,
+      },
+    }
+  );
+
+  return { rating, totalRatings };
+};
 
 // @desc    Apply for store registration
 // @route   POST /api/stores
@@ -114,6 +144,70 @@ export const getMyStore = async (req, res) => {
   }
 };
 
+// @desc    Create or update the authenticated user's rating for a store
+// @route   POST /api/stores/:id/ratings
+// @access  Private
+export const submitStoreRating = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  try {
+    const store = await Store.findOne({
+      _id: req.params.id,
+      status: 'approved',
+    }).select('_id ownerId');
+
+    if (!store) {
+      return res.status(404).json({ success: false, message: 'Store not found or not available for rating' });
+    }
+
+    if (store.ownerId.toString() === req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You cannot rate your own store' });
+    }
+
+    const ratingValue = req.body.rating;
+
+    const result = await StoreRating.updateOne(
+      {
+        storeId: store._id,
+        userId: req.user._id,
+      },
+      {
+        $set: {
+          rating: ratingValue,
+        },
+      },
+      {
+        upsert: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      }
+    );
+
+    const ratingSummary = await syncStoreRatingAggregate(store._id);
+    const isNewRating = result.upsertedCount > 0;
+
+    return res.status(isNewRating ? 201 : 200).json({
+      success: true,
+      message: isNewRating ? 'Store rating submitted successfully' : 'Store rating updated successfully',
+      data: {
+        storeId: store._id,
+        myRating: ratingValue,
+        rating: ratingSummary.rating,
+        totalRatings: ratingSummary.totalRatings,
+      },
+    });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ success: false, message: 'Store not found (Invalid ID)' });
+    }
+    console.error('[Submit Store Rating Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error while saving the store rating' });
+  }
+};
+
 // @desc    Get single store by ID
 // @route   GET /api/stores/:id
 // @access  Public
@@ -137,7 +231,20 @@ export const getStoreById = async (req, res) => {
       }
     }
 
-    return res.status(200).json({ success: true, data: serializeStore(store) });
+    let viewerRating;
+    if (req.user && store.status === 'approved') {
+      const existingRating = await StoreRating.findOne({
+        storeId: store._id,
+        userId: req.user._id,
+      }).select('rating');
+
+      viewerRating = existingRating?.rating;
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: serializeStore(store, { viewerRating }),
+    });
   } catch (error) {
     // Handle specific mongoose cast error (invalid ID format gracefully)
     if (error.kind === 'ObjectId') {

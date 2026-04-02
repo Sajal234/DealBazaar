@@ -1,8 +1,8 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { applyForStore, getStores, getMyStore, getStoreById } from '../controllers/store.controller.js';
+import { applyForStore, getStores, getMyStore, getStoreById, submitStoreRating } from '../controllers/store.controller.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
-import { publicRateLimiter, storeWriteRateLimiter } from '../middleware/rateLimit.js';
+import { publicRateLimiter, storeRatingRateLimiter, storeWriteRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -37,6 +37,21 @@ router.get('/', publicRateLimiter, getStores);
 // @desc    Get the authenticated user's store
 // @access  Private
 router.get('/me', protect, getMyStore);
+
+// @route   POST /api/stores/:id/ratings
+// @desc    Create or update the authenticated user's rating for a store
+// @access  Private
+router.post(
+  '/:id/ratings',
+  protect,
+  storeRatingRateLimiter,
+  [
+    body('rating', 'Rating must be a whole number between 1 and 5')
+      .isInt({ min: 1, max: 5 })
+      .toInt(),
+  ],
+  submitStoreRating
+);
 
 // @route   GET /api/stores/:id
 // @desc    Get single store by ID

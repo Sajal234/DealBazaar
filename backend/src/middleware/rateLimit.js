@@ -37,6 +37,12 @@ export const storeWriteRateLimiter = buildRateLimiter({
   message: 'Too many store management requests. Please try again later.',
 });
 
+export const storeRatingRateLimiter = buildRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: 'Too many store rating requests. Please try again later.',
+});
+
 export const dealWriteRateLimiter = buildRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 20,
