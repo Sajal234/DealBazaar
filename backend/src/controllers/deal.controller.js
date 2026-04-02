@@ -18,6 +18,47 @@ const streamUpload = (buffer) => {
   });
 };
 
+const findOwnedStore = async (userId) => Store.findOne({ ownerId: userId });
+const allowedDealStatuses = new Set(['pending', 'active', 'expired', 'rejected']);
+
+const normalizeOwnedDealUpdate = (body) => {
+  const updateFields = {};
+
+  if (body.productName !== undefined) {
+    const productName = String(body.productName).trim();
+    if (!productName) {
+      return { error: 'Product name cannot be empty' };
+    }
+    updateFields.productName = productName;
+  }
+
+  if (body.description !== undefined) {
+    const description = String(body.description).trim();
+    if (!description) {
+      return { error: 'Description cannot be empty' };
+    }
+    updateFields.description = description;
+  }
+
+  if (body.price !== undefined) {
+    const parsedPrice = Number(body.price);
+    if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
+      return { error: 'Price must be a valid positive number' };
+    }
+    updateFields.price = parsedPrice;
+  }
+
+  if (body.city !== undefined) {
+    const city = String(body.city).trim();
+    if (!city) {
+      return { error: 'City cannot be empty' };
+    }
+    updateFields.city = city.toLowerCase();
+  }
+
+  return { updateFields };
+};
+
 // @desc    Create a new deal
 // @route   POST /api/deals
 // @access  Private (Store Owners Only)
@@ -120,6 +161,55 @@ export const createDeal = async (req, res) => {
   }
 };
 
+// @desc    Get deals belonging to the authenticated store owner
+// @route   GET /api/deals/mine
+// @access  Private
+export const getMyDeals = async (req, res) => {
+  try {
+    const store = await findOwnedStore(req.user._id);
+
+    if (!store) {
+      return res.status(404).json({ success: false, message: 'No store found for this account' });
+    }
+
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
+    const skip = (page - 1) * limit;
+    const query = {
+      storeId: store._id,
+      isDeleted: false,
+    };
+
+    if (req.query.status) {
+      if (!allowedDealStatuses.has(req.query.status)) {
+        return res.status(400).json({ success: false, message: 'Invalid deal status filter' });
+      }
+      query.status = req.query.status;
+    }
+
+    const deals = await Deal.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await Deal.countDocuments(query);
+
+    return res.status(200).json({
+      success: true,
+      count: deals.length,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+      },
+      data: deals.map((deal) => serializeDeal(deal, { includeMetrics: true, includeLifecycle: true })),
+    });
+  } catch (error) {
+    console.error('[Get My Deals Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error while fetching your deals' });
+  }
+};
+
 // @desc    Get all active deals
 // @route   GET /api/deals
 // @access  Public
@@ -170,6 +260,133 @@ export const getDeals = async (req, res) => {
   } catch (error) {
     console.error('[Get Deals Error]', error);
     return res.status(500).json({ success: false, message: 'Server error while fetching deals' });
+  }
+};
+
+// @desc    Update a deal owned by the authenticated store owner
+// @route   PATCH /api/deals/:id
+// @access  Private
+export const updateDeal = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  try {
+    const store = await findOwnedStore(req.user._id);
+
+    if (!store) {
+      return res.status(404).json({ success: false, message: 'No store found for this account' });
+    }
+
+    if (store.status !== 'approved') {
+      return res.status(403).json({ success: false, message: 'Your store is not approved yet.' });
+    }
+
+    const deal = await Deal.findOne({
+      _id: req.params.id,
+      storeId: store._id,
+      isDeleted: false,
+    });
+
+    if (!deal) {
+      return res.status(404).json({ success: false, message: 'Deal not found' });
+    }
+
+    const { updateFields, error } = normalizeOwnedDealUpdate(req.body);
+    if (error) {
+      return res.status(400).json({ success: false, message: error });
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({ success: false, message: 'Provide at least one field to update' });
+    }
+
+    const updatedDeal = await Deal.findOneAndUpdate(
+      { _id: deal._id },
+      {
+        $set: {
+          ...updateFields,
+          status: 'pending',
+        },
+        $unset: {
+          expiresAt: 1,
+          cleanupAt: 1,
+          lastVerifiedAt: 1,
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message:
+        deal.status === 'pending'
+          ? 'Deal updated successfully.'
+          : 'Deal updated and sent back for admin review.',
+      data: serializeDeal(updatedDeal, { includeMetrics: true, includeLifecycle: true }),
+    });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ success: false, message: 'Invalid Deal ID string' });
+    }
+    console.error('[Update Deal Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error while updating the deal' });
+  }
+};
+
+// @desc    Resubmit a rejected or expired deal for admin review
+// @route   PATCH /api/deals/:id/resubmit
+// @access  Private
+export const resubmitDeal = async (req, res) => {
+  try {
+    const store = await findOwnedStore(req.user._id);
+
+    if (!store) {
+      return res.status(404).json({ success: false, message: 'No store found for this account' });
+    }
+
+    if (store.status !== 'approved') {
+      return res.status(403).json({ success: false, message: 'Your store is not approved yet.' });
+    }
+
+    const deal = await Deal.findOne({
+      _id: req.params.id,
+      storeId: store._id,
+      isDeleted: false,
+    });
+
+    if (!deal) {
+      return res.status(404).json({ success: false, message: 'Deal not found' });
+    }
+
+    if (!['rejected', 'expired'].includes(deal.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Only rejected or expired deals can be resubmitted',
+      });
+    }
+
+    const updatedDeal = await Deal.findOneAndUpdate(
+      { _id: deal._id },
+      {
+        $set: { status: 'pending' },
+        $unset: { cleanupAt: 1, expiresAt: 1, lastVerifiedAt: 1 },
+      },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Deal resubmitted successfully. Pending admin approval.',
+      data: serializeDeal(updatedDeal, { includeMetrics: true, includeLifecycle: true }),
+    });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ success: false, message: 'Invalid Deal ID string' });
+    }
+    console.error('[Resubmit Deal Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error while resubmitting the deal' });
   }
 };
 

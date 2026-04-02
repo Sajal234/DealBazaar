@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { applyForStore, getStores, getStoreById } from '../controllers/store.controller.js';
+import { applyForStore, getStores, getMyStore, getStoreById } from '../controllers/store.controller.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -30,6 +30,11 @@ router.post(
 // @desc    Get all active/approved stores
 // @access  Public
 router.get('/', getStores);
+
+// @route   GET /api/stores/me
+// @desc    Get the authenticated user's store
+// @access  Private
+router.get('/me', protect, getMyStore);
 
 // @route   GET /api/stores/:id
 // @desc    Get single store by ID

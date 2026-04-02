@@ -1,5 +1,6 @@
 import Store from '../models/Store.js';
 import Deal from '../models/Deal.js';
+import User from '../models/User.js';
 import { serializeDeal, serializeStore } from '../utils/serializers.js';
 
 // @desc    List pending store applications
@@ -111,6 +112,11 @@ export const updateStoreStatus = async (req, res) => {
         message: 'Store already processed by another admin or does not exist'
       });
     }
+
+    await User.findOneAndUpdate(
+      { _id: store.ownerId, role: { $ne: 'admin' } },
+      { role: status === 'approved' ? 'store' : 'user' }
+    );
 
     return res.status(200).json({ 
       success: true, 

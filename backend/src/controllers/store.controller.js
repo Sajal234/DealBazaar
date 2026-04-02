@@ -96,6 +96,24 @@ export const getStores = async (req, res) => {
   }
 };
 
+// @desc    Get the authenticated user's store
+// @route   GET /api/stores/me
+// @access  Private
+export const getMyStore = async (req, res) => {
+  try {
+    const store = await Store.findOne({ ownerId: req.user._id });
+
+    if (!store) {
+      return res.status(404).json({ success: false, message: 'No store found for this account' });
+    }
+
+    return res.status(200).json({ success: true, data: serializeStore(store) });
+  } catch (error) {
+    console.error('[Get My Store Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error while fetching your store' });
+  }
+};
+
 // @desc    Get single store by ID
 // @route   GET /api/stores/:id
 // @access  Public

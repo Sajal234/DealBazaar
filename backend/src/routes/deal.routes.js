@@ -1,6 +1,13 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { createDeal, getDeals, getDealById } from '../controllers/deal.controller.js';
+import {
+  createDeal,
+  getDeals,
+  getDealById,
+  getMyDeals,
+  updateDeal,
+  resubmitDeal,
+} from '../controllers/deal.controller.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
 
@@ -27,6 +34,31 @@ router.post(
 // @desc    Get all active deals with index-supported search filters
 // @access  Public
 router.get('/', getDeals);
+
+// @route   GET /api/deals/mine
+// @desc    Get deals owned by the authenticated store owner
+// @access  Private
+router.get('/mine', protect, getMyDeals);
+
+// @route   PATCH /api/deals/:id/resubmit
+// @desc    Resubmit a rejected or expired deal for moderation
+// @access  Private
+router.patch('/:id/resubmit', protect, resubmitDeal);
+
+// @route   PATCH /api/deals/:id
+// @desc    Update a deal owned by the authenticated store owner
+// @access  Private
+router.patch(
+  '/:id',
+  protect,
+  [
+    body('productName').optional().trim().notEmpty().withMessage('Product name cannot be empty'),
+    body('description').optional().trim().notEmpty().withMessage('Description cannot be empty'),
+    body('city').optional().trim().notEmpty().withMessage('City cannot be empty'),
+    body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a valid positive number'),
+  ],
+  updateDeal
+);
 
 // @route   GET /api/deals/:id
 // @desc    Get a single deal strictly returning owner-masked metadata
