@@ -1,12 +1,21 @@
 import rateLimit from 'express-rate-limit';
 
-const getRateLimitKey = (req) => req.user?._id?.toString() || req.ip || 'unknown';
+const getRequestIp = (req) => req.ip || req.socket?.remoteAddress || 'unknown';
 
-const buildRateLimiter = ({ windowMs, max, message }) =>
+const getRateLimitKey = (req) => req.user?._id?.toString() || `ip:${getRequestIp(req)}`;
+
+const getAuthRateLimitKey = (req) => {
+  const email =
+    typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+
+  return email ? `email:${email}` : `ip:${getRequestIp(req)}`;
+};
+
+const buildRateLimiter = ({ windowMs, max, message, keyGenerator = getRateLimitKey }) =>
   rateLimit({
     windowMs,
     max,
-    keyGenerator: getRateLimitKey,
+    keyGenerator,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -19,6 +28,7 @@ export const authRateLimiter = buildRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: 'Too many authentication attempts. Please try again later.',
+  keyGenerator: getAuthRateLimitKey,
 });
 
 export const storeWriteRateLimiter = buildRateLimiter({
