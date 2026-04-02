@@ -2,12 +2,14 @@ import express from 'express';
 import { body } from 'express-validator';
 import { signup, login, getMe } from '../controllers/auth.controller.js';
 import { protect } from '../middleware/auth.js';
+import { authRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
 // @route   POST /api/auth/signup
 router.post(
   '/signup',
+  authRateLimiter,
   [
     body('name', 'Name is strictly required').notEmpty().trim(),
     body('email', 'Please include a completely valid email').isEmail().normalizeEmail(),
@@ -22,6 +24,7 @@ router.post(
 // @route   POST /api/auth/login
 router.post(
   '/login',
+  authRateLimiter,
   [
     body('email', 'Please include a strictly valid email').isEmail().normalizeEmail(),
     body('password', 'Password is required').notEmpty()

@@ -5,20 +5,28 @@ import User from '../models/User.js';
 // Explicitly load .env variables manually since we are running this script entirely independently of the server
 dotenv.config();
 
+const getRequiredEnv = (key, options = {}) => {
+  const { trim = true } = options;
+  const rawValue = process.env[key];
+  const value = trim ? rawValue?.trim() : rawValue;
+
+  if (!value) {
+    throw new Error(`${key} is required for admin seeding.`);
+  }
+
+  return value;
+};
+
 const seedAdmin = async () => {
   try {
-    if (!process.env.MONGO_URI) {
-      throw new Error('MONGO_URI is strictly required but not defined in your environment variables.');
-    }
+    const mongoUri = getRequiredEnv('MONGO_URI');
+    const adminEmail = getRequiredEnv('ADMIN_EMAIL').toLowerCase();
+    const adminPassword = getRequiredEnv('ADMIN_PASSWORD', { trim: false });
+    const adminName = process.env.ADMIN_NAME?.trim() || 'System Administrator';
 
     console.log('[Seed Engine] Booting MongoDB connection...');
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(mongoUri);
     console.log('[Seed Engine] MongoDB Connected Successfully.');
-
-    // Enforce environment overrides to dynamically inject Production superusers via CLI later
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@dealbazaar.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'SuperSecretAdmin123!';
-    const adminName = process.env.ADMIN_NAME || 'System Administrator';
 
     // Security Check: Attempt to locate exact matches
     const existingAdmin = await User.findOne({ email: adminEmail });
@@ -27,13 +35,13 @@ const seedAdmin = async () => {
       if (existingAdmin.role === 'admin') {
         console.log(`[Seed Engine] Administrator account securely mapped and verified for: ${adminEmail}`);
         console.log(`[Seed Engine] Operation Skipped. Exiting.`);
-        process.exit(0);
+        return;
       } else {
         // Upgrade Edge Case: Upgrades the role in case the founder registered it normally by accident
         existingAdmin.role = 'admin';
         await existingAdmin.save();
         console.log(`[Seed Engine] Successfully upgraded standard user ${adminEmail} to Administrator role!`);
-        process.exit(0);
+        return;
       }
     }
 
@@ -46,11 +54,13 @@ const seedAdmin = async () => {
     });
 
     console.log(`[Seed Engine] Success! Provisioned highly secure Administrator Account: ${adminEmail}`);
-    await mongoose.disconnect();
-    process.exit(0);
   } catch (error) {
     console.error('[Seed Engine Fatal Error]', error);
-    process.exit(1);
+    process.exitCode = 1;
+  } finally {
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
   }
 };
 

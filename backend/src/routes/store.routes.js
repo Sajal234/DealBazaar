@@ -2,6 +2,7 @@ import express from 'express';
 import { body } from 'express-validator';
 import { applyForStore, getStores, getMyStore, getStoreById } from '../controllers/store.controller.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
+import { storeWriteRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -10,6 +11,7 @@ const router = express.Router();
 // @access  Private
 router.post(
   '/',
+  storeWriteRateLimiter,
   protect, // Authentication strictly required
   [
     body('name', 'Store name is strictly required').trim().notEmpty(),

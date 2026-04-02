@@ -9,6 +9,7 @@ import {
   resubmitDeal,
 } from '../controllers/deal.controller.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
+import { dealWriteRateLimiter } from '../middleware/rateLimit.js';
 import upload from '../middleware/upload.js';
 
 const router = express.Router();
@@ -18,6 +19,7 @@ const router = express.Router();
 // @access  Private (Store Owners Only)
 router.post(
   '/',
+  dealWriteRateLimiter,
   protect,                     // 1. Verify standard JWT Authentication
   upload.array('images', 5),   // 2. Explictly trap the payload using your requested Multer array ceiling
   [
@@ -43,13 +45,14 @@ router.get('/mine', protect, getMyDeals);
 // @route   PATCH /api/deals/:id/resubmit
 // @desc    Resubmit a rejected or expired deal for moderation
 // @access  Private
-router.patch('/:id/resubmit', protect, resubmitDeal);
+router.patch('/:id/resubmit', dealWriteRateLimiter, protect, resubmitDeal);
 
 // @route   PATCH /api/deals/:id
 // @desc    Update a deal owned by the authenticated store owner
 // @access  Private
 router.patch(
   '/:id',
+  dealWriteRateLimiter,
   protect,
   [
     body('productName').optional().trim().notEmpty().withMessage('Product name cannot be empty'),
