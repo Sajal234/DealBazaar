@@ -2,6 +2,8 @@ import cron from 'node-cron';
 import Deal from '../models/Deal.js';
 import { destroyCloudinaryAssets } from '../utils/cloudinaryAssets.js';
 
+const CLEANUP_RETRY_DELAY_MS = 6 * 60 * 60 * 1000;
+
 // Setup Cron Job: Runs once a day at 3:00 AM server time (Low Traffic Period)
 const cleanupImagesJob = () => {
   cron.schedule('0 3 * * *', async () => {
@@ -54,6 +56,7 @@ const cleanupImagesJob = () => {
               filter: { _id: deal._id },
               update: {
                 $set: {
+                  cleanupAt: new Date(Date.now() + CLEANUP_RETRY_DELAY_MS),
                   images: remainingAssets.map((asset) => asset.imageUrl),
                   imagePublicIds: remainingAssets.map((asset) => asset.publicId),
                 },
