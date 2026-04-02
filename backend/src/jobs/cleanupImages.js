@@ -14,9 +14,12 @@ const cleanupImagesJob = () => {
       // Find deals that have safely passed their 72-hour cleanup grace period
       // (This inherently catches both 'expired' and 'rejected' deals!)
       const dealsToClean = await Deal.find({
-        status: { $in: ['expired', 'rejected'] },
         cleanupAt: { $lt: now },
-        isDeleted: false
+        isDeleted: false,
+        $or: [
+          { status: { $in: ['expired', 'rejected'] } },
+          { archivedAt: { $ne: null } },
+        ],
       }).select('imagePublicIds images _id'); // Massive RAM projection optimization again!
 
       if (dealsToClean.length === 0) {

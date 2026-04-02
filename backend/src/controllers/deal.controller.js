@@ -22,6 +22,7 @@ const streamUpload = (buffer) => {
 const findOwnedStore = async (userId) => Store.findOne({ ownerId: userId });
 const allowedDealStatuses = new Set(['pending', 'active', 'expired', 'rejected']);
 const CLICK_DEDUPE_WINDOW_MS = 30 * 1000;
+const DEAL_DELETE_RETRY_DELAY_MS = 6 * 60 * 60 * 1000;
 const recentDealClickCache = new Map();
 
 const normalizeOwnedDealUpdate = (body) => {
@@ -213,6 +214,7 @@ export const getMyDeals = async (req, res) => {
     const skip = (page - 1) * limit;
     const query = {
       storeId: store._id,
+      archivedAt: null,
       isDeleted: false,
     };
 
@@ -257,6 +259,7 @@ export const getDeals = async (req, res) => {
 
     // Strict baseline query scope
     let query = { status: 'active', isDeleted: false };
+    query.archivedAt = null;
 
     // Leverage your Compound Index: City
     if (req.query.city) {
@@ -322,6 +325,7 @@ export const updateDeal = async (req, res) => {
     const deal = await Deal.findOne({
       _id: req.params.id,
       storeId: store._id,
+      archivedAt: null,
       isDeleted: false,
     });
 
@@ -389,6 +393,7 @@ export const resubmitDeal = async (req, res) => {
     const deal = await Deal.findOne({
       _id: req.params.id,
       storeId: store._id,
+      archivedAt: null,
       isDeleted: false,
     });
 
@@ -426,6 +431,99 @@ export const resubmitDeal = async (req, res) => {
   }
 };
 
+// @desc    Archive a deal owned by the authenticated store owner
+// @route   DELETE /api/deals/:id
+// @access  Private
+export const archiveDeal = async (req, res) => {
+  try {
+    const store = await findOwnedStore(req.user._id);
+
+    if (!store) {
+      return res.status(404).json({ success: false, message: 'No store found for this account' });
+    }
+
+    const deal = await Deal.findOne({
+      _id: req.params.id,
+      storeId: store._id,
+      archivedAt: null,
+      isDeleted: false,
+    });
+
+    if (!deal) {
+      return res.status(404).json({ success: false, message: 'Deal not found' });
+    }
+
+    const archivedAt = new Date();
+    const { failedIds, failures } = await destroyCloudinaryAssets(deal.imagePublicIds);
+
+    if (failures.length > 0) {
+      console.error('[Archive Deal Cleanup Error]', {
+        dealId: deal._id.toString(),
+        failures,
+      });
+    }
+
+    if (failedIds.length > 0) {
+      const failedIdSet = new Set(failedIds);
+      const remainingAssets = (deal.imagePublicIds || [])
+        .map((publicId, index) => ({
+          publicId,
+          imageUrl: (deal.images || [])[index],
+        }))
+        .filter((asset) => failedIdSet.has(asset.publicId));
+
+      await Deal.updateOne(
+        { _id: deal._id },
+        {
+          $set: {
+            archivedAt,
+            cleanupAt: new Date(Date.now() + DEAL_DELETE_RETRY_DELAY_MS),
+            images: remainingAssets.map((asset) => asset.imageUrl),
+            imagePublicIds: remainingAssets.map((asset) => asset.publicId),
+          },
+          $unset: {
+            expiresAt: 1,
+            lastVerifiedAt: 1,
+          },
+        }
+      );
+
+      return res.status(202).json({
+        success: true,
+        message: 'Deal archived. Some assets are queued for retry cleanup.',
+      });
+    }
+
+    await Deal.updateOne(
+      { _id: deal._id },
+      {
+        $set: {
+          archivedAt,
+          isDeleted: true,
+          images: [],
+          imagePublicIds: [],
+        },
+        $unset: {
+          cleanupAt: 1,
+          expiresAt: 1,
+          lastVerifiedAt: 1,
+        },
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Deal archived successfully.',
+    });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ success: false, message: 'Invalid Deal ID string' });
+    }
+    console.error('[Archive Deal Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error while archiving the deal' });
+  }
+};
+
 // @desc    Track click-through intent on an active public deal
 // @route   POST /api/deals/:id/click
 // @access  Public
@@ -443,6 +541,7 @@ export const trackDealClick = async (req, res) => {
     const result = await Deal.updateOne(
       {
         _id: req.params.id,
+        archivedAt: null,
         status: 'active',
         isDeleted: false,
       },
@@ -477,7 +576,7 @@ export const getDealById = async (req, res) => {
       'name address city phone rating totalRatings isVerified ownerId'
     );
 
-    if (!deal || deal.isDeleted) {
+    if (!deal || deal.isDeleted || deal.archivedAt) {
       return res.status(404).json({ success: false, message: 'Deal not found' });
     }
 

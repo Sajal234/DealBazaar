@@ -1,6 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import {
+  archiveDeal,
   createDeal,
   getDeals,
   getDealById,
@@ -63,6 +64,11 @@ router.patch(
   ],
   updateDeal
 );
+
+// @route   DELETE /api/deals/:id
+// @desc    Archive a deal owned by the authenticated store owner
+// @access  Private
+router.delete('/:id', protect, dealWriteRateLimiter, archiveDeal);
 
 // @route   POST /api/deals/:id/click
 // @desc    Track click-through intent on an active deal

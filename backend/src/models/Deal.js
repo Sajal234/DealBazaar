@@ -61,6 +61,9 @@ const dealSchema = new mongoose.Schema(
     cleanupAt: {
       type: Date, // Set to current time + 72 hours when status becomes expired/rejected
     },
+    archivedAt: {
+      type: Date,
+    },
     isDeleted: {
       type: Boolean,
       default: false
@@ -91,6 +94,7 @@ dealSchema.index({ storeId: 1 });
 dealSchema.index({ status: 1, isDeleted: 1 });
 dealSchema.index({ status: 1, expiresAt: 1 });
 dealSchema.index({ cleanupAt: 1 });
+dealSchema.index({ archivedAt: 1 });
 
 const Deal = mongoose.model('Deal', dealSchema);
 
