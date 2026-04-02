@@ -2,6 +2,7 @@ import { validationResult } from 'express-validator';
 import cloudinary from '../config/cloudinary.js';
 import Deal from '../models/Deal.js';
 import Store from '../models/Store.js';
+import { serializeDeal } from '../utils/serializers.js';
 
 // Helper function to upload multer memory buffer directly to Cloudinary via stream
 const streamUpload = (buffer) => {
@@ -25,7 +26,8 @@ export const createDeal = async (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ success: false, errors: errors.array() });
   }
-
+  
+  let imagePublicIds = [];
   try {
     // 1. Verify user actually owns an approved Store
     const store = await Store.findOne({ ownerId: req.user._id });
@@ -42,7 +44,6 @@ export const createDeal = async (req, res) => {
     
     // 2. Extract and Upload Images to Cloudinary (from Memory Buffer)
     const imagesUrls = [];
-    const imagePublicIds = [];
 
     // req.files is populated safely by multer upload.array('images', 5) in our routes
     if (req.files && req.files.length > 5) {
@@ -105,7 +106,7 @@ export const createDeal = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      data: deal,
+      data: serializeDeal(deal),
       message: 'Deal securely submitted. Pending admin approval.',
     });
   } catch (error) {
@@ -148,8 +149,8 @@ export const getDeals = async (req, res) => {
 
     // Utilize optimized `.populate` to safely return store contact metadata without leaking ownerId mapping natively
     const deals = await Deal.find(query)
-      .select('-imagePublicIds -cleanupAt -isDeleted') // DTO stripping
-      .populate('storeId', 'name address phone rating isVerified')
+      .select('storeId productName description price city images status createdAt updatedAt')
+      .populate('storeId', 'name address city phone rating totalRatings isVerified')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -164,7 +165,7 @@ export const getDeals = async (req, res) => {
         page,
         pages: Math.ceil(total / limit),
       },
-      data: deals,
+      data: deals.map((deal) => serializeDeal(deal)),
     });
   } catch (error) {
     console.error('[Get Deals Error]', error);
@@ -177,7 +178,10 @@ export const getDeals = async (req, res) => {
 // @access  Public
 export const getDealById = async (req, res) => {
   try {
-    const deal = await Deal.findById(req.params.id).populate('storeId', 'name address phone rating isVerified ownerId');
+    const deal = await Deal.findById(req.params.id).populate(
+      'storeId',
+      'name address city phone rating totalRatings isVerified ownerId'
+    );
 
     if (!deal || deal.isDeleted) {
       return res.status(404).json({ success: false, message: 'Deal not found' });
@@ -201,16 +205,7 @@ export const getDealById = async (req, res) => {
       }).catch(err => console.error('[View Update Error]', err));
     }
 
-    const dealDTO = deal.toObject();
-    delete dealDTO.imagePublicIds;
-    delete dealDTO.cleanupAt;
-    delete dealDTO.isDeleted;
-    // Ensure storeId.ownerId is detached from the DTO payload
-    if (dealDTO.storeId) {
-      delete dealDTO.storeId.ownerId;
-    }
-
-    return res.status(200).json({ success: true, data: dealDTO });
+    return res.status(200).json({ success: true, data: serializeDeal(deal) });
   } catch (error) {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ success: false, message: 'Invalid Deal ID string' });

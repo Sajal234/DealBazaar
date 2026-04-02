@@ -1,5 +1,6 @@
 import { validationResult } from 'express-validator';
 import Store from '../models/Store.js';
+import { serializeStore } from '../utils/serializers.js';
 
 // @desc    Apply for store registration
 // @route   POST /api/stores
@@ -43,7 +44,7 @@ export const applyForStore = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Store application submitted successfully. Pending admin approval.',
-      data: store,
+      data: serializeStore(store),
     });
   } catch (error) {
     // Race-condition fallback: 11000 Unique index on ownerId
@@ -73,7 +74,6 @@ export const getStores = async (req, res) => {
     }
 
     const stores = await Store.find(query)
-      .select('-ownerId') // Prevent exposing underlying user IDs natively
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -88,7 +88,7 @@ export const getStores = async (req, res) => {
         page,
         pages: Math.ceil(total / limit),
       },
-      data: stores,
+      data: stores.map((store) => serializeStore(store)),
     });
   } catch (error) {
     console.error('[Get Stores Error]', error);
@@ -119,11 +119,7 @@ export const getStoreById = async (req, res) => {
       }
     }
 
-    // Security: Strip internal ID from DTO before public return
-    const storeDTO = store.toObject();
-    delete storeDTO.ownerId;
-
-    return res.status(200).json({ success: true, data: storeDTO });
+    return res.status(200).json({ success: true, data: serializeStore(store) });
   } catch (error) {
     // Handle specific mongoose cast error (invalid ID format gracefully)
     if (error.kind === 'ObjectId') {
