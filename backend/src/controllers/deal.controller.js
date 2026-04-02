@@ -397,6 +397,42 @@ export const resubmitDeal = async (req, res) => {
   }
 };
 
+// @desc    Track click-through intent on an active public deal
+// @route   POST /api/deals/:id/click
+// @access  Public
+export const trackDealClick = async (req, res) => {
+  try {
+    const deal = await Deal.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        status: 'active',
+        isDeleted: false,
+      },
+      {
+        $inc: { clicks: 1 },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!deal) {
+      return res.status(404).json({ success: false, message: 'Deal not found' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Deal click tracked successfully',
+    });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ success: false, message: 'Invalid Deal ID string' });
+    }
+    console.error('[Track Deal Click Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error while tracking deal click' });
+  }
+};
+
 // @desc    Get single deal by ID
 // @route   GET /api/deals/:id
 // @access  Public

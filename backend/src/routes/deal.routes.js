@@ -5,6 +5,7 @@ import {
   getDeals,
   getDealById,
   getMyDeals,
+  trackDealClick,
   updateDeal,
   resubmitDeal,
 } from '../controllers/deal.controller.js';
@@ -62,6 +63,11 @@ router.patch(
   ],
   updateDeal
 );
+
+// @route   POST /api/deals/:id/click
+// @desc    Track click-through intent on an active deal
+// @access  Public
+router.post('/:id/click', publicRateLimiter, trackDealClick);
 
 // @route   GET /api/deals/:id
 // @desc    Get a single deal strictly returning owner-masked metadata
