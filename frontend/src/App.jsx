@@ -12,22 +12,39 @@ import {
 const themeStorageKey = 'dealbazaar.theme';
 
 function getInitialTheme() {
-  const storedTheme = window.localStorage.getItem(themeStorageKey);
+  if (typeof window === 'undefined') {
+    return 'light';
+  }
+
+  let storedTheme = null;
+
+  try {
+    storedTheme = window.localStorage.getItem(themeStorageKey);
+  } catch {
+    storedTheme = null;
+  }
 
   if (storedTheme === 'light' || storedTheme === 'dark') {
     return storedTheme;
   }
 
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export function App() {
   const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.style.colorScheme = theme;
-    window.localStorage.setItem(themeStorageKey, theme);
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(themeStorageKey, theme);
+      } catch {}
+    }
   }, [theme]);
 
   const nextThemeLabel = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
