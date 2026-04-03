@@ -16,7 +16,7 @@
   <rect width="1200" height="630" rx="36" fill="url(#bg)" />
   <rect width="1200" height="630" rx="36" fill="url(#glowLeft)" />
   <rect width="1200" height="630" rx="36" fill="url(#glowRight)" />
-  <g opacity="0.12">
+  <g opacity="0.045">
     <path d="M0 70H1200M0 140H1200M0 210H1200M0 280H1200M0 350H1200M0 420H1200M0 490H1200M0 560H1200" stroke="#bac3cc" />
     <path d="M70 0V630M140 0V630M210 0V630M280 0V630M350 0V630M420 0V630M490 0V630M560 0V630M630 0V630M700 0V630M770 0V630M840 0V630M910 0V630M980 0V630M1050 0V630M1120 0V630" stroke="#bac3cc" />
   </g>
@@ -24,9 +24,10 @@
     <rect width="84" height="84" rx="24" fill="#11151a" stroke="rgba(255,255,255,0.08)" />
     <g transform="translate(14 14)" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5">
       <path d="M6 8v28h8.5c7.5 0 12.5-5.7 12.5-14S22 8 14.5 8H6Z" stroke="#f4f1eb" />
-      <path d="M31.5 8v28" stroke="#d6b18a" />
-      <path d="M31.5 8h6.2c4.8 0 7.8 2.8 7.8 6.6 0 3.7-3 6.2-7.8 6.2h-6.2" stroke="#d6b18a" />
-      <path d="M31.5 20.8h6.8c5 0 8.2 2.8 8.2 7s-3.2 8.2-8.6 8.2h-6.4" stroke="#d6b18a" />
+      <path d="M29.8 8v28" stroke="#d6b18a" />
+      <path d="M27.2 6.6v30.8" stroke="#11151a" stroke-width="2.2" />
+      <path d="M29.8 8H36c4.8 0 7.8 2.8 7.8 6.6 0 3.7-3 6.2-7.8 6.2h-6.2" stroke="#d6b18a" />
+      <path d="M29.8 20.8h6.8c5 0 8.2 2.8 8.2 7S41.6 36 36.2 36h-6.4" stroke="#d6b18a" />
     </g>
   </g>
   <text x="206" y="145" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700">DealBazaar</text>
@@ -40,11 +41,11 @@
     Real stores only. Moderated listings. Time-limited offers.
   </text>
   <g transform="translate(96 494)">
-    <rect width="228" height="58" rx="29" fill="#f4f6f8" />
-    <text x="36" y="38" fill="#14171a" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">Explore deals</text>
+    <rect width="228" height="54" rx="18" fill="#f4f6f8" />
+    <text x="36" y="36.5" fill="#14171a" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">Explore deals</text>
   </g>
   <g transform="translate(348 494)">
-    <rect width="248" height="58" rx="29" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.08)" />
-    <text x="34" y="38" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="600">Start selling locally</text>
+    <rect width="248" height="54" rx="18" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" />
+    <text x="34" y="36.5" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="600">Start selling locally</text>
   </g>
 </svg>
