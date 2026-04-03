@@ -54,7 +54,9 @@ export function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <div className="brand__mark">DB</div>
+          <div className="brand__mark" aria-hidden="true">
+            <img src="/favicon.svg" alt="" className="brand__mark-image" />
+          </div>
           <div>
             <p className="brand__name">DealBazaar</p>
             <p className="brand__subtext">Verified local commerce.</p>

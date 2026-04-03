@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DealBazaar favicon">
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="#14171a" />
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5">
+    <path d="M18 18v28h8.5c7.5 0 12.5-5.7 12.5-14S34 18 26.5 18H18Z" stroke="#f4f1eb" />
+    <path d="M43.5 18v28" stroke="#d6b18a" />
+    <path d="M43.5 18h6.2c4.8 0 7.8 2.8 7.8 6.6 0 3.7-3 6.2-7.8 6.2h-6.2" stroke="#d6b18a" />
+    <path d="M43.5 30.8h6.8c5 0 8.2 2.8 8.2 7s-3.2 8.2-8.6 8.2h-6.4" stroke="#d6b18a" />
+  </g>
+</svg>

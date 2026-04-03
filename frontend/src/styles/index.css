@@ -101,10 +101,13 @@ body::before {
   border-radius: 16px;
   background: var(--surface-strong);
   box-shadow: var(--shadow-soft);
-  color: var(--accent-strong);
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  overflow: hidden;
+}
+
+.brand__mark-image {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .brand__name,
