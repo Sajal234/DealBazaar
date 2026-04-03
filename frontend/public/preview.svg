@@ -41,11 +41,11 @@
     Real stores only. Moderated listings. Time-limited offers.
   </text>
   <g transform="translate(96 494)">
-    <rect width="228" height="54" rx="18" fill="#f4f6f8" />
-    <text x="36" y="36.5" fill="#14171a" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">Explore deals</text>
+    <rect width="220" height="54" rx="18" fill="#f4f6f8" />
+    <text x="110" y="27" fill="#14171a" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle" dominant-baseline="middle">Explore deals</text>
   </g>
   <g transform="translate(348 494)">
-    <rect width="248" height="54" rx="18" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" />
-    <text x="34" y="36.5" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="600">Start selling locally</text>
+    <rect width="306" height="54" rx="18" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" />
+    <text x="153" y="27" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="600" text-anchor="middle" dominant-baseline="middle">Start selling locally</text>
   </g>
 </svg>
