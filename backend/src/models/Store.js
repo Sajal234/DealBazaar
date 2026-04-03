@@ -65,10 +65,8 @@ const storeSchema = new mongoose.Schema(
 );
 
 // Helpful indexes for querying stores quickly
-storeSchema.index({ ownerId: 1 });
-storeSchema.index({ city: 1 });
-storeSchema.index({ status: 1 });
-storeSchema.index({ name: "text", city: "text" });
+storeSchema.index({ status: 1, createdAt: -1 });
+storeSchema.index({ status: 1, city: 1, createdAt: -1 });
 
 const Store = mongoose.model('Store', storeSchema);
 
