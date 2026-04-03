@@ -9,7 +9,7 @@ process.env.CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'test-s
 const [
   { signup, login },
   { applyForStore, submitStoreRating },
-  { updateDeal },
+  { updateDeal, trackDealClick },
   { updateStoreStatus, updateDealStatus },
   { default: User },
   { default: Store },
@@ -312,6 +312,84 @@ test('updateDeal resets status back to pending and clears lifecycle timers', asy
   assert.equal(res.statusCode, 200);
   assert.equal(res.body.message, 'Deal updated and sent back for admin review.');
   assert.equal(res.body.data.status, 'pending');
+});
+
+test('updateDeal hides deals that do not belong to the authenticated owner store', async () => {
+  const req = {
+    params: { id: 'deal-foreign' },
+    user: { _id: 'owner-1' },
+    body: { price: 9999 },
+  };
+  const res = createMockResponse();
+
+  await withPatchedProperties(
+    [
+      {
+        target: Store,
+        key: 'findOne',
+        value: async () => ({
+          _id: 'store-1',
+          status: 'approved',
+        }),
+      },
+      {
+        target: Deal,
+        key: 'findOne',
+        value: async () => null,
+      },
+    ],
+    async () => {
+      await updateDeal(req, res);
+    }
+  );
+
+  assert.equal(res.statusCode, 404);
+  assert.deepEqual(res.body, {
+    success: false,
+    message: 'Deal not found',
+  });
+});
+
+test('trackDealClick dedupes repeated clicks from the same actor within the cache window', async () => {
+  const req = {
+    params: { id: 'deal-click-dedupe' },
+    ip: '127.0.0.1',
+  };
+  const firstResponse = createMockResponse();
+  const secondResponse = createMockResponse();
+  const updateCalls = [];
+
+  await withPatchedProperties(
+    [
+      {
+        target: Deal,
+        key: 'updateOne',
+        value: async (...args) => {
+          updateCalls.push(args);
+          return { matchedCount: 1 };
+        },
+      },
+    ],
+    async () => {
+      await trackDealClick(req, firstResponse);
+      await trackDealClick(req, secondResponse);
+    }
+  );
+
+  assert.equal(updateCalls.length, 1);
+  assert.deepEqual(updateCalls[0][0], {
+    _id: 'deal-click-dedupe',
+    archivedAt: { $eq: null },
+    status: 'active',
+    isDeleted: false,
+  });
+  assert.deepEqual(updateCalls[0][1], {
+    $inc: { clicks: 1 },
+  });
+  assert.equal(firstResponse.statusCode, 204);
+  assert.equal(firstResponse.ended, true);
+  assert.equal(secondResponse.statusCode, 204);
+  assert.equal(secondResponse.ended, true);
 });
 
 test('updateStoreStatus promotes approved store owners to the store role', async () => {
