@@ -33,6 +33,7 @@ function getInitialTheme() {
 
 export function App() {
   const [theme, setTheme] = useState(getInitialTheme);
+  const [activeFeature, setActiveFeature] = useState('explore');
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -56,7 +57,7 @@ export function App() {
           <div className="brand__mark">DB</div>
           <div>
             <p className="brand__name">DealBazaar</p>
-            <p className="brand__subtext">Premium local commerce, designed for trust.</p>
+            <p className="brand__subtext">Verified local commerce.</p>
           </div>
         </div>
 
@@ -78,80 +79,95 @@ export function App() {
             <span>Verified local deals</span>
           </div>
 
-          <h1>Calm, premium discovery for the stores around you.</h1>
+          <h1>Discover local deals with less noise and more trust.</h1>
           <p>
-            DealBazaar brings verified offline retailers into a cleaner digital storefront, so
-            shoppers can find trusted live offers and stores can publish with credibility.
+            DealBazaar gives offline stores a disciplined digital layer so shoppers can browse
+            current offers quickly and stores can publish with credibility.
           </p>
+
+          <ul className="trust-list" aria-label="Marketplace trust signals">
+            <li>Admin-approved deals</li>
+            <li>Real store verification</li>
+            <li>Auto-expiring offers</li>
+          </ul>
 
           <div className="hero__actions">
             <button type="button" className="button button--primary">
-              Explore deals
+              Explore verified deals
               <ArrowRight size={18} />
             </button>
             <button type="button" className="button button--secondary">
-              List your store
+              Start selling locally
             </button>
           </div>
 
           <dl className="hero-metrics">
             <div>
               <dt>48–72h</dt>
-              <dd>moderated deal lifecycle</dd>
+              <dd>moderated lifecycle</dd>
             </div>
             <div>
               <dt>1 flow</dt>
-              <dd>for discovery, trust, and outreach</dd>
+              <dd>from discovery to contact</dd>
             </div>
             <div>
               <dt>0 noise</dt>
-              <dd>from cluttered classified marketplaces</dd>
+              <dd>from cluttered classifieds</dd>
             </div>
           </dl>
         </section>
 
         <section className="hero-panel">
-          <article className="feature-card feature-card--primary">
+          <button
+            type="button"
+            className={`feature-card feature-card--primary${activeFeature === 'explore' ? ' is-active' : ''}`}
+            onMouseEnter={() => setActiveFeature('explore')}
+            onFocus={() => setActiveFeature('explore')}
+            onClick={() => setActiveFeature('explore')}
+          >
             <div className="feature-card__icon">
               <Search size={18} />
             </div>
             <div>
               <p className="feature-card__eyebrow">Explore</p>
-              <h2>Find active offers with clarity</h2>
-              <p>
-                Search current deals, compare store quality, and move directly into calling or
-                messaging with confidence.
-              </p>
+              <h2>Find serious offers fast</h2>
+              <p>Search live deals, compare store quality, and reach out with context.</p>
             </div>
-          </article>
+          </button>
 
-          <article className="feature-card">
+          <button
+            type="button"
+            className={`feature-card${activeFeature === 'sell' ? ' is-active' : ''}`}
+            onMouseEnter={() => setActiveFeature('sell')}
+            onFocus={() => setActiveFeature('sell')}
+            onClick={() => setActiveFeature('sell')}
+          >
             <div className="feature-card__icon">
               <Store size={18} />
             </div>
             <div>
               <p className="feature-card__eyebrow">Sell</p>
-              <h2>Give local stores a polished digital layer</h2>
-              <p>
-                Applications, moderation, and store dashboards create a cleaner path from offline
-                inventory to online demand.
-              </p>
+              <h2>Give stores a cleaner digital surface</h2>
+              <p>Structured onboarding and deal workflows help local inventory reach demand.</p>
             </div>
-          </article>
+          </button>
 
-          <article className="feature-card">
+          <button
+            type="button"
+            className={`feature-card${activeFeature === 'trust' ? ' is-active' : ''}`}
+            onMouseEnter={() => setActiveFeature('trust')}
+            onFocus={() => setActiveFeature('trust')}
+            onClick={() => setActiveFeature('trust')}
+          >
             <div className="feature-card__icon">
               <ShieldCheck size={18} />
             </div>
             <div>
               <p className="feature-card__eyebrow">Trust</p>
-              <h2>Moderation and expiry keep the marketplace credible</h2>
-              <p>
-                Ratings, approvals, and automatic expiry handling protect the experience without
-                adding friction to honest stores.
-              </p>
+              <h2>Keep trust visible</h2>
+              <p>Ratings, approvals, and expiry rules keep listings current instead of noisy.</p>
             </div>
-          </article>
+          </button>
         </section>
       </main>
     </div>
