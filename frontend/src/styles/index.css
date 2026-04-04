@@ -642,6 +642,17 @@ body::before {
   line-height: 1.64;
 }
 
+.state-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.state-card__retry {
+  min-width: 132px;
+}
+
 .state-card__spinner {
   animation: spin 1s linear infinite;
 }

@@ -3,7 +3,7 @@ import { DealCard } from '../features/deals/DealCard';
 import { useDealsQuery } from '../features/deals/deals.queries';
 
 export function DealsPage() {
-  const { data, isLoading, error } = useDealsQuery({ limit: 12 });
+  const { data, isLoading, error, refetch, isRefetching } = useDealsQuery({ limit: 12 });
   const deals = data?.items || [];
 
   return (
@@ -35,6 +35,16 @@ export function DealsPage() {
           <div>
             <h2>Could not load deals</h2>
             <p>{error.message || 'Unable to load deals right now.'}</p>
+            <button
+              type="button"
+              className="button button--secondary state-card__retry"
+              onClick={() => {
+                refetch();
+              }}
+              disabled={isRefetching}
+            >
+              {isRefetching ? 'Retrying...' : 'Try again'}
+            </button>
           </div>
         </section>
       ) : null}

@@ -4,9 +4,10 @@ import { getDealDetail, listDeals } from './deals.api';
 
 export function useDealsQuery({ limit = 12 } = {}) {
   const queryClient = useQueryClient();
+  const listParams = { limit };
 
   const query = useQuery({
-    queryKey: ['deals', 'list', limit],
+    queryKey: ['deals', 'list', listParams],
     queryFn: ({ signal }) => listDeals({ limit, signal }),
   });
 

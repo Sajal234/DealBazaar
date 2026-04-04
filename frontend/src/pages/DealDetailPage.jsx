@@ -28,7 +28,10 @@ export function DealDetailPage() {
   const { dealId } = useParams();
   const location = useLocation();
   const initialDeal = location.state?.dealPreview || null;
-  const { data: deal, isLoading, error } = useDealDetailQuery(dealId, initialDeal);
+  const { data: deal, isLoading, error, refetch, isRefetching } = useDealDetailQuery(
+    dealId,
+    initialDeal
+  );
 
   if (isLoading) {
     return (
@@ -52,6 +55,21 @@ export function DealDetailPage() {
           <div>
             <h2>Could not load this deal</h2>
             <p>{error?.message || 'The deal may have expired or is no longer available.'}</p>
+            <div className="state-card__actions">
+              <button
+                type="button"
+                className="button button--secondary state-card__retry"
+                onClick={() => {
+                  refetch();
+                }}
+                disabled={isRefetching}
+              >
+                {isRefetching ? 'Retrying...' : 'Try again'}
+              </button>
+              <Link to="/deals" className="button button--ghost">
+                Back to deals
+              </Link>
+            </div>
           </div>
         </section>
       </main>
