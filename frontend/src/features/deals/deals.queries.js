@@ -13,12 +13,12 @@ export function useDealsQuery({ limit = 12 } = {}) {
   });
 
   useEffect(() => {
-    if (!query.data?.items) {
+    if (!query.isSuccess || !query.data?.items || !query.dataUpdatedAt) {
       return;
     }
 
-    seedDealPreviewCache(queryClient, query.data.items);
-  }, [query.data?.items, queryClient]);
+    seedDealPreviewCache(queryClient, query.data.items, query.dataUpdatedAt);
+  }, [query.isSuccess, query.data?.items, query.dataUpdatedAt, queryClient]);
 
   return query;
 }
@@ -28,7 +28,7 @@ export function useDealDetailQuery(dealId, initialDeal) {
   const canFetchDeal = isValidDealId(dealId);
 
   return useQuery({
-    queryKey: dealsKeys.detail(dealId),
+    queryKey: canFetchDeal ? dealsKeys.detail(dealId) : dealsKeys.detailInvalid(dealId),
     queryFn: ({ signal }) => getDealDetail(dealId, { signal }),
     enabled: canFetchDeal,
     placeholderData: () =>

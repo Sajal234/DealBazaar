@@ -18,6 +18,7 @@ export const dealsKeys = {
   ],
   details: () => [...dealsKeys.all, 'detail'],
   detail: (dealId) => [...dealsKeys.details(), dealId],
+  detailInvalid: (dealId) => [...dealsKeys.details(), 'invalid', dealId || ''],
   previews: () => [...dealsKeys.all, 'preview'],
   preview: (dealId) => [...dealsKeys.previews(), dealId],
 };
