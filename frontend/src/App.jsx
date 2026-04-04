@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './layout/AppLayout';
+import { DealDetailPage } from './pages/DealDetailPage';
+import { DealsPage } from './pages/DealsPage';
 import { HomePage } from './pages/HomePage';
 
 const themeStorageKey = 'dealbazaar.theme';
@@ -42,7 +45,12 @@ export function App() {
 
   return (
     <AppLayout theme={theme} setTheme={setTheme}>
-      <HomePage />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/deals" element={<DealsPage />} />
+        <Route path="/deals/:dealId" element={<DealDetailPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </AppLayout>
   );
 }

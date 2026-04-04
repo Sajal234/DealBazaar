@@ -1,4 +1,5 @@
 import { ArrowRight, Clock3, MapPin, Search, Sparkles, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function HomePage() {
   return (
@@ -22,10 +23,10 @@ export function HomePage() {
         </ul>
 
         <div className="hero__actions">
-          <button type="button" className="button button--primary">
+          <Link to="/deals" className="button button--primary">
             Explore verified deals
             <ArrowRight size={18} />
-          </button>
+          </Link>
           <button type="button" className="button button--secondary">
             Start selling locally
           </button>
@@ -87,9 +88,9 @@ export function HomePage() {
                 <Clock3 size={14} />
                 Ends in 11h
               </span>
-              <button type="button" className="listing-card__action">
+              <span className="listing-card__action" aria-hidden="true">
                 View deal
-              </button>
+              </span>
             </div>
           </article>
 
@@ -115,9 +116,12 @@ export function HomePage() {
                 <Clock3 size={14} />
                 Freshly listed
               </span>
-              <button type="button" className="listing-card__action listing-card__action--quiet">
+              <span
+                className="listing-card__action listing-card__action--quiet"
+                aria-hidden="true"
+              >
                 Compare
-              </button>
+              </span>
             </div>
           </article>
         </div>

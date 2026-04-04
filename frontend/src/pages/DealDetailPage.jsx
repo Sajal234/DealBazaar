@@ -1,0 +1,126 @@
+import { AlertCircle, ArrowLeft, Clock3, LoaderCircle, MapPin, Phone, Search, Star } from 'lucide-react';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { trackDealClick } from '../features/deals/deals.api';
+import { useDealDetailQuery } from '../features/deals/deals.queries';
+
+function ContactAction({ deal }) {
+  const phone = deal.store?.phone ? String(deal.store.phone).trim() : '';
+
+  if (!phone) {
+    return <span className="button button--secondary button--disabled">Store contact unavailable</span>;
+  }
+
+  return (
+    <a
+      href={`tel:${phone}`}
+      className="button button--primary"
+      onClick={() => {
+        trackDealClick(deal.id);
+      }}
+    >
+      <Phone size={18} />
+      Call store
+    </a>
+  );
+}
+
+export function DealDetailPage() {
+  const { dealId } = useParams();
+  const location = useLocation();
+  const initialDeal = location.state?.dealPreview || null;
+  const { data: deal, isLoading, error } = useDealDetailQuery(dealId, initialDeal);
+
+  if (isLoading) {
+    return (
+      <main className="page-shell">
+        <section className="state-card" aria-live="polite">
+          <LoaderCircle size={18} className="state-card__spinner" />
+          <div>
+            <h2>Loading deal details</h2>
+            <p>Fetching the latest verified deal information.</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (error || !deal) {
+    return (
+      <main className="page-shell">
+        <section className="state-card state-card--error" aria-live="polite">
+          <AlertCircle size={18} />
+          <div>
+            <h2>Could not load this deal</h2>
+            <p>{error?.message || 'The deal may have expired or is no longer available.'}</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="page-shell">
+      <Link to="/deals" className="page-backlink">
+        <ArrowLeft size={16} />
+        Back to deals
+      </Link>
+
+      <section className="deal-detail">
+        <div className="deal-detail__media">
+          {deal.imageUrl ? (
+            <img src={deal.imageUrl} alt={deal.title} className="deal-detail__image" />
+          ) : (
+            <div className="deal-detail__image deal-detail__image--placeholder" aria-hidden="true">
+              <Search size={20} />
+            </div>
+          )}
+        </div>
+
+        <div className="deal-detail__content">
+          <div className="deal-detail__topline">
+            <span className="listing-card__badge">Verified deal</span>
+            <span className="deal-detail__price">{deal.priceLabel}</span>
+          </div>
+
+          <div className="deal-detail__header">
+            <h1>{deal.title}</h1>
+            <p>{deal.description}</p>
+          </div>
+
+          <div className="deal-detail__meta">
+            <span>
+              <MapPin size={16} />
+              {deal.cityLabel}
+            </span>
+            <span>
+              <Clock3 size={16} />
+              Live now
+            </span>
+            {deal.store?.rating ? (
+              <span>
+                <Star size={16} />
+                {deal.store.rating} rating
+              </span>
+            ) : null}
+          </div>
+
+          <div className="detail-store-card">
+            <p className="detail-store-card__eyebrow">Store</p>
+            <h2>{deal.store?.name || 'Verified local store'}</h2>
+            <p>
+              {deal.store?.city || deal.cityLabel}
+              {deal.store?.isVerified ? ' • Verified retailer' : ''}
+            </p>
+          </div>
+
+          <div className="deal-detail__actions">
+            <ContactAction deal={deal} />
+            <Link to="/deals" className="button button--secondary">
+              Keep browsing
+            </Link>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
