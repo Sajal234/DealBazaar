@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getDealDetail, listDeals } from './deals.api';
+import { getDealPlaceholderData, seedDealPreviewCache } from './deals.cache';
+import { dealsKeys, isValidDealId } from './deals.keys';
 
 export function useDealsQuery({ limit = 12 } = {}) {
   const queryClient = useQueryClient();
-  const listParams = { limit };
 
   const query = useQuery({
-    queryKey: ['deals', 'list', listParams],
+    queryKey: dealsKeys.list({ limit }),
     queryFn: ({ signal }) => listDeals({ limit, signal }),
   });
 
@@ -16,9 +17,7 @@ export function useDealsQuery({ limit = 12 } = {}) {
       return;
     }
 
-    query.data.items.forEach((deal) => {
-      queryClient.setQueryData(['deals', 'detail', deal.id], (existingDeal) => existingDeal || deal);
-    });
+    seedDealPreviewCache(queryClient, query.data.items);
   }, [query.data?.items, queryClient]);
 
   return query;
@@ -26,11 +25,18 @@ export function useDealsQuery({ limit = 12 } = {}) {
 
 export function useDealDetailQuery(dealId, initialDeal) {
   const queryClient = useQueryClient();
+  const canFetchDeal = isValidDealId(dealId);
 
   return useQuery({
-    queryKey: ['deals', 'detail', dealId],
+    queryKey: dealsKeys.detail(dealId),
     queryFn: ({ signal }) => getDealDetail(dealId, { signal }),
-    enabled: Boolean(dealId),
-    placeholderData: () => initialDeal || queryClient.getQueryData(['deals', 'detail', dealId]),
+    enabled: canFetchDeal,
+    placeholderData: () =>
+      getDealPlaceholderData({
+        queryClient,
+        dealId,
+        initialDeal,
+        canFetchDeal,
+      }),
   });
 }

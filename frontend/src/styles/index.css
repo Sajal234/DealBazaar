@@ -839,6 +839,13 @@ body::before {
   letter-spacing: -0.04em;
 }
 
+.deal-detail__status {
+  margin: -4px 0 0;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
 .deal-detail__header h1 {
   margin: 0;
   font-size: clamp(2rem, 4vw, 3.1rem);
