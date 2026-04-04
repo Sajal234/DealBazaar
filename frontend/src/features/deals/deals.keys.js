@@ -3,18 +3,18 @@ const normalizeTextPart = (value) => {
     return '';
   }
 
-  return value.trim().toLowerCase();
+  return value.trim();
 };
 
 export const dealsKeys = {
   all: ['deals'],
   lists: () => [...dealsKeys.all, 'list'],
-  list: ({ limit = 12, city = '', search = '', sort = 'recent' } = {}) => [
+  list: ({ limit = 12, page = 1, city = '', search = '' } = {}) => [
     ...dealsKeys.lists(),
     limit,
+    page,
     normalizeTextPart(city),
     normalizeTextPart(search),
-    normalizeTextPart(sort) || 'recent',
   ],
   details: () => [...dealsKeys.all, 'detail'],
   detail: (dealId) => [...dealsKeys.details(), dealId],

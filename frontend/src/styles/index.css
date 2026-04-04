@@ -685,6 +685,27 @@ body::before {
   line-height: 1.6;
 }
 
+.deals-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 0 0;
+}
+
+.deals-pagination__button {
+  min-width: 124px;
+}
+
+.deals-pagination__summary {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
 .state-card {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -1050,6 +1071,15 @@ body::before {
 
   .deals-filters {
     grid-template-columns: 1fr;
+  }
+
+  .deals-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .deals-pagination__summary {
+    order: -1;
   }
 }
 

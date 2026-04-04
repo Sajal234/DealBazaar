@@ -4,12 +4,12 @@ import { getDealDetail, listDeals } from './deals.api';
 import { getDealPlaceholderData, seedDealPreviewCache } from './deals.cache';
 import { dealsKeys, isValidDealId } from './deals.keys';
 
-export function useDealsQuery({ limit = 12, search = '', city = '' } = {}) {
+export function useDealsQuery({ limit = 12, page = 1, search = '', city = '' } = {}) {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: dealsKeys.list({ limit, search, city }),
-    queryFn: ({ signal }) => listDeals({ limit, search, city, signal }),
+    queryKey: dealsKeys.list({ limit, page, search, city }),
+    queryFn: ({ signal }) => listDeals({ limit, page, search, city, signal }),
   });
 
   useEffect(() => {

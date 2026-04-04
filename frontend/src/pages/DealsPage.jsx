@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, LoaderCircle, MapPin, Search } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { DealCard } from '../features/deals/DealCard';
+import { DealsPagination } from '../features/deals/DealsPagination';
 import {
   createDealsSearchParams,
   hasDealsFilters,
   readDealsFilters,
 } from '../features/deals/deals.filters';
+import { getSafeDealsPage } from '../features/deals/deals.pagination';
 import { useDealsQuery } from '../features/deals/deals.queries';
 
 export function DealsPage() {
@@ -14,27 +16,69 @@ export function DealsPage() {
   const filters = useMemo(() => readDealsFilters(searchParams), [searchParams]);
   const [draftFilters, setDraftFilters] = useState(filters);
   const hasActiveFilters = hasDealsFilters(filters);
-  const { data, dataUpdatedAt, isLoading, error, refetch, isRefetching } = useDealsQuery({
+  const { data, dataUpdatedAt, isLoading, error, refetch, isRefetching, isFetching } = useDealsQuery({
     limit: 12,
+    page: filters.page,
     search: filters.search,
     city: filters.city,
   });
   const deals = data?.items || [];
+  const pagination = data?.pagination || null;
+  const totalPages = pagination?.pages || 1;
+  const currentPage = getSafeDealsPage(pagination?.page ?? filters.page, totalPages);
+  const shouldCanonicalizePage = !isLoading && !error && currentPage !== filters.page;
+  const shouldShowPagination =
+    !isLoading && !error && (pagination?.total || 0) > 0 && (totalPages > 1 || currentPage > 1);
 
   useEffect(() => {
     setDraftFilters(filters);
   }, [filters]);
 
+  useEffect(() => {
+    if (!shouldCanonicalizePage) {
+      return;
+    }
+
+    setSearchParams(
+      createDealsSearchParams({
+        search: filters.search,
+        city: filters.city,
+        page: currentPage,
+      }),
+      { replace: true }
+    );
+  }, [currentPage, filters.city, filters.page, filters.search, setSearchParams, shouldCanonicalizePage]);
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    setSearchParams(createDealsSearchParams(draftFilters));
+    setSearchParams(
+      createDealsSearchParams({
+        ...draftFilters,
+        page: 1,
+      })
+    );
   };
 
   const handleReset = () => {
-    const clearedFilters = { search: '', city: '' };
+    const clearedFilters = { search: '', city: '', page: 1 };
 
     setDraftFilters(clearedFilters);
     setSearchParams(createDealsSearchParams(clearedFilters));
+  };
+
+  const handlePageChange = (nextPage) => {
+    const safePage = getSafeDealsPage(nextPage, totalPages);
+
+    if (safePage === currentPage) {
+      return;
+    }
+
+    setSearchParams(
+      createDealsSearchParams({
+        ...filters,
+        page: safePage,
+      })
+    );
   };
 
   return (
@@ -106,8 +150,8 @@ export function DealsPage() {
 
         <p className="deals-toolbar__summary">
           {hasActiveFilters
-            ? `Showing ${deals.length} live deal${deals.length === 1 ? '' : 's'} for the current filter set.`
-            : 'Showing the latest live deals across the marketplace.'}
+            ? `Showing ${pagination?.total ?? deals.length} live deal${(pagination?.total ?? deals.length) === 1 ? '' : 's'} for the current filter set.`
+            : `Showing ${pagination?.total ?? deals.length} live deal${(pagination?.total ?? deals.length) === 1 ? '' : 's'} across the marketplace.`}
         </p>
       </section>
 
@@ -161,6 +205,16 @@ export function DealsPage() {
             <DealCard key={deal.id} deal={deal} previewTimestamp={dataUpdatedAt} />
           ))}
         </section>
+      ) : null}
+
+      {shouldShowPagination ? (
+        <DealsPagination
+          page={currentPage}
+          pages={totalPages}
+          total={pagination?.total || deals.length}
+          onPageChange={handlePageChange}
+          isDisabled={isFetching}
+        />
       ) : null}
     </main>
   );

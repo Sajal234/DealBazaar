@@ -26,10 +26,11 @@ async function requestJson(path, options = {}) {
   return payload;
 }
 
-function createDealsQueryString({ limit = 12, search = '', city = '' } = {}) {
+function createDealsQueryString({ limit = 12, page = 1, search = '', city = '' } = {}) {
   const params = new URLSearchParams();
 
   params.set('limit', String(limit));
+  params.set('page', String(page));
 
   if (typeof search === 'string' && search.trim()) {
     params.set('search', search.trim());
@@ -42,8 +43,8 @@ function createDealsQueryString({ limit = 12, search = '', city = '' } = {}) {
   return params.toString();
 }
 
-export async function listDeals({ limit = 12, search = '', city = '', signal } = {}) {
-  const queryString = createDealsQueryString({ limit, search, city });
+export async function listDeals({ limit = 12, page = 1, search = '', city = '', signal } = {}) {
+  const queryString = createDealsQueryString({ limit, page, search, city });
   const payload = await requestJson(`/api/deals?${queryString}`, {
     signal,
   });
