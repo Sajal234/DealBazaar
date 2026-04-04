@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, LoaderCircle, MapPin, Search } from 'lucide-react';
+import { AlertCircle, LoaderCircle, Search } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { DealCard } from '../features/deals/DealCard';
+import { DealsFiltersPanel } from '../features/deals/DealsFiltersPanel';
 import { DealsPagination } from '../features/deals/DealsPagination';
 import {
   createDealsSearchParams,
@@ -82,140 +83,101 @@ export function DealsPage() {
   };
 
   return (
-    <main className="page-shell">
+    <main className="page-shell page-shell--catalog">
       <section className="page-header">
         <div>
           <p className="page-header__eyebrow">Marketplace</p>
-          <h1>Verified deals, filtered the way people actually browse.</h1>
-          <p>
-            Search across current listings or narrow by city. The URL updates with your filters, so
-            this page is now a real browsable entry point into the marketplace.
-          </p>
+          <h1>Browse verified local deals.</h1>
+          <p>Search products, narrow by city, and move through the catalog the way shoppers expect.</p>
         </div>
       </section>
 
-      <section className="deals-toolbar" aria-label="Deals filters">
-        <form className="deals-filters" onSubmit={handleSubmit}>
-          <label className="filter-field">
-            <span className="filter-field__label">Search</span>
-            <div className="filter-field__control">
-              <Search size={16} />
-              <input
-                type="search"
-                name="search"
-                value={draftFilters.search}
-                onChange={(event) => {
-                  setDraftFilters((currentFilters) => ({
-                    ...currentFilters,
-                    search: event.target.value,
-                  }));
-                }}
-                placeholder="Search deals or products"
-                autoComplete="off"
-              />
-            </div>
-          </label>
-
-          <label className="filter-field">
-            <span className="filter-field__label">City</span>
-            <div className="filter-field__control">
-              <MapPin size={16} />
-              <input
-                type="text"
-                name="city"
-                value={draftFilters.city}
-                onChange={(event) => {
-                  setDraftFilters((currentFilters) => ({
-                    ...currentFilters,
-                    city: event.target.value,
-                  }));
-                }}
-                placeholder="Enter a city"
-                autoComplete="off"
-              />
-            </div>
-          </label>
-
-          <div className="deals-filters__actions">
-            <button type="submit" className="button button--primary">
-              Apply filters
-            </button>
-            {hasActiveFilters ? (
-              <button type="button" className="button button--secondary" onClick={handleReset}>
-                Clear
-              </button>
-            ) : null}
-          </div>
-        </form>
-
-        <p className="deals-toolbar__summary">
-          {hasActiveFilters
-            ? `Showing ${pagination?.total ?? deals.length} live deal${(pagination?.total ?? deals.length) === 1 ? '' : 's'} for the current filter set.`
-            : `Showing ${pagination?.total ?? deals.length} live deal${(pagination?.total ?? deals.length) === 1 ? '' : 's'} across the marketplace.`}
-        </p>
-      </section>
-
-      {isLoading ? (
-        <section className="state-card" aria-live="polite">
-          <LoaderCircle size={18} className="state-card__spinner" />
-          <div>
-            <h2>Loading live deals</h2>
-            <p>Pulling the latest verified offers from the marketplace.</p>
-          </div>
-        </section>
-      ) : null}
-
-      {!isLoading && error ? (
-        <section className="state-card state-card--error" aria-live="polite">
-          <AlertCircle size={18} />
-          <div>
-            <h2>Could not load deals</h2>
-            <p>{error.message || 'Unable to load deals right now.'}</p>
-            <button
-              type="button"
-              className="button button--secondary state-card__retry"
-              onClick={() => {
-                refetch();
-              }}
-              disabled={isRefetching}
-            >
-              {isRefetching ? 'Retrying...' : 'Try again'}
-            </button>
-          </div>
-        </section>
-      ) : null}
-
-      {!isLoading && !error && deals.length === 0 ? (
-        <section className="state-card" aria-live="polite">
-          <Search size={18} />
-          <div>
-            <h2>{hasActiveFilters ? 'No deals match these filters' : 'No live deals yet'}</h2>
-            <p>
-              {hasActiveFilters
-                ? 'Try a broader search or clear the city filter to see more approved offers.'
-                : 'Approved offers will appear here as soon as stores publish them.'}
-            </p>
-          </div>
-        </section>
-      ) : null}
-
-      {!isLoading && !error && deals.length > 0 ? (
-        <section className="deal-grid" aria-label="Live deals">
-          {deals.map((deal) => (
-            <DealCard key={deal.id} deal={deal} previewTimestamp={dataUpdatedAt} />
-          ))}
-        </section>
-      ) : null}
-
-      {shouldShowPagination ? (
-        <DealsPagination
-          page={currentPage}
-          pages={totalPages}
-          total={pagination?.total || deals.length}
-          onPageChange={handlePageChange}
-          isDisabled={isFetching}
+      <section className="catalog-layout">
+        <DealsFiltersPanel
+          draftFilters={draftFilters}
+          setDraftFilters={setDraftFilters}
+          hasActiveFilters={hasActiveFilters}
+          onSubmit={handleSubmit}
+          onReset={handleReset}
         />
-      ) : null}
+
+        <div className="catalog-main">
+          <section className="catalog-resultsbar" aria-live="polite">
+            <div>
+              <p className="catalog-resultsbar__eyebrow">Results</p>
+              <h2>{hasActiveFilters ? 'Filtered marketplace view' : 'All live marketplace deals'}</h2>
+            </div>
+
+            <p className="catalog-resultsbar__summary">
+              {hasActiveFilters
+                ? `${pagination?.total ?? deals.length} matching deal${(pagination?.total ?? deals.length) === 1 ? '' : 's'}`
+                : `${pagination?.total ?? deals.length} live deal${(pagination?.total ?? deals.length) === 1 ? '' : 's'} available`}
+            </p>
+          </section>
+
+          {isLoading ? (
+            <section className="state-card" aria-live="polite">
+              <LoaderCircle size={18} className="state-card__spinner" />
+              <div>
+                <h2>Loading live deals</h2>
+                <p>Pulling the latest verified offers from the marketplace.</p>
+              </div>
+            </section>
+          ) : null}
+
+          {!isLoading && error ? (
+            <section className="state-card state-card--error" aria-live="polite">
+              <AlertCircle size={18} />
+              <div>
+                <h2>Could not load deals</h2>
+                <p>{error.message || 'Unable to load deals right now.'}</p>
+                <button
+                  type="button"
+                  className="button button--secondary state-card__retry"
+                  onClick={() => {
+                    refetch();
+                  }}
+                  disabled={isRefetching}
+                >
+                  {isRefetching ? 'Retrying...' : 'Try again'}
+                </button>
+              </div>
+            </section>
+          ) : null}
+
+          {!isLoading && !error && deals.length === 0 ? (
+            <section className="state-card" aria-live="polite">
+              <Search size={18} />
+              <div>
+                <h2>{hasActiveFilters ? 'No deals match these filters' : 'No live deals yet'}</h2>
+                <p>
+                  {hasActiveFilters
+                    ? 'Try a broader search or clear the city filter to see more approved offers.'
+                    : 'Approved offers will appear here as soon as stores publish them.'}
+                </p>
+              </div>
+            </section>
+          ) : null}
+
+          {!isLoading && !error && deals.length > 0 ? (
+            <section className="deal-grid" aria-label="Live deals">
+              {deals.map((deal) => (
+                <DealCard key={deal.id} deal={deal} previewTimestamp={dataUpdatedAt} />
+              ))}
+            </section>
+          ) : null}
+
+          {shouldShowPagination ? (
+            <DealsPagination
+              page={currentPage}
+              pages={totalPages}
+              total={pagination?.total || deals.length}
+              onPageChange={handlePageChange}
+              isDisabled={isFetching}
+            />
+          ) : null}
+        </div>
+      </section>
     </main>
   );
 }

@@ -36,6 +36,10 @@ export function AppLayout({ children, theme, setTheme }) {
             Browse deals
           </NavLink>
 
+          <NavLink to="/login" className="button button--secondary">
+            Sign in
+          </NavLink>
+
           <button
             type="button"
             className="theme-toggle"

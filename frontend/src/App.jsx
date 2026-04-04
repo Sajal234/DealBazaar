@@ -4,6 +4,7 @@ import { AppLayout } from './layout/AppLayout';
 import { DealDetailPage } from './pages/DealDetailPage';
 import { DealsPage } from './pages/DealsPage';
 import { HomePage } from './pages/HomePage';
+import { LoginPage } from './pages/LoginPage';
 
 const themeStorageKey = 'dealbazaar.theme';
 
@@ -49,6 +50,7 @@ export function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/deals" element={<DealsPage />} />
         <Route path="/deals/:dealId" element={<DealDetailPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>
