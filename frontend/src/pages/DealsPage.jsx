@@ -3,7 +3,9 @@ import { DealCard } from '../features/deals/DealCard';
 import { useDealsQuery } from '../features/deals/deals.queries';
 
 export function DealsPage() {
-  const { data, isLoading, error, refetch, isRefetching } = useDealsQuery({ limit: 12 });
+  const { data, dataUpdatedAt, isLoading, error, refetch, isRefetching } = useDealsQuery({
+    limit: 12,
+  });
   const deals = data?.items || [];
 
   return (
@@ -62,7 +64,7 @@ export function DealsPage() {
       {!isLoading && !error && deals.length > 0 ? (
         <section className="deal-grid" aria-label="Live deals">
           {deals.map((deal) => (
-            <DealCard key={deal.id} deal={deal} />
+            <DealCard key={deal.id} deal={deal} previewTimestamp={dataUpdatedAt} />
           ))}
         </section>
       ) : null}

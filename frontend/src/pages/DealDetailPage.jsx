@@ -28,12 +28,16 @@ function ContactAction({ deal }) {
 export function DealDetailPage() {
   const { dealId } = useParams();
   const location = useLocation();
-  const initialDeal = location.state?.dealPreview || null;
+  const initialDealEntry = location.state?.dealPreviewEntry || null;
   const hasValidDealId = isValidDealId(dealId);
-  const { data: deal, isLoading, isFetching, error, refetch, isRefetching } = useDealDetailQuery(
-    dealId,
-    initialDeal
-  );
+  const {
+    data: deal,
+    isLoading,
+    isPlaceholderData,
+    error,
+    refetch,
+    isRefetching,
+  } = useDealDetailQuery(dealId, initialDealEntry);
 
   if (!hasValidDealId) {
     return (
@@ -121,7 +125,9 @@ export function DealDetailPage() {
             <span className="deal-detail__price">{deal.priceLabel}</span>
           </div>
 
-          {isFetching ? <p className="deal-detail__status">Refreshing live details...</p> : null}
+          {isPlaceholderData ? (
+            <p className="deal-detail__status">Refreshing live details...</p>
+          ) : null}
 
           <div className="deal-detail__header">
             <h1>{deal.title}</h1>

@@ -23,7 +23,7 @@ export function useDealsQuery({ limit = 12 } = {}) {
   return query;
 }
 
-export function useDealDetailQuery(dealId, initialDeal) {
+export function useDealDetailQuery(dealId, initialDealEntry) {
   const queryClient = useQueryClient();
   const canFetchDeal = isValidDealId(dealId);
 
@@ -35,7 +35,7 @@ export function useDealDetailQuery(dealId, initialDeal) {
       getDealPlaceholderData({
         queryClient,
         dealId,
-        initialDeal,
+        initialDealEntry,
         canFetchDeal,
       }),
   });

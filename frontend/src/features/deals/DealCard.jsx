@@ -1,9 +1,14 @@
 import { Clock3, MapPin, Search, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { createDealPreviewEntry } from './deals.preview';
 
-export function DealCard({ deal }) {
+export function DealCard({ deal, previewTimestamp }) {
   return (
-    <Link to={`/deals/${deal.id}`} state={{ dealPreview: deal }} className="deal-card">
+    <Link
+      to={`/deals/${deal.id}`}
+      state={{ dealPreviewEntry: createDealPreviewEntry(deal, previewTimestamp) }}
+      className="deal-card"
+    >
       <div className="deal-card__image-wrap">
         {deal.imageUrl ? (
           <img src={deal.imageUrl} alt={deal.title} className="deal-card__image" />

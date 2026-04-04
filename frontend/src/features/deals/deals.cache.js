@@ -1,20 +1,6 @@
 import { dealsKeys } from './deals.keys';
-import { DEAL_PREVIEW_MAX_AGE_MS } from './deals.constants';
-import { isPreviewEntry, isUsableDealPreview } from './deals.validation';
-
-function getFreshPreviewData(queryClient, dealId) {
-  const previewEntry = queryClient.getQueryData(dealsKeys.preview(dealId));
-
-  if (!isPreviewEntry(previewEntry)) {
-    return undefined;
-  }
-
-  if (Date.now() - previewEntry.cachedAt > DEAL_PREVIEW_MAX_AGE_MS) {
-    return undefined;
-  }
-
-  return isUsableDealPreview(previewEntry.data) ? previewEntry.data : undefined;
-}
+import { createDealPreviewEntry, resolveFreshDealPreviewData } from './deals.preview';
+import { isPreviewEntry } from './deals.validation';
 
 export function seedDealPreviewCache(queryClient, deals, fetchedAt) {
   if (!Array.isArray(deals)) {
@@ -31,22 +17,21 @@ export function seedDealPreviewCache(queryClient, deals, fetchedAt) {
         return existingEntry;
       }
 
-      return {
-        data: deal,
-        cachedAt: fetchedAt,
-      };
+      return createDealPreviewEntry(deal, fetchedAt);
     });
   });
 }
 
-export function getDealPlaceholderData({ queryClient, dealId, initialDeal, canFetchDeal }) {
+export function getDealPlaceholderData({ queryClient, dealId, initialDealEntry, canFetchDeal }) {
   if (!canFetchDeal) {
     return undefined;
   }
 
   const cachedDetail = queryClient.getQueryData(dealsKeys.detail(dealId));
-  const freshPreview = getFreshPreviewData(queryClient, dealId);
-  const safeInitialDeal = isUsableDealPreview(initialDeal) ? initialDeal : undefined;
+  const previewData = resolveFreshDealPreviewData(
+    initialDealEntry,
+    queryClient.getQueryData(dealsKeys.preview(dealId))
+  );
 
-  return freshPreview || safeInitialDeal || cachedDetail || undefined;
+  return previewData || cachedDetail || undefined;
 }
