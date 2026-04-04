@@ -1,77 +1,81 @@
-import { ArrowRight, Clock3, MapPin, Search, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, Clock3, MapPin, Sparkles, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function HomePage() {
   return (
-    <main className="hero-layout">
-      <section className="hero-copy">
-        <div className="hero__badge">
-          <Sparkles size={14} />
-          <span>Verified local deals</span>
+    <main className="home-storefront">
+      <section className="home-hero">
+        <div className="home-hero__copy">
+          <div className="hero__badge">
+            <Sparkles size={14} />
+            <span>Verified local deals</span>
+          </div>
+
+          <h1>Shop nearby offers without the marketplace mess.</h1>
+          <p>
+            Browse approved offers from real stores, compare quickly, and contact the seller only
+            when the deal is actually worth your time.
+          </p>
+
+          <div className="home-hero__actions">
+            <Link to="/deals" className="button button--primary">
+              Explore deals
+              <ArrowRight size={18} />
+            </Link>
+            <Link to="/login" className="button button--secondary">
+              Sell on DealBazaar
+            </Link>
+          </div>
+
+          <ul className="home-hero__trust" aria-label="Marketplace trust signals">
+            <li>Admin-approved deals</li>
+            <li>Verified local stores</li>
+            <li>Auto-expiring offers</li>
+          </ul>
         </div>
-
-        <h1>Discover local deals with less noise and more trust.</h1>
-        <p>
-          DealBazaar gives offline stores a disciplined digital layer so shoppers can browse
-          current offers quickly and stores can publish with credibility.
-        </p>
-
-        <ul className="trust-list" aria-label="Marketplace trust signals">
-          <li>Admin-approved deals</li>
-          <li>Real store verification</li>
-          <li>Auto-expiring offers</li>
-        </ul>
-
-        <div className="hero__actions">
-          <Link to="/deals" className="button button--primary">
-            Explore verified deals
-            <ArrowRight size={18} />
-          </Link>
-          <button type="button" className="button button--secondary">
-            Start selling locally
-          </button>
-        </div>
-
-        <dl className="hero-metrics">
-          <div>
-            <dt>48–72h</dt>
-            <dd>moderated lifecycle</dd>
-          </div>
-          <div>
-            <dt>1 flow</dt>
-            <dd>from discovery to contact</dd>
-          </div>
-          <div>
-            <dt>0 noise</dt>
-            <dd>from cluttered classifieds</dd>
-          </div>
-        </dl>
       </section>
 
-      <section className="hero-panel" aria-label="Marketplace preview">
-        <div className="preview-shell">
-          <div className="preview-shell__header">
-            <div>
-              <p className="preview-shell__eyebrow">Live preview</p>
-              <h2>How discovery should feel.</h2>
-            </div>
-            <div className="preview-shell__search" aria-hidden="true">
-              <Search size={16} />
-            </div>
-          </div>
+      <section className="home-highlights" aria-label="Marketplace highlights">
+        <div className="home-highlights__item">
+          <strong>48–72h</strong>
+          <span>Moderated deal lifecycle</span>
+        </div>
+        <div className="home-highlights__item">
+          <strong>1 flow</strong>
+          <span>From discovery to store contact</span>
+        </div>
+        <div className="home-highlights__item">
+          <strong>0 noise</strong>
+          <span>Cleaner than crowded classifieds</span>
+        </div>
+        <div className="home-highlights__item">
+          <strong>Trusted</strong>
+          <span>Verification-first marketplace design</span>
+        </div>
+      </section>
 
-          <div className="preview-shell__chips" aria-hidden="true">
-            <span className="preview-chip preview-chip--active">Verified</span>
-            <span className="preview-chip">Active now</span>
-            <span className="preview-chip">Nearby</span>
+      <section className="home-deals" aria-label="Marketplace preview">
+        <div className="home-featured__header">
+          <div>
+            <p className="preview-shell__eyebrow">Marketplace preview</p>
+            <h2>Popular deals right now</h2>
           </div>
+          <Link to="/deals" className="home-featured__link">
+            Browse all deals
+            <ArrowRight size={16} />
+          </Link>
+        </div>
 
+        <div className="home-featured__grid">
           <article className="listing-card">
+            <div>
+              <p className="preview-shell__eyebrow">Featured</p>
+              <h3>Weekend flagship price drop</h3>
+            </div>
             <div className="listing-card__topline">
               <span className="listing-card__badge">Verified store</span>
               <span className="listing-card__price">From ₹18,999</span>
             </div>
-            <h3>Weekend flagship price drop</h3>
             <p className="listing-card__store">Orbit Digital</p>
             <div className="listing-card__meta">
               <span>
@@ -86,7 +90,7 @@ export function HomePage() {
             <div className="listing-card__footer">
               <span>
                 <Clock3 size={14} />
-                Ends in 11h
+                Ends tonight
               </span>
               <span className="listing-card__action" aria-hidden="true">
                 View deal
@@ -95,11 +99,14 @@ export function HomePage() {
           </article>
 
           <article className="listing-card listing-card--muted">
+            <div>
+              <p className="preview-shell__eyebrow">Latest</p>
+              <h3>Accessory bundle with pickup today</h3>
+            </div>
             <div className="listing-card__topline">
               <span className="listing-card__badge">Moderated today</span>
               <span className="listing-card__price">From ₹2,499</span>
             </div>
-            <h3>Accessory bundle with pickup today</h3>
             <p className="listing-card__store">North Avenue Mobiles</p>
             <div className="listing-card__meta">
               <span>
@@ -121,6 +128,37 @@ export function HomePage() {
                 aria-hidden="true"
               >
                 Compare
+              </span>
+            </div>
+          </article>
+
+          <article className="listing-card">
+            <div>
+              <p className="preview-shell__eyebrow">Popular</p>
+              <h3>Same-day pickup on store clearance stock</h3>
+            </div>
+            <div className="listing-card__topline">
+              <span className="listing-card__badge">Trusted seller</span>
+              <span className="listing-card__price">From ₹7,999</span>
+            </div>
+            <p className="listing-card__store">Pixel Point</p>
+            <div className="listing-card__meta">
+              <span>
+                <MapPin size={14} />
+                HSR Layout
+              </span>
+              <span>
+                <Star size={14} />
+                4.7 rating
+              </span>
+            </div>
+            <div className="listing-card__footer">
+              <span>
+                <Clock3 size={14} />
+                Ends in 8h
+              </span>
+              <span className="listing-card__action" aria-hidden="true">
+                View deal
               </span>
             </div>
           </article>

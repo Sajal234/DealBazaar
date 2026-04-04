@@ -55,11 +55,8 @@ export function LoginPage() {
       <section className="login-panel">
         <div className="login-panel__intro">
           <p className="login-panel__eyebrow">Account access</p>
-          <h1>Sign in to manage your verified marketplace activity.</h1>
-          <p>
-            Store owners and returning users can sign in here to continue with the same secure
-            account used on DealBazaar.
-          </p>
+          <h1>Sign in to your DealBazaar account</h1>
+          <p>Access store tools, saved activity, and marketplace actions from one place.</p>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
