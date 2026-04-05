@@ -21,6 +21,40 @@ function createApiUrl(path) {
   return `${normalizedBaseUrl}${normalizedPath}`;
 }
 
+function isLocalHostname(hostname) {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+}
+
+function createApiCandidates(path) {
+  const candidates = [];
+  const normalizedPath = typeof path === 'string' && path.startsWith('/') ? path : `/${path}`;
+
+  if (/^https?:\/\//i.test(path)) {
+    return [path];
+  }
+
+  if (API_BASE_URL) {
+    candidates.push(createApiUrl(path));
+  } else {
+    candidates.push(path);
+  }
+
+  if (typeof window !== 'undefined' && window.location) {
+    const { origin, hostname } = window.location;
+
+    if (origin) {
+      candidates.push(`${origin}${normalizedPath}`);
+    }
+
+    if (isLocalHostname(hostname)) {
+      candidates.push(`http://localhost:5001${normalizedPath}`);
+      candidates.push(`http://127.0.0.1:5001${normalizedPath}`);
+    }
+  }
+
+  return Array.from(new Set(candidates.filter(Boolean)));
+}
+
 async function parseResponse(response) {
   const clonedResponse = response.clone();
   const contentType = response.headers.get('content-type') || '';
@@ -79,7 +113,7 @@ function getErrorMessage(payload, rawText, response, contentType) {
   }
 
   if (contentType.includes('text/html') || /<!doctype html>|<html/i.test(rawText)) {
-    return 'The frontend received an HTML page instead of API JSON. Restart the frontend after changing VITE_API_URL, and make sure the backend is running on the expected port.';
+    return 'We could not reach the signup service correctly. Please make sure the backend server is running and try again.';
   }
 
   if (typeof rawText === 'string' && rawText.trim()) {
@@ -95,7 +129,7 @@ function getErrorMessage(payload, rawText, response, contentType) {
   }
 
   if (response?.ok) {
-    return 'The frontend received an unexpected response from the server. Restart the frontend after environment changes and make sure VITE_API_URL points to the backend API.';
+    return 'We received an unexpected response from the server. Please try again in a moment.';
   }
 
   if (response?.status) {
@@ -105,34 +139,78 @@ function getErrorMessage(payload, rawText, response, contentType) {
   return 'Request failed';
 }
 
-export async function requestJson(path, options = {}) {
-  const session = readAuthSession();
-  let response;
-
-  try {
-    response = await fetch(createApiUrl(path), {
-      ...options,
-      headers: {
-        Accept: 'application/json',
-        ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {}),
-        ...options.headers,
-      },
-    });
-  } catch (error) {
-    const networkError = new Error('Could not reach the backend API. Check that the backend server is running.');
-    networkError.cause = error;
-    throw networkError;
+function shouldRetryWithAnotherCandidate({ response, payload, rawText, contentType, error }) {
+  if (error) {
+    return true;
   }
 
-  const { payload, rawText, contentType } = await parseResponse(response);
+  if (!response) {
+    return true;
+  }
 
-  if (!response.ok || !payload?.success) {
+  if (contentType.includes('text/html') || /<!doctype html>|<html/i.test(rawText)) {
+    return true;
+  }
+
+  if (response.ok && !payload?.success) {
+    return true;
+  }
+
+  return false;
+}
+
+export async function requestJson(path, options = {}) {
+  const session = readAuthSession();
+  const requestHeaders = {
+    Accept: 'application/json',
+    ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {}),
+    ...options.headers,
+  };
+  const apiCandidates = createApiCandidates(path);
+  let lastError = null;
+
+  for (const candidate of apiCandidates) {
+    let response;
+
+    try {
+      response = await fetch(candidate, {
+        ...options,
+        headers: requestHeaders,
+      });
+    } catch (error) {
+      lastError = error;
+
+      if (shouldRetryWithAnotherCandidate({ error }) && candidate !== apiCandidates[apiCandidates.length - 1]) {
+        continue;
+      }
+
+      const networkError = new Error('Could not reach the backend API. Check that the backend server is running.');
+      networkError.cause = error;
+      throw networkError;
+    }
+
+    const { payload, rawText, contentType } = await parseResponse(response);
+
+    if (response.ok && payload?.success) {
+      return payload;
+    }
+
+    const shouldRetry =
+      shouldRetryWithAnotherCandidate({ response, payload, rawText, contentType }) &&
+      candidate !== apiCandidates[apiCandidates.length - 1];
+
+    if (shouldRetry) {
+      continue;
+    }
+
     const error = new Error(getErrorMessage(payload, rawText, response, contentType));
     error.status = response.status;
     throw error;
   }
 
-  return payload;
+  const fallbackError = new Error('Could not reach the backend API. Check that the backend server is running.');
+  fallbackError.cause = lastError;
+  throw fallbackError;
 }
 
 export { createApiUrl };

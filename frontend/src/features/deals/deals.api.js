@@ -1,4 +1,4 @@
-import { requestJson } from '../../lib/requestJson';
+import { createApiUrl, requestJson } from '../../lib/requestJson';
 import { mapDealDetail, mapDealSummary } from './deals.mappers';
 
 function createDealsQueryString({ limit = 12, page = 1, search = '', city = '' } = {}) {
@@ -40,7 +40,7 @@ export async function getDealDetail(dealId, { signal } = {}) {
 
 export async function trackDealClick(dealId) {
   try {
-    await fetch(`/api/deals/${encodeURIComponent(dealId)}/click`, {
+    await fetch(createApiUrl(`/api/deals/${encodeURIComponent(dealId)}/click`), {
       method: 'POST',
       headers: {
         Accept: 'application/json',
