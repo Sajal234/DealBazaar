@@ -7,6 +7,7 @@
   --surface-strong: rgba(255, 255, 255, 0.9);
   --text-main: #14171a;
   --text-soft: #4d5762;
+  --text-placeholder: rgba(77, 87, 98, 0.56);
   --stroke: rgba(20, 23, 26, 0.08);
   --accent: #86633b;
   --accent-strong: #5b3f1f;
@@ -29,6 +30,7 @@
   --surface-strong: rgba(25, 31, 37, 0.9);
   --text-main: #f4f6f8;
   --text-soft: #a4adb7;
+  --text-placeholder: rgba(164, 173, 183, 0.5);
   --stroke: rgba(255, 255, 255, 0.08);
   --accent: #d6b18a;
   --accent-strong: #f1d8bb;
@@ -673,7 +675,7 @@ body::before {
 }
 
 .filter-field__control input::placeholder {
-  color: var(--text-soft);
+  color: var(--text-placeholder);
 }
 
 .deals-filters__actions {

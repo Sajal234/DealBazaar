@@ -175,6 +175,10 @@
   font: inherit;
 }
 
+.account-password-form__field input::placeholder {
+  color: var(--text-placeholder);
+}
+
 .account-password-form__field input:focus {
   outline: none;
   border-color: rgba(134, 99, 59, 0.4);

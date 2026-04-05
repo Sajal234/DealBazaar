@@ -364,7 +364,7 @@
 }
 
 .filter-field__control--textarea textarea::placeholder {
-  color: var(--text-soft);
+  color: var(--text-placeholder);
 }
 
 .store-file-input {

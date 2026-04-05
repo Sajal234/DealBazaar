@@ -125,7 +125,7 @@
 }
 
 .login-field__control input::placeholder {
-  color: var(--text-soft);
+  color: var(--text-placeholder);
 }
 
 .login-form__error {
