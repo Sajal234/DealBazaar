@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, BarChart3, Clock3, Eye, LoaderCircle, PencilLine, RotateCcw } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { DealsPagination } from '../deals/DealsPagination';
 import { StoreDealArchiveControl } from './StoreDealArchiveControl';
 import { StoreDealComposer } from './StoreDealComposer';
 import { StoreDealEditor } from './StoreDealEditor';
 import { StoreOwnedDealMedia } from './StoreOwnedDealMedia';
 import { getOwnerDealStatusLabel, normalizeOwnerDealStatus } from './storeDeals.filters';
+import { createStoreDealsSearchParams, readStoreDealsSearchParams } from './storeDeals.searchParams';
 import { StoreDealsToolbar } from './StoreDealsToolbar';
 import { useArchiveOwnedDealMutation, useMyDealsQuery, useResubmitOwnedDealMutation } from './storeDeals.queries';
 
@@ -18,16 +19,16 @@ const actionCopy = {
 };
 
 export function StoreDealsSection({ defaultCityLabel }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = readStoreDealsSearchParams(searchParams);
   const [feedback, setFeedback] = useState('');
   const [activeAction, setActiveAction] = useState(null);
   const [editingDealId, setEditingDealId] = useState(null);
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading, error, refetch, isRefetching, isFetching } = useMyDealsQuery({
     enabled: true,
     limit: 6,
-    page: currentPage,
-    status: statusFilter,
+    page: filters.page,
+    status: filters.status,
   });
   const resubmitMutation = useResubmitOwnedDealMutation();
   const archiveMutation = useArchiveOwnedDealMutation();
@@ -35,13 +36,19 @@ export function StoreDealsSection({ defaultCityLabel }) {
   const pagination = data?.pagination || null;
   const totalDeals = pagination?.total || 0;
   const totalPages = Math.max(1, pagination?.pages || 1);
-  const resolvedPage = Math.min(Math.max(1, pagination?.page || currentPage), totalPages);
+  const resolvedPage = Math.min(Math.max(1, pagination?.page || filters.page), totalPages);
 
   useEffect(() => {
-    if (resolvedPage !== currentPage) {
-      setCurrentPage(resolvedPage);
+    if (resolvedPage !== filters.page) {
+      setSearchParams(
+        createStoreDealsSearchParams({
+          status: filters.status,
+          page: resolvedPage,
+        }),
+        { replace: true }
+      );
     }
-  }, [currentPage, resolvedPage]);
+  }, [filters.page, filters.status, resolvedPage, setSearchParams]);
 
   const handleResubmit = async (dealId) => {
     setActiveAction({ type: 'resubmit', dealId });
@@ -74,21 +81,25 @@ export function StoreDealsSection({ defaultCityLabel }) {
   const handleStatusChange = (nextStatus) => {
     const normalizedStatus = normalizeOwnerDealStatus(nextStatus);
 
-    if (normalizedStatus === statusFilter) {
+    if (normalizedStatus === filters.status) {
       return;
     }
 
-    setStatusFilter(normalizedStatus);
-    setCurrentPage(1);
+    setSearchParams(
+      createStoreDealsSearchParams({
+        status: normalizedStatus,
+        page: 1,
+      })
+    );
     setEditingDealId(null);
     setFeedback('');
   };
 
   const shouldShowPagination = !isLoading && !error && totalDeals > 0 && totalPages > 1;
   const emptyStateTitle =
-    statusFilter === 'all' ? 'No seller deals yet' : `No ${getOwnerDealStatusLabel(statusFilter).toLowerCase()} deals`;
+    filters.status === 'all' ? 'No seller deals yet' : `No ${getOwnerDealStatusLabel(filters.status).toLowerCase()} deals`;
   const emptyStateBody =
-    statusFilter === 'all'
+    filters.status === 'all'
       ? 'Your first submitted listing will appear here after you create a new deal.'
       : 'Try another status filter or create a new listing to expand your seller workspace.';
 
@@ -111,7 +122,7 @@ export function StoreDealsSection({ defaultCityLabel }) {
       ) : null}
 
       <StoreDealsToolbar
-        statusFilter={statusFilter}
+        statusFilter={filters.status}
         onStatusChange={handleStatusChange}
         total={totalDeals}
         page={resolvedPage}
@@ -273,7 +284,12 @@ export function StoreDealsSection({ defaultCityLabel }) {
             const safePage = Math.min(Math.max(1, nextPage), totalPages);
 
             if (safePage !== resolvedPage) {
-              setCurrentPage(safePage);
+              setSearchParams(
+                createStoreDealsSearchParams({
+                  status: filters.status,
+                  page: safePage,
+                })
+              );
               setEditingDealId(null);
               setFeedback('');
             }
