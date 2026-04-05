@@ -70,6 +70,7 @@ export function mapOwnedDeal(rawDeal) {
     cityValue: typeof rawDeal?.city === 'string' ? rawDeal.city : '',
     priceLabel: formatPrice(rawDeal?.price),
     imageUrl: Array.isArray(rawDeal?.images) && rawDeal.images.length > 0 ? rawDeal.images[0] : '',
+    imageCount: Array.isArray(rawDeal?.images) ? rawDeal.images.length : 0,
     status,
     statusLabel: meta.label,
     statusTone: meta.tone,

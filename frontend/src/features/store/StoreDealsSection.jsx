@@ -4,6 +4,7 @@ import { DealsPagination } from '../deals/DealsPagination';
 import { StoreDealArchiveControl } from './StoreDealArchiveControl';
 import { StoreDealComposer } from './StoreDealComposer';
 import { StoreDealEditor } from './StoreDealEditor';
+import { StoreOwnedDealMedia } from './StoreOwnedDealMedia';
 import { getOwnerDealStatusLabel, normalizeOwnerDealStatus } from './storeDeals.filters';
 import { StoreDealsToolbar } from './StoreDealsToolbar';
 import { useArchiveOwnedDealMutation, useMyDealsQuery, useResubmitOwnedDealMutation } from './storeDeals.queries';
@@ -171,6 +172,12 @@ export function StoreDealsSection({ defaultCityLabel }) {
 
             return (
               <article key={deal.id} className="owner-deal-card">
+                <StoreOwnedDealMedia
+                  title={deal.title}
+                  imageUrl={deal.imageUrl}
+                  imageCount={deal.imageCount}
+                />
+
                 <div className="owner-deal-card__header">
                   <div>
                     <h3>{deal.title}</h3>
