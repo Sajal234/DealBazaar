@@ -31,6 +31,30 @@ export async function listPendingDeals({ page = 1, limit = 6, signal } = {}) {
   };
 }
 
+export async function listApprovedStores({ page = 1, limit = 6, signal } = {}) {
+  const payload = await requestJson(
+    `/api/admin/stores/approved?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`,
+    { signal }
+  );
+
+  return {
+    items: Array.isArray(payload?.data) ? payload.data.map(mapAdminStore) : [],
+    pagination: normalizePagination(payload?.pagination),
+  };
+}
+
+export async function listActiveDeals({ page = 1, limit = 6, signal } = {}) {
+  const payload = await requestJson(
+    `/api/admin/deals/active?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`,
+    { signal }
+  );
+
+  return {
+    items: Array.isArray(payload?.data) ? payload.data.map(mapAdminDeal) : [],
+    pagination: normalizePagination(payload?.pagination),
+  };
+}
+
 export async function updatePendingStoreStatus({ storeId, status }) {
   const payload = await requestJson(`/api/admin/stores/${encodeURIComponent(storeId)}/status`, {
     method: 'PATCH',
@@ -56,5 +80,25 @@ export async function updatePendingDealStatus({ dealId, status, hoursValid = 48 
 
   return {
     message: payload?.message || `Deal marked as ${status}.`,
+  };
+}
+
+export async function removeApprovedStore({ storeId }) {
+  const payload = await requestJson(`/api/admin/stores/${encodeURIComponent(storeId)}/remove`, {
+    method: 'PATCH',
+  });
+
+  return {
+    message: payload?.message || 'Store removed from the marketplace.',
+  };
+}
+
+export async function removeActiveDeal({ dealId }) {
+  const payload = await requestJson(`/api/admin/deals/${encodeURIComponent(dealId)}/remove`, {
+    method: 'PATCH',
+  });
+
+  return {
+    message: payload?.message || 'Deal removed from the marketplace.',
   };
 }

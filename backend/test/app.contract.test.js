@@ -123,9 +123,13 @@ test('deal router exposes the expected route contract', () => {
 
 test('admin router exposes the expected moderation route contract', () => {
   assert.deepEqual(listRoutes(adminRoutes), [
+    'GET /deals/active',
     'GET /deals/pending',
+    'GET /stores/approved',
     'GET /stores/pending',
+    'PATCH /deals/:id/remove',
     'PATCH /deals/:id/status',
+    'PATCH /stores/:id/remove',
     'PATCH /stores/:id/status',
   ]);
 });

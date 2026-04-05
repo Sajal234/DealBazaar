@@ -24,14 +24,24 @@ export function readAdminSearchParams(searchParams) {
   return {
     storesPage: normalizePage(searchParams.get('storesPage')),
     dealsPage: normalizePage(searchParams.get('dealsPage')),
+    approvedStoresPage: normalizePage(searchParams.get('approvedStoresPage')),
+    activeDealsPage: normalizePage(searchParams.get('activeDealsPage')),
     hours: normalizeApprovalWindow(searchParams.get('hours')),
   };
 }
 
-export function createAdminSearchParams({ storesPage = 1, dealsPage = 1, hours = '48' } = {}) {
+export function createAdminSearchParams({
+  storesPage = 1,
+  dealsPage = 1,
+  approvedStoresPage = 1,
+  activeDealsPage = 1,
+  hours = '48',
+} = {}) {
   const params = new URLSearchParams();
   const normalizedStoresPage = normalizePage(storesPage);
   const normalizedDealsPage = normalizePage(dealsPage);
+  const normalizedApprovedStoresPage = normalizePage(approvedStoresPage);
+  const normalizedActiveDealsPage = normalizePage(activeDealsPage);
   const normalizedHours = normalizeApprovalWindow(hours);
 
   if (normalizedStoresPage > 1) {
@@ -40,6 +50,14 @@ export function createAdminSearchParams({ storesPage = 1, dealsPage = 1, hours =
 
   if (normalizedDealsPage > 1) {
     params.set('dealsPage', String(normalizedDealsPage));
+  }
+
+  if (normalizedApprovedStoresPage > 1) {
+    params.set('approvedStoresPage', String(normalizedApprovedStoresPage));
+  }
+
+  if (normalizedActiveDealsPage > 1) {
+    params.set('activeDealsPage', String(normalizedActiveDealsPage));
   }
 
   if (normalizedHours !== '48') {

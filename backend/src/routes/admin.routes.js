@@ -1,7 +1,11 @@
 import express from 'express';
 import {
+  listActiveDeals,
+  listApprovedStores,
   listPendingStores,
   listPendingDeals,
+  removeDeal,
+  removeStore,
   updateStoreStatus,
   updateDealStatus,
 } from '../controllers/admin.controller.js';
@@ -21,12 +25,16 @@ router.use(adminRateLimiter);
 // @desc    Approve/Reject Store (Assigns Trust isVerified flag)
 // @access  Private (Admin Only)
 router.get('/stores/pending', listPendingStores);
+router.get('/stores/approved', listApprovedStores);
 router.patch('/stores/:id/status', updateStoreStatus);
+router.patch('/stores/:id/remove', removeStore);
 
 // @route   PATCH /api/admin/deals/:id/status
 // @desc    Approve/Reject Deal (Sets Expiry TTL & Cloudinary Cron triggers)
 // @access  Private (Admin Only)
 router.get('/deals/pending', listPendingDeals);
+router.get('/deals/active', listActiveDeals);
 router.patch('/deals/:id/status', updateDealStatus);
+router.patch('/deals/:id/remove', removeDeal);
 
 export default router;

@@ -10,7 +10,7 @@ const [
   { signup, login, googleAuth },
   { applyForStore, submitStoreRating },
   { updateDeal, trackDealClick },
-  { updateStoreStatus, updateDealStatus },
+  { updateStoreStatus, updateDealStatus, removeStore, removeDeal },
   { default: User },
   { default: Store },
   { default: StoreRating },
@@ -508,5 +508,95 @@ test('updateDealStatus rejects already processed deals', async () => {
   assert.deepEqual(res.body, {
     success: false,
     message: 'Deal already processed by another admin or does not exist',
+  });
+});
+
+test('removeStore demotes an approved seller and pulls down related deals', async () => {
+  const req = {
+    params: { id: 'store-1' },
+  };
+  const res = createMockResponse();
+  const userUpdateCalls = [];
+  const dealUpdateCalls = [];
+
+  await withPatchedProperties(
+    [
+      {
+        target: Store,
+        key: 'findOneAndUpdate',
+        value: async () => ({
+          _id: 'store-1',
+          ownerId: 'owner-1',
+          status: 'rejected',
+          isVerified: false,
+        }),
+      },
+      {
+        target: User,
+        key: 'findOneAndUpdate',
+        value: async (...args) => {
+          userUpdateCalls.push(args);
+          return { acknowledged: true };
+        },
+      },
+      {
+        target: Deal,
+        key: 'updateMany',
+        value: async (...args) => {
+          dealUpdateCalls.push(args);
+          return { acknowledged: true };
+        },
+      },
+    ],
+    async () => {
+      await removeStore(req, res);
+    }
+  );
+
+  assert.equal(userUpdateCalls.length, 1);
+  assert.deepEqual(userUpdateCalls[0][0], {
+    _id: 'owner-1',
+    role: { $ne: 'admin' },
+  });
+  assert.deepEqual(userUpdateCalls[0][1], { role: 'user' });
+  assert.equal(dealUpdateCalls.length, 1);
+  assert.deepEqual(dealUpdateCalls[0][0], {
+    storeId: 'store-1',
+    isDeleted: false,
+    archivedAt: { $eq: null },
+  });
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, {
+    success: true,
+    message: 'Store removed from the public marketplace.',
+  });
+});
+
+test('removeDeal pulls down a live deal from the marketplace', async () => {
+  const req = {
+    params: { id: 'deal-1' },
+  };
+  const res = createMockResponse();
+
+  await withPatchedProperties(
+    [
+      {
+        target: Deal,
+        key: 'findOneAndUpdate',
+        value: async () => ({
+          _id: 'deal-1',
+          status: 'rejected',
+        }),
+      },
+    ],
+    async () => {
+      await removeDeal(req, res);
+    }
+  );
+
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, {
+    success: true,
+    message: 'Deal removed from the public marketplace.',
   });
 });
