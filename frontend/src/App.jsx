@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useCurrentUserQuery } from './features/auth/auth.queries';
-import { readAuthSession } from './features/auth/auth.session';
+import { useAuthSessionState } from './features/auth/auth.session';
 import { RequireAuth } from './features/auth/RequireAuth';
 import { RequireRole } from './features/auth/RequireRole';
 import { AppLayout } from './layout/AppLayout';
@@ -43,8 +43,9 @@ function getInitialTheme() {
 
 export function App() {
   const [theme, setTheme] = useState(getInitialTheme);
-  const { data: currentUser, isLoading: isAuthLoading, isFetching: isAuthFetching } = useCurrentUserQuery();
-  const hasSavedSession = Boolean(readAuthSession()?.token);
+  const authSession = useAuthSessionState();
+  const { data: currentUser, isLoading: isAuthLoading, isFetching: isAuthFetching } = useCurrentUserQuery(authSession);
+  const hasSavedSession = Boolean(authSession?.token);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {

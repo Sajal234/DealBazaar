@@ -1,16 +1,16 @@
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { changePassword, getCurrentUser } from './auth.api';
-import { clearAuthSession, persistAuthSession, readAuthSession } from './auth.session';
+import { clearAuthSession, persistAuthSession } from './auth.session';
 
 export const authKeys = {
   all: ['auth'],
   currentUser: () => [...authKeys.all, 'me'],
 };
 
-export function useCurrentUserQuery() {
+export function useCurrentUserQuery(session) {
   const queryClient = useQueryClient();
-  const hasToken = Boolean(readAuthSession()?.token);
+  const hasToken = Boolean(session?.token);
 
   const query = useQuery({
     queryKey: authKeys.currentUser(),
@@ -21,13 +21,18 @@ export function useCurrentUserQuery() {
   });
 
   useEffect(() => {
+    if (!hasToken) {
+      queryClient.setQueryData(authKeys.currentUser(), null);
+      return;
+    }
+
     if (query.error?.status !== 401) {
       return;
     }
 
     clearAuthSession();
     queryClient.removeQueries({ queryKey: authKeys.all });
-  }, [query.error, queryClient]);
+  }, [hasToken, query.error, queryClient]);
 
   return query;
 }

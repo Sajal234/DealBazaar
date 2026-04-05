@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 export const AUTH_SESSION_STORAGE_KEY = 'dealbazaar.auth-session';
 export const AUTH_SESSION_CHANGE_EVENT = 'dealbazaar:auth-session-change';
 
@@ -66,4 +68,44 @@ export function clearAuthSession() {
     window.localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
     emitAuthSessionChange(null);
   } catch {}
+}
+
+function isAuthStorageEvent(event) {
+  return event.key === AUTH_SESSION_STORAGE_KEY || event.key === null;
+}
+
+export function useAuthSessionState() {
+  const [session, setSession] = useState(() => readAuthSession());
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const syncSession = () => {
+      setSession(readAuthSession());
+    };
+
+    const handleStorage = (event) => {
+      if (!isAuthStorageEvent(event)) {
+        return;
+      }
+
+      syncSession();
+    };
+
+    const handleSessionChange = () => {
+      syncSession();
+    };
+
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener(AUTH_SESSION_CHANGE_EVENT, handleSessionChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener(AUTH_SESSION_CHANGE_EVENT, handleSessionChange);
+    };
+  }, []);
+
+  return session;
 }
