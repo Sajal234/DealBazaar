@@ -67,3 +67,18 @@ export async function createOwnedDeal({ productName, description, price, city, i
     message: payload.message || 'Deal securely submitted. Pending admin approval.',
   };
 }
+
+export async function updateOwnedDeal({ dealId, updates }) {
+  const payload = await requestJson(`/api/deals/${encodeURIComponent(dealId)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updates),
+  });
+
+  return {
+    deal: payload.data ? mapOwnedDeal(payload.data) : null,
+    message: payload.message || 'Deal updated successfully.',
+  };
+}

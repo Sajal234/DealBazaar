@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { AlertCircle, BarChart3, Clock3, Eye, LoaderCircle, RotateCcw, Trash2 } from 'lucide-react';
+import { AlertCircle, BarChart3, Clock3, Eye, LoaderCircle, PencilLine, RotateCcw, Trash2 } from 'lucide-react';
 import { StoreDealComposer } from './StoreDealComposer';
+import { StoreDealEditor } from './StoreDealEditor';
 import { useArchiveOwnedDealMutation, useMyDealsQuery, useResubmitOwnedDealMutation } from './storeDeals.queries';
 
 const actionCopy = {
@@ -17,6 +18,7 @@ const actionCopy = {
 export function StoreDealsSection({ defaultCityLabel }) {
   const [feedback, setFeedback] = useState('');
   const [activeAction, setActiveAction] = useState(null);
+  const [editingDealId, setEditingDealId] = useState(null);
   const { data, isLoading, error, refetch, isRefetching } = useMyDealsQuery({ enabled: true, limit: 6, page: 1 });
   const resubmitMutation = useResubmitOwnedDealMutation();
   const archiveMutation = useArchiveOwnedDealMutation();
@@ -145,6 +147,7 @@ export function StoreDealsSection({ defaultCityLabel }) {
             const isArchivePending =
               activeAction?.type === 'archive' && activeAction?.dealId === deal.id;
             const canResubmit = deal.status === 'rejected' || deal.status === 'expired';
+            const isEditing = editingDealId === deal.id;
 
             return (
               <article key={deal.id} className="owner-deal-card">
@@ -177,6 +180,19 @@ export function StoreDealsSection({ defaultCityLabel }) {
                 </div>
 
                 <div className="owner-deal-card__actions">
+                  <button
+                    type="button"
+                    className="button button--secondary"
+                    onClick={() => {
+                      setFeedback('');
+                      setEditingDealId((currentDealId) => (currentDealId === deal.id ? null : deal.id));
+                    }}
+                    disabled={isResubmitPending || isArchivePending}
+                  >
+                    <PencilLine size={16} />
+                    {isEditing ? 'Editing' : 'Edit'}
+                  </button>
+
                   {canResubmit ? (
                     <button
                       type="button"
@@ -203,6 +219,18 @@ export function StoreDealsSection({ defaultCityLabel }) {
                     {isArchivePending ? actionCopy.archive.loading : actionCopy.archive.label}
                   </button>
                 </div>
+
+                {isEditing ? (
+                  <StoreDealEditor
+                    deal={deal}
+                    onClose={() => {
+                      setEditingDealId(null);
+                    }}
+                    onSuccess={(message) => {
+                      setFeedback(message);
+                    }}
+                  />
+                ) : null}
               </article>
             );
           })}

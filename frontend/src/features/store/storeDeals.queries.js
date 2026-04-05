@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dealsKeys } from '../deals/deals.keys';
-import { archiveOwnedDeal, createOwnedDeal, listMyDeals, resubmitOwnedDeal } from './storeDeals.api';
+import { archiveOwnedDeal, createOwnedDeal, listMyDeals, resubmitOwnedDeal, updateOwnedDeal } from './storeDeals.api';
 
 export const storeDealsKeys = {
   all: ['store', 'deals'],
@@ -45,6 +45,18 @@ export function useCreateOwnedDealMutation() {
 
   return useMutation({
     mutationFn: createOwnedDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: storeDealsKeys.all });
+      queryClient.invalidateQueries({ queryKey: dealsKeys.all });
+    },
+  });
+}
+
+export function useUpdateOwnedDealMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateOwnedDeal,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: storeDealsKeys.all });
       queryClient.invalidateQueries({ queryKey: dealsKeys.all });
