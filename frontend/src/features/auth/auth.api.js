@@ -36,3 +36,18 @@ export async function getCurrentUser() {
 
   return payload.data;
 }
+
+export async function changePassword({ currentPassword, newPassword }) {
+  const payload = await requestJson('/api/auth/password', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      currentPassword,
+      newPassword,
+    }),
+  });
+
+  return payload.data;
+}

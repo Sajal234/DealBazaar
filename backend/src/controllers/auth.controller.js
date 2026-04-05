@@ -12,6 +12,13 @@ const generateToken = (id) => {
   });
 };
 
+const serializeAuthUser = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+});
+
 // @desc    Register a new user
 // @route   POST /api/auth/signup
 // @access  Public
@@ -53,10 +60,7 @@ export const signup = async (req, res) => {
       return res.status(201).json({
         success: true,
         data: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
+          ...serializeAuthUser(user),
           token: generateToken(user._id),
         },
       });
@@ -95,10 +99,7 @@ export const login = async (req, res) => {
       return res.status(200).json({
         success: true,
         data: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
+          ...serializeAuthUser(user),
           token: generateToken(user._id),
         },
       });
@@ -119,10 +120,56 @@ export const getMe = async (req, res) => {
   try {
     return res.status(200).json({
       success: true,
-      data: req.user,
+      data: serializeAuthUser(req.user),
     });
   } catch (error) {
     console.error('[GetMe Error]', error);
     return res.status(500).json({ success: false, message: 'Server error during profile fetch' });
+  }
+};
+
+// @desc    Change the authenticated user's password
+// @route   PATCH /api/auth/password
+// @access  Private
+export const changePassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user._id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User account no longer exists' });
+    }
+
+    const isCurrentPasswordValid = await user.matchPassword(currentPassword);
+
+    if (!isCurrentPasswordValid) {
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    const isSamePassword = await user.matchPassword(newPassword);
+
+    if (isSamePassword) {
+      return res.status(400).json({ success: false, message: 'New password must be different from your current password' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully.',
+      data: {
+        ...serializeAuthUser(user),
+        token: generateToken(user._id),
+      },
+    });
+  } catch (error) {
+    console.error('[Change Password Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error during password update' });
   }
 };

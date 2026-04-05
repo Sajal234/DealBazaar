@@ -30,6 +30,10 @@ export const protect = async (req, res, next) => {
         return res.status(401).json({ success: false, message: 'Not authorized, user no longer exists' });
       }
 
+      if (typeof req.user.changedPasswordAfter === 'function' && req.user.changedPasswordAfter(decoded.iat)) {
+        return res.status(401).json({ success: false, message: 'Not authorized, token expired after password change' });
+      }
+
       return next();
     } catch (error) {
       console.error('[Auth Error]', error.message);

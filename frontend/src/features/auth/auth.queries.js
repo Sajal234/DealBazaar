@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getCurrentUser } from './auth.api';
-import { clearAuthSession, readAuthSession } from './auth.session';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { changePassword, getCurrentUser } from './auth.api';
+import { clearAuthSession, persistAuthSession, readAuthSession } from './auth.session';
 
 export const authKeys = {
   all: ['auth'],
@@ -30,4 +30,21 @@ export function useCurrentUserQuery() {
   }, [query.error, queryClient]);
 
   return query;
+}
+
+export function useChangePasswordMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: changePassword,
+    onSuccess: (session) => {
+      persistAuthSession(session);
+      queryClient.setQueryData(authKeys.currentUser(), {
+        _id: session._id,
+        name: session.name,
+        email: session.email,
+        role: session.role,
+      });
+    },
+  });
 }

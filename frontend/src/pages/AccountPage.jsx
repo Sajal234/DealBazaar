@@ -1,5 +1,6 @@
 import { BadgeCheck, LogIn, Mail, ShieldCheck, Store as StoreIcon, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AccountPasswordForm } from '../features/auth/AccountPasswordForm';
 import '../styles/account.css';
 
 const roleContent = {
@@ -157,6 +158,8 @@ export function AccountPage({ currentUser }) {
           </article>
         ) : null}
       </section>
+
+      <AccountPasswordForm />
     </main>
   );
 }

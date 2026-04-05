@@ -1,8 +1,8 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { signup, login, getMe } from '../controllers/auth.controller.js';
+import { signup, login, getMe, changePassword } from '../controllers/auth.controller.js';
 import { protect } from '../middleware/auth.js';
-import { authRateLimiter } from '../middleware/rateLimit.js';
+import { authRateLimiter, passwordWriteRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -35,5 +35,20 @@ router.post(
 // @route   GET /api/auth/me
 // Requires robust token validation via the 'protect' middleware!
 router.get('/me', protect, getMe);
+
+// @route   PATCH /api/auth/password
+router.patch(
+  '/password',
+  protect,
+  passwordWriteRateLimiter,
+  [
+    body('currentPassword', 'Current password is required').notEmpty(),
+    body('newPassword', 'Please enter a securely long password (6+ characters)')
+      .isLength({ min: 6 })
+      .matches(/\d/)
+      .withMessage('New password must contain at least one number'),
+  ],
+  changePassword
+);
 
 export default router;

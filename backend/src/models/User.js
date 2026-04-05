@@ -25,6 +25,9 @@ const userSchema = new mongoose.Schema(
       maxlength: 100,
       select: false, 
     },
+    passwordChangedAt: {
+      type: Date,
+    },
     role: {
       type: String,
       enum: ['user', 'store', 'admin'],
@@ -41,6 +44,11 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
+
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date(Date.now() - 1000);
+  }
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
@@ -48,6 +56,16 @@ userSchema.pre('save', async function (next) {
 // Helper method to verify passwords during login
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+userSchema.methods.changedPasswordAfter = function (jwtIssuedAt) {
+  if (!this.passwordChangedAt || !jwtIssuedAt) {
+    return false;
+  }
+
+  const passwordChangedAtSeconds = Math.floor(this.passwordChangedAt.getTime() / 1000);
+
+  return passwordChangedAtSeconds > jwtIssuedAt;
 };
 
 const User = mongoose.model('User', userSchema);

@@ -135,6 +135,84 @@
   font-weight: 600;
 }
 
+.account-password-form {
+  display: grid;
+  gap: 14px;
+}
+
+.account-password-form__field {
+  display: grid;
+  gap: 8px;
+}
+
+.account-password-form__field span {
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.account-password-form__field input {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  background: var(--surface-strong);
+  color: var(--text-main);
+  font: inherit;
+}
+
+.account-password-form__field input:focus {
+  outline: none;
+  border-color: rgba(134, 99, 59, 0.4);
+  box-shadow: 0 0 0 4px rgba(134, 99, 59, 0.12);
+}
+
+.account-password-form__hint {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.account-password-form__error,
+.account-password-form__success {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.account-password-form__error {
+  border: 1px solid rgba(180, 92, 86, 0.22);
+  background: rgba(180, 92, 86, 0.08);
+  color: #9b3c34;
+}
+
+.account-password-form__success {
+  border: 1px solid rgba(54, 122, 84, 0.18);
+  background: rgba(54, 122, 84, 0.08);
+  color: #2d6a4f;
+}
+
+:root[data-theme="dark"] .account-password-form__error {
+  color: #ffb9b1;
+}
+
+:root[data-theme="dark"] .account-password-form__success {
+  color: #b4f0cf;
+}
+
+.account-password-form__actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
 @media (max-width: 960px) {
   .account-layout,
   .account-grid {

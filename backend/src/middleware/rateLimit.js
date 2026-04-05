@@ -31,6 +31,12 @@ export const authRateLimiter = buildRateLimiter({
   keyGenerator: getAuthRateLimitKey,
 });
 
+export const passwordWriteRateLimiter = buildRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 8,
+  message: 'Too many password change attempts. Please try again later.',
+});
+
 export const storeWriteRateLimiter = buildRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 10,
