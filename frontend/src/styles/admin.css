@@ -258,6 +258,32 @@
   font-size: 0.86rem;
 }
 
+.admin-owner-summary {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.admin-owner-summary__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.admin-owner-summary__meta {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
 .admin-context-links {
   display: flex;
   flex-wrap: wrap;

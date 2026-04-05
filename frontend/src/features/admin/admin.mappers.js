@@ -81,6 +81,8 @@ export function mapAdminStore(rawStore) {
     phoneLabel: formatPhone(rawStore?.phone),
     phone: rawStore?.phone || '',
     ownerId: rawStore?.ownerId || 'Unknown owner',
+    ownerName: rawStore?.owner?.name || '',
+    ownerEmail: rawStore?.owner?.email || '',
     submittedAtLabel: formatDateLabel(rawStore?.createdAt),
     ratingLabel: formatRating(rawStore?.rating, rawStore?.totalRatings),
     isVerified: Boolean(rawStore?.isVerified),

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, BadgeCheck, Clock3, LoaderCircle, ShieldAlert, ShieldCheck, Store as StoreIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AdminDealMedia } from '../features/admin/AdminDealMedia';
+import { AdminStoreOwnerSummary } from '../features/admin/AdminStoreOwnerSummary';
 import { AdminStoreContextLinks } from '../features/admin/AdminStoreContextLinks';
 import { DealsPagination } from '../features/deals/DealsPagination';
 import {
@@ -207,8 +208,14 @@ export function AdminPage({ currentUser }) {
 
                     <div className="admin-card__note">
                       <StoreIcon size={16} />
-                      <span>Owner ID: {store.ownerId}</span>
+                      <span>Application owner</span>
                     </div>
+
+                    <AdminStoreOwnerSummary
+                      ownerName={store.ownerName}
+                      ownerEmail={store.ownerEmail}
+                      ownerId={store.ownerId}
+                    />
 
                     <AdminStoreContextLinks phone={store.phone} viewLabel="Open public store page" />
 

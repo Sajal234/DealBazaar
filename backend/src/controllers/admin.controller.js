@@ -19,6 +19,25 @@ export const listPendingStores = async (req, res) => {
       .limit(limit)
       .sort({ createdAt: 1 });
 
+    const ownerIds = stores
+      .map((store) => store.ownerId)
+      .filter(Boolean);
+
+    const owners = ownerIds.length
+      ? await User.find({ _id: { $in: ownerIds } }).select('name email')
+      : [];
+
+    const ownerMap = new Map(
+      owners.map((owner) => [
+        owner._id.toString(),
+        {
+          _id: owner._id,
+          name: owner.name,
+          email: owner.email,
+        },
+      ])
+    );
+
     const total = await Store.countDocuments(query);
 
     return res.status(200).json({
@@ -29,7 +48,15 @@ export const listPendingStores = async (req, res) => {
         page,
         pages: Math.ceil(total / limit),
       },
-      data: stores.map((store) => serializeStore(store, { includeOwnerId: true })),
+      data: stores.map((store) => {
+        const serializedStore = serializeStore(store, { includeOwnerId: true });
+        const owner = ownerMap.get(store.ownerId?.toString());
+
+        return {
+          ...serializedStore,
+          owner,
+        };
+      }),
     });
   } catch (error) {
     console.error('[List Pending Stores Error]', error);
