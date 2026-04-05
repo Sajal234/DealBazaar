@@ -525,14 +525,28 @@
     grid-template-areas:
       "brand actions"
       "mobile mobile";
-    margin-bottom: 24px;
-    padding: 12px;
-    gap: 12px;
+    margin-bottom: 22px;
+    padding: 10px 12px;
+    gap: 10px;
     align-items: center;
   }
 
   .topbar__brand {
     grid-area: brand;
+  }
+
+  .brand__mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .brand__name {
+    font-size: 0.88rem;
+  }
+
+  .brand__subtext {
+    font-size: 0.76rem;
   }
 
   .catalog-layout {
@@ -557,6 +571,7 @@
     justify-self: end;
     justify-content: flex-end;
     flex-wrap: nowrap;
+    gap: 8px;
   }
 
   .topbar__desktop-only {
@@ -565,6 +580,8 @@
 
   .topbar__menu-toggle {
     display: inline-flex;
+    width: 40px;
+    height: 40px;
   }
 
   .site-nav {
@@ -677,6 +694,16 @@
     margin-bottom: 18px;
     padding: 10px;
     gap: 10px;
+  }
+
+  .brand__mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+  }
+
+  .brand__name {
+    font-size: 0.84rem;
   }
 
   .topbar__actions {
