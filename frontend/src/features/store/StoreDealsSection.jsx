@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertCircle, BarChart3, Clock3, Eye, LoaderCircle, PencilLine, RotateCcw, Trash2 } from 'lucide-react';
+import { DealsPagination } from '../deals/DealsPagination';
 import { StoreDealComposer } from './StoreDealComposer';
 import { StoreDealEditor } from './StoreDealEditor';
+import { getOwnerDealStatusLabel, normalizeOwnerDealStatus } from './storeDeals.filters';
+import { StoreDealsToolbar } from './StoreDealsToolbar';
 import { useArchiveOwnedDealMutation, useMyDealsQuery, useResubmitOwnedDealMutation } from './storeDeals.queries';
 
 const actionCopy = {
@@ -19,22 +22,27 @@ export function StoreDealsSection({ defaultCityLabel }) {
   const [feedback, setFeedback] = useState('');
   const [activeAction, setActiveAction] = useState(null);
   const [editingDealId, setEditingDealId] = useState(null);
-  const { data, isLoading, error, refetch, isRefetching } = useMyDealsQuery({ enabled: true, limit: 6, page: 1 });
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data, isLoading, error, refetch, isRefetching, isFetching } = useMyDealsQuery({
+    enabled: true,
+    limit: 6,
+    page: currentPage,
+    status: statusFilter,
+  });
   const resubmitMutation = useResubmitOwnedDealMutation();
   const archiveMutation = useArchiveOwnedDealMutation();
   const deals = data?.items || [];
-  const totalDeals = data?.pagination?.total || deals.length;
+  const pagination = data?.pagination || null;
+  const totalDeals = pagination?.total || 0;
+  const totalPages = Math.max(1, pagination?.pages || 1);
+  const resolvedPage = Math.min(Math.max(1, pagination?.page || currentPage), totalPages);
 
-  const metrics = useMemo(() => {
-    return deals.reduce(
-      (summary, deal) => {
-        summary.views += deal.views;
-        summary.clicks += deal.clicks;
-        return summary;
-      },
-      { views: 0, clicks: 0 }
-    );
-  }, [deals]);
+  useEffect(() => {
+    if (resolvedPage !== currentPage) {
+      setCurrentPage(resolvedPage);
+    }
+  }, [currentPage, resolvedPage]);
 
   const handleResubmit = async (dealId) => {
     setActiveAction({ type: 'resubmit', dealId });
@@ -64,6 +72,27 @@ export function StoreDealsSection({ defaultCityLabel }) {
     }
   };
 
+  const handleStatusChange = (nextStatus) => {
+    const normalizedStatus = normalizeOwnerDealStatus(nextStatus);
+
+    if (normalizedStatus === statusFilter) {
+      return;
+    }
+
+    setStatusFilter(normalizedStatus);
+    setCurrentPage(1);
+    setEditingDealId(null);
+    setFeedback('');
+  };
+
+  const shouldShowPagination = !isLoading && !error && totalDeals > 0 && totalPages > 1;
+  const emptyStateTitle =
+    statusFilter === 'all' ? 'No seller deals yet' : `No ${getOwnerDealStatusLabel(statusFilter).toLowerCase()} deals`;
+  const emptyStateBody =
+    statusFilter === 'all'
+      ? 'Your first submitted listing will appear here after you create a new deal.'
+      : 'Try another status filter or create a new listing to expand your seller workspace.';
+
   return (
     <section className="store-workspace" aria-label="Your deals">
       <StoreDealComposer defaultCityLabel={defaultCityLabel} />
@@ -74,21 +103,6 @@ export function StoreDealsSection({ defaultCityLabel }) {
           <h2>Manage current listings</h2>
           <p>See the latest deal states, keep moderation moving, and clean up expired listings.</p>
         </div>
-
-        <div className="store-workspace__stats">
-          <div>
-            <span>Latest listings</span>
-            <strong>{totalDeals}</strong>
-          </div>
-          <div>
-            <span>Total views</span>
-            <strong>{metrics.views}</strong>
-          </div>
-          <div>
-            <span>Total clicks</span>
-            <strong>{metrics.clicks}</strong>
-          </div>
-        </div>
       </div>
 
       {feedback ? (
@@ -96,6 +110,15 @@ export function StoreDealsSection({ defaultCityLabel }) {
           {feedback}
         </p>
       ) : null}
+
+      <StoreDealsToolbar
+        statusFilter={statusFilter}
+        onStatusChange={handleStatusChange}
+        total={totalDeals}
+        page={resolvedPage}
+        pages={totalPages}
+        visibleCount={deals.length}
+      />
 
       {isLoading ? (
         <section className="state-card" aria-live="polite">
@@ -133,8 +156,8 @@ export function StoreDealsSection({ defaultCityLabel }) {
         <section className="state-card" aria-live="polite">
           <BarChart3 size={18} />
           <div>
-            <h2>No seller deals yet</h2>
-            <p>Your first submitted listing will appear here after you create a new deal.</p>
+            <h2>{emptyStateTitle}</h2>
+            <p>{emptyStateBody}</p>
           </div>
         </section>
       ) : null}
@@ -235,6 +258,24 @@ export function StoreDealsSection({ defaultCityLabel }) {
             );
           })}
         </div>
+      ) : null}
+
+      {shouldShowPagination ? (
+        <DealsPagination
+          page={resolvedPage}
+          pages={totalPages}
+          total={totalDeals}
+          onPageChange={(nextPage) => {
+            const safePage = Math.min(Math.max(1, nextPage), totalPages);
+
+            if (safePage !== resolvedPage) {
+              setCurrentPage(safePage);
+              setEditingDealId(null);
+              setFeedback('');
+            }
+          }}
+          isDisabled={isFetching}
+        />
       ) : null}
     </section>
   );

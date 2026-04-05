@@ -1,17 +1,24 @@
 import { requestJson } from '../../lib/requestJson';
+import { normalizeOwnerDealStatus } from './storeDeals.filters';
 import { mapOwnedDeal } from './storeDeals.mappers';
 
-function createOwnerDealsQueryString({ limit = 6, page = 1 } = {}) {
+function createOwnerDealsQueryString({ limit = 6, page = 1, status = 'all' } = {}) {
   const params = new URLSearchParams();
 
   params.set('limit', String(limit));
   params.set('page', String(page));
 
+   const normalizedStatus = normalizeOwnerDealStatus(status);
+
+  if (normalizedStatus !== 'all') {
+    params.set('status', normalizedStatus);
+  }
+
   return params.toString();
 }
 
-export async function listMyDeals({ limit = 6, page = 1, signal } = {}) {
-  const payload = await requestJson(`/api/deals/mine?${createOwnerDealsQueryString({ limit, page })}`, {
+export async function listMyDeals({ limit = 6, page = 1, status = 'all', signal } = {}) {
+  const payload = await requestJson(`/api/deals/mine?${createOwnerDealsQueryString({ limit, page, status })}`, {
     signal,
   });
 

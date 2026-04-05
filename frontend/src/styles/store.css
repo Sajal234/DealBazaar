@@ -251,6 +251,60 @@
   margin-top: 6px;
 }
 
+.store-deals-toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--stroke);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.store-deals-toolbar__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.store-deals-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--text-soft);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.store-deals-filter-chip--active {
+  background: rgba(134, 99, 59, 0.12);
+  border-color: rgba(134, 99, 59, 0.18);
+  color: var(--accent-strong);
+}
+
+.store-deals-toolbar__summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 8px 14px;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
 .store-composer {
   display: grid;
   gap: 14px;
@@ -380,36 +434,6 @@
   line-height: 1.6;
 }
 
-.store-workspace__stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(92px, 1fr));
-  gap: 10px;
-  min-width: min(100%, 340px);
-}
-
-.store-workspace__stats div {
-  display: grid;
-  gap: 4px;
-  padding: 14px;
-  border: 1px solid var(--stroke);
-  border-radius: 16px;
-  background: var(--surface);
-}
-
-.store-workspace__stats span {
-  color: var(--text-soft);
-  font-size: 0.76rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.store-workspace__stats strong {
-  font-size: 1.08rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-}
-
 .store-workspace__feedback {
   margin: 0;
   padding: 13px 16px;
@@ -520,6 +544,15 @@
 }
 
 @media (max-width: 980px) {
+  .store-deals-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .store-deals-toolbar__summary {
+    justify-content: start;
+  }
+
   .store-workspace__header {
     align-items: stretch;
     flex-direction: column;
@@ -555,11 +588,6 @@
   .store-facts,
   .store-form__grid {
     grid-template-columns: 1fr;
-  }
-
-  .store-workspace__stats {
-    grid-template-columns: 1fr;
-    min-width: 0;
   }
 
   .store-summary-list div {
