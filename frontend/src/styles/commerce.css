@@ -335,6 +335,23 @@
   margin-top: 18px;
 }
 
+.home-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(180px, 0.75fr) auto;
+  gap: 12px;
+  align-items: end;
+  max-width: 760px;
+  margin-top: 18px;
+}
+
+.home-search .filter-field {
+  min-width: 0;
+}
+
+.home-search__submit {
+  min-width: 150px;
+}
+
 .home-hero__trust {
   display: flex;
   flex-wrap: wrap;
@@ -566,6 +583,10 @@
 
   .topbar {
     flex-wrap: wrap;
+  }
+
+  .home-search {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -2,6 +2,7 @@ import { AlertCircle, ArrowRight, LoaderCircle, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DealCard } from '../features/deals/DealCard';
 import { useDealsQuery } from '../features/deals/deals.queries';
+import { HomeSearchForm } from '../features/home/HomeSearchForm';
 import { HomeVerifiedStoresList } from '../features/home/HomeVerifiedStoresList';
 import { useStoresQuery } from '../features/store/store.queries';
 
@@ -36,6 +37,8 @@ export function HomePage() {
               Sell on DealBazaar
             </Link>
           </div>
+
+          <HomeSearchForm />
 
           <ul className="home-hero__trust" aria-label="Marketplace trust signals">
             <li>Admin-approved deals</li>
