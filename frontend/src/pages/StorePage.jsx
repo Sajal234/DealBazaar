@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, BadgeCheck, Clock3, LoaderCircle, ShieldCheck, Store as StoreIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { StoreDealsSection } from '../features/store/StoreDealsSection';
 import { useApplyForStoreMutation, useMyStoreQuery } from '../features/store/store.queries';
 import '../styles/store.css';
 
@@ -221,6 +222,8 @@ export function StorePage({ currentUser }) {
             </div>
           </aside>
         </section>
+
+        {store.status === 'approved' ? <StoreDealsSection /> : null}
       </main>
     );
   }

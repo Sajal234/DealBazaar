@@ -245,6 +245,167 @@
   color: #b4f0cf;
 }
 
+.store-workspace {
+  display: grid;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.store-workspace__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.store-workspace__header h2,
+.store-workspace__header p {
+  margin: 0;
+}
+
+.store-workspace__header h2 {
+  font-size: 1.24rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.store-workspace__header p:last-child {
+  max-width: 560px;
+  margin-top: 8px;
+  color: var(--text-soft);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.store-workspace__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(92px, 1fr));
+  gap: 10px;
+  min-width: min(100%, 340px);
+}
+
+.store-workspace__stats div {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.store-workspace__stats span {
+  color: var(--text-soft);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.store-workspace__stats strong {
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.store-workspace__feedback {
+  margin: 0;
+  padding: 13px 16px;
+  border: 1px solid rgba(54, 122, 84, 0.18);
+  border-radius: 16px;
+  background: rgba(54, 122, 84, 0.08);
+  color: #2d6a4f;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+:root[data-theme="dark"] .store-workspace__feedback {
+  color: #b4f0cf;
+}
+
+.owner-deals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.owner-deal-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--stroke);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.owner-deal-card__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.owner-deal-card__header h3,
+.owner-deal-card__header p {
+  margin: 0;
+}
+
+.owner-deal-card__header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+
+.owner-deal-card__header p {
+  margin-top: 8px;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.owner-deal-card__meta,
+.owner-deal-card__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.owner-deal-card__metrics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.owner-deal-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.owner-deal-card__actions .button {
+  min-height: 40px;
+  border-radius: 12px;
+}
+
+.owner-deal-card__archive {
+  border-radius: 12px;
+}
+
+@media (max-width: 980px) {
+  .store-workspace__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .owner-deals-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 980px) {
   .store-onboarding,
   .store-overview {
@@ -260,6 +421,11 @@
   .store-facts,
   .store-form__grid {
     grid-template-columns: 1fr;
+  }
+
+  .store-workspace__stats {
+    grid-template-columns: 1fr;
+    min-width: 0;
   }
 
   .store-summary-list div {
