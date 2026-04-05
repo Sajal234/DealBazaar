@@ -27,7 +27,7 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
       <AppRouteEffects />
 
       <header className="topbar">
-        <div className="topbar__cluster">
+        <div className="topbar__brand">
           <NavLink to="/" className="brand brand--link" aria-label="DealBazaar home">
             <div className="brand__mark" aria-hidden="true">
               <img src="/favicon.svg" alt="" className="brand__mark-image" />
@@ -37,41 +37,41 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
               <p className="brand__subtext">Verified local commerce.</p>
             </div>
           </NavLink>
-
-          <nav className="site-nav" aria-label="Primary navigation">
-            <NavLink to="/" end className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}>
-              Home
-            </NavLink>
-            <NavLink
-              to="/deals"
-              className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
-            >
-              Deals
-            </NavLink>
-            <NavLink
-              to="/stores"
-              className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
-            >
-              Stores
-            </NavLink>
-            {currentUser?.role === 'admin' ? (
-              <NavLink
-                to="/admin"
-                className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
-              >
-                Admin
-              </NavLink>
-            ) : null}
-            {currentUser && currentUser.role !== 'admin' ? (
-              <NavLink
-                to="/store"
-                className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
-              >
-                Store
-              </NavLink>
-            ) : null}
-          </nav>
         </div>
+
+        <nav className="site-nav" aria-label="Primary navigation">
+          <NavLink to="/" end className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}>
+            Home
+          </NavLink>
+          <NavLink
+            to="/deals"
+            className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
+          >
+            Deals
+          </NavLink>
+          <NavLink
+            to="/stores"
+            className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
+          >
+            Stores
+          </NavLink>
+          {currentUser?.role === 'admin' ? (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
+            >
+              Admin
+            </NavLink>
+          ) : null}
+          {currentUser && currentUser.role !== 'admin' ? (
+            <NavLink
+              to="/store"
+              className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
+            >
+              Store
+            </NavLink>
+          ) : null}
+        </nav>
 
         <div className="topbar__actions">
           <NavLink to="/deals" className="button button--ghost">

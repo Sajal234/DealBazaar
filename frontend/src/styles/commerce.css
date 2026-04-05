@@ -8,6 +8,9 @@
 }
 
 .topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
   gap: 16px;
   margin-bottom: 28px;
   padding: 12px 14px;
@@ -17,13 +20,17 @@
   box-shadow: var(--shadow-soft);
 }
 
-.topbar__cluster {
-  gap: 18px;
+.topbar__brand {
+  display: flex;
+  align-items: center;
   min-width: 0;
 }
 
 .topbar__actions {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  justify-self: end;
 }
 
 .brand__mark {
@@ -41,6 +48,7 @@
 }
 
 .site-nav {
+  justify-self: center;
   gap: 6px;
   padding: 4px;
   background: rgba(20, 23, 26, 0.03);
@@ -516,8 +524,10 @@
   }
 
   .topbar {
+    grid-template-columns: 1fr;
     margin-bottom: 24px;
     padding: 12px;
+    justify-items: stretch;
   }
 
   .catalog-layout {
@@ -537,10 +547,10 @@
     justify-content: start;
   }
 
-  .topbar {
-    flex-wrap: wrap;
+  .topbar__actions {
+    justify-self: stretch;
+    justify-content: space-between;
   }
-
 }
 
 @media (max-width: 640px) {
@@ -551,6 +561,11 @@
   .topbar {
     margin-bottom: 18px;
     padding: 10px;
+  }
+
+  .topbar__actions {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .page-shell {
