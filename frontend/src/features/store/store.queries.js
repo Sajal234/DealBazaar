@@ -1,10 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { applyForStore, getMyStore } from './store.api';
+import { dealsKeys } from '../deals/deals.keys';
+import { applyForStore, getMyStore, getStoreById, submitStoreRating } from './store.api';
 
 export const storeKeys = {
   all: ['store'],
+  details: () => [...storeKeys.all, 'detail'],
+  detail: (storeId) => [...storeKeys.details(), storeId],
   myStore: () => [...storeKeys.all, 'me'],
 };
+
+export function useStoreDetailQuery({ storeId, enabled }) {
+  return useQuery({
+    queryKey: storeId ? storeKeys.detail(storeId) : [...storeKeys.details(), 'invalid'],
+    queryFn: ({ signal }) => getStoreById(storeId, { signal }),
+    enabled: enabled && typeof storeId === 'string' && storeId.trim().length > 0,
+    retry: (failureCount, error) => error?.status !== 404 && failureCount < 1,
+    staleTime: 60 * 1000,
+  });
+}
 
 export function useMyStoreQuery({ enabled }) {
   return useQuery({
@@ -23,6 +36,30 @@ export function useApplyForStoreMutation() {
     mutationFn: applyForStore,
     onSuccess: ({ store }) => {
       queryClient.setQueryData(storeKeys.myStore(), store);
+    },
+  });
+}
+
+export function useStoreRatingMutation(storeId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (rating) => submitStoreRating({ storeId, rating }),
+    onSuccess: (result) => {
+      queryClient.setQueryData(storeKeys.detail(storeId), (currentStore) => {
+        if (!currentStore) {
+          return currentStore;
+        }
+
+        return {
+          ...currentStore,
+          rating: Number.isFinite(Number(result?.rating)) ? Number(result.rating).toFixed(1) : currentStore.rating,
+          totalRatings: Number.isFinite(Number(result?.totalRatings)) ? Number(result.totalRatings) : currentStore.totalRatings,
+          myRating: Number.isFinite(Number(result?.myRating)) ? Number(result.myRating) : currentStore.myRating,
+        };
+      });
+
+      queryClient.invalidateQueries({ queryKey: dealsKeys.all });
     },
   });
 }

@@ -56,7 +56,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/deals" element={<DealsPage />} />
-        <Route path="/deals/:dealId" element={<DealDetailPage />} />
+        <Route path="/deals/:dealId" element={<DealDetailPage currentUser={currentUser} />} />
         <Route
           path="/login"
           element={

@@ -3,6 +3,8 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { trackDealClick } from '../features/deals/deals.api';
 import { isValidDealId } from '../features/deals/deals.keys';
 import { useDealDetailQuery } from '../features/deals/deals.queries';
+import { StoreRatingPanel } from '../features/store/StoreRatingPanel';
+import { useStoreDetailQuery } from '../features/store/store.queries';
 
 function ContactAction({ deal }) {
   const phone = deal.store?.phone ? String(deal.store.phone).trim() : '';
@@ -25,7 +27,7 @@ function ContactAction({ deal }) {
   );
 }
 
-export function DealDetailPage() {
+export function DealDetailPage({ currentUser }) {
   const { dealId } = useParams();
   const location = useLocation();
   const initialDealEntry = location.state?.dealPreviewEntry || null;
@@ -38,6 +40,27 @@ export function DealDetailPage() {
     refetch,
     isRefetching,
   } = useDealDetailQuery(dealId, initialDealEntry);
+  const {
+    data: storeDetail,
+  } = useStoreDetailQuery({
+    storeId: deal?.store?.id,
+    enabled: Boolean(deal?.store?.id),
+  });
+
+  const store = storeDetail || (deal?.store
+    ? {
+        id: deal.store.id,
+        name: deal.store.name || 'Verified local store',
+        cityLabel: deal.store.city || deal.cityLabel,
+        phone: deal.store.phone || '',
+        phoneLabel: deal.store.phone || 'Not available',
+        rating: deal.store.rating || null,
+        totalRatings: 0,
+        myRating: null,
+        isVerified: Boolean(deal.store.isVerified),
+        address: '',
+      }
+    : null);
 
   if (!hasValidDealId) {
     return (
@@ -143,22 +166,25 @@ export function DealDetailPage() {
               <Clock3 size={16} />
               Live now
             </span>
-            {deal.store?.rating ? (
+            {store?.rating ? (
               <span>
                 <Star size={16} />
-                {deal.store.rating} rating
+                {store.rating} rating
               </span>
             ) : null}
           </div>
 
           <div className="detail-store-card">
             <p className="detail-store-card__eyebrow">Store</p>
-            <h2>{deal.store?.name || 'Verified local store'}</h2>
+            <h2>{store?.name || 'Verified local store'}</h2>
             <p>
-              {deal.store?.city || deal.cityLabel}
-              {deal.store?.isVerified ? ' • Verified retailer' : ''}
+              {store?.cityLabel || deal.cityLabel}
+              {store?.isVerified ? ' • Verified retailer' : ''}
             </p>
+            {store?.address ? <p className="detail-store-card__address">{store.address}</p> : null}
           </div>
+
+          {store?.id ? <StoreRatingPanel store={store} currentUser={currentUser} /> : null}
 
           <div className="deal-detail__actions">
             <ContactAction deal={deal} />

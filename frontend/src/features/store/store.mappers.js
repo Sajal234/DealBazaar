@@ -23,15 +23,17 @@ const formatPhone = (value) => {
 export function mapStore(rawStore) {
   return {
     id: rawStore?._id || '',
-    name: rawStore?.name || 'Your store',
-    address: rawStore?.address || 'Address pending',
+    name: rawStore?.name || 'Verified local store',
+    address: rawStore?.address || '',
     cityLabel: formatTitleCase(rawStore?.city, 'Local area'),
     stateLabel: formatTitleCase(rawStore?.state, 'State'),
     phoneLabel: formatPhone(rawStore?.phone),
+    phone: rawStore?.phone || '',
     status: rawStore?.status || 'pending',
     isVerified: Boolean(rawStore?.isVerified),
     rating: Number.isFinite(Number(rawStore?.rating)) ? Number(rawStore.rating).toFixed(1) : null,
     totalRatings: Number.isFinite(Number(rawStore?.totalRatings)) ? Number(rawStore.totalRatings) : 0,
+    myRating: Number.isFinite(Number(rawStore?.myRating)) ? Number(rawStore.myRating) : null,
     createdAt: rawStore?.createdAt || null,
   };
 }
