@@ -300,15 +300,15 @@
 
 .home-storefront {
   display: grid;
-  gap: 20px;
+  gap: 28px;
 }
 
 .home-hero {
-  padding: 8px 0 2px;
+  padding: 12px 0 4px;
 }
 
 .home-hero__copy {
-  max-width: 720px;
+  max-width: 680px;
 }
 
 .home-hero__copy h1 {
@@ -332,31 +332,14 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 18px;
-}
-
-.home-search {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(180px, 0.75fr) auto;
-  gap: 12px;
-  align-items: end;
-  max-width: 760px;
-  margin-top: 18px;
-}
-
-.home-search .filter-field {
-  min-width: 0;
-}
-
-.home-search__submit {
-  min-width: 150px;
+  margin-top: 20px;
 }
 
 .home-hero__trust {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 20px;
-  margin: 18px 0 0;
+  gap: 10px 18px;
+  margin: 16px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -368,56 +351,44 @@
 }
 
 .home-highlights {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  border-top: 1px solid var(--stroke);
-  border-bottom: 1px solid var(--stroke);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 22px;
+  padding: 4px 0 0;
 }
 
 .home-highlights__item {
-  display: grid;
-  gap: 6px;
-  padding: 16px 18px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .home-highlights__item + .home-highlights__item {
+  padding-left: 22px;
   border-left: 1px solid var(--stroke);
 }
 
 .home-highlights__item strong {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
 .home-highlights__item span {
   color: var(--text-soft);
-  font-size: 0.86rem;
-  line-height: 1.55;
-}
-
-.home-deals {
-  display: grid;
-  gap: 16px;
-  padding-top: 4px;
+  font-size: 0.84rem;
+  line-height: 1.5;
 }
 
 .home-market {
   display: grid;
-  grid-template-columns: minmax(0, 1.9fr) minmax(280px, 0.95fr);
-  gap: 20px;
-  align-items: start;
-}
-
-.home-market__main,
-.home-market__sidebar {
-  display: grid;
   gap: 16px;
 }
 
-.home-market__sidebar {
-  align-content: start;
+.home-stores {
+  display: grid;
+  gap: 16px;
 }
 
 .home-section__header {
@@ -427,25 +398,21 @@
   gap: 14px;
 }
 
-.home-section__header--stacked {
-  align-items: start;
-}
-
 .home-section__header h2 {
   margin: 0;
   max-width: 560px;
-  font-size: 1.08rem;
+  font-size: 1.02rem;
   font-weight: 600;
   letter-spacing: -0.03em;
 }
 
 .home-market__deals {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .home-store-list {
   display: grid;
-  gap: 12px;
+  gap: 0;
 }
 
 .home-store-row {
@@ -453,16 +420,22 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid var(--stroke);
-  border-radius: 18px;
-  background: var(--surface);
-  box-shadow: var(--shadow-soft);
+  padding: 14px 0;
+  border-bottom: 1px solid var(--stroke);
+}
+
+.home-store-row:first-child {
+  padding-top: 0;
+}
+
+.home-store-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 .home-store-row__copy {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -532,24 +505,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .home-market {
-    grid-template-columns: 1fr;
-  }
-
-  .home-highlights {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .home-highlights__item:nth-child(3),
-  .home-highlights__item:nth-child(4) {
-    border-top: 1px solid var(--stroke);
-  }
-
-  .home-highlights__item:nth-child(3) {
-    border-left: 0;
-  }
-
-  .home-featured__grid {
+  .home-market__deals {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -585,9 +541,6 @@
     flex-wrap: wrap;
   }
 
-  .home-search {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 640px) {
@@ -613,12 +566,13 @@
   }
 
   .home-highlights {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .home-highlights__item + .home-highlights__item {
+    padding-left: 0;
     border-left: 0;
-    border-top: 1px solid var(--stroke);
   }
 
   .home-featured__header {
@@ -633,11 +587,6 @@
 
   .home-market__deals {
     grid-template-columns: 1fr;
-  }
-
-  .home-store-row {
-    align-items: start;
-    flex-direction: column;
   }
 
   .home-featured__grid {
