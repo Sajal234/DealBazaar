@@ -10,7 +10,12 @@ export function DealCard({ deal, previewTimestamp }) {
       state={{ dealPreviewEntry: createDealPreviewEntry(deal, previewTimestamp) }}
       className="deal-card"
     >
-      <DealCardMedia title={deal.title} imageUrl={deal.imageUrl} priceLabel={deal.priceLabel} />
+      <DealCardMedia
+        title={deal.title}
+        imageUrl={deal.imageUrl}
+        imageCount={deal.imageCount}
+        priceLabel={deal.priceLabel}
+      />
 
       <div className="deal-card__body">
         <div className="deal-card__eyebrow">

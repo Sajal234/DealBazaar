@@ -1,10 +1,13 @@
 import { ImageIcon, Search } from 'lucide-react';
 
-export function DealCardMedia({ title, imageUrl, priceLabel }) {
+export function DealCardMedia({ title, imageUrl, imageCount = 0, priceLabel }) {
+  const hasMultipleImages = Number(imageCount) > 1;
+
   if (imageUrl) {
     return (
       <div className="deal-card__image-wrap">
         <img src={imageUrl} alt={title} className="deal-card__image" />
+        {hasMultipleImages ? <span className="deal-card__image-count">+{imageCount - 1}</span> : null}
       </div>
     );
   }

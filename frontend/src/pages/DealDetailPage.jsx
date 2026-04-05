@@ -1,6 +1,7 @@
-import { AlertCircle, ArrowLeft, Clock3, LoaderCircle, MapPin, Phone, Search, Star } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Clock3, LoaderCircle, MapPin, Phone, Star } from 'lucide-react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { ResourceNotFoundState } from '../components/ResourceNotFoundState';
+import { DealDetailGallery } from '../features/deals/DealDetailGallery';
 import { trackDealClick } from '../features/deals/deals.api';
 import { isValidDealId } from '../features/deals/deals.keys';
 import { useDealDetailQuery } from '../features/deals/deals.queries';
@@ -166,15 +167,7 @@ export function DealDetailPage({ currentUser }) {
       </Link>
 
       <section className="deal-detail">
-        <div className="deal-detail__media">
-          {deal.imageUrl ? (
-            <img src={deal.imageUrl} alt={deal.title} className="deal-detail__image" />
-          ) : (
-            <div className="deal-detail__image deal-detail__image--placeholder" aria-hidden="true">
-              <Search size={20} />
-            </div>
-          )}
-        </div>
+        <DealDetailGallery title={deal.title} images={deal.images} imageUrl={deal.imageUrl} />
 
         <div className="deal-detail__content">
           <div className="deal-detail__topline">

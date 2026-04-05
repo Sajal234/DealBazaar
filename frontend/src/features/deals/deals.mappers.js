@@ -35,17 +35,24 @@ const normalizeStore = (rawStore) => {
   };
 };
 
-export const mapDealSummary = (rawDeal) => ({
-  id: rawDeal?._id || '',
-  title: rawDeal?.productName || 'Untitled deal',
-  description: rawDeal?.description || 'No description available.',
-  priceLabel: formatPrice(rawDeal?.price),
-  cityLabel: formatCity(rawDeal?.city),
-  imageUrl: Array.isArray(rawDeal?.images) && rawDeal.images.length > 0 ? rawDeal.images[0] : '',
-  images: Array.isArray(rawDeal?.images) ? rawDeal.images : [],
-  store: normalizeStore(rawDeal?.storeId),
-  status: rawDeal?.status || 'active',
-});
+export const mapDealSummary = (rawDeal) => {
+  const images = Array.isArray(rawDeal?.images)
+    ? rawDeal.images.filter((entry) => typeof entry === 'string' && entry.trim())
+    : [];
+
+  return {
+    id: rawDeal?._id || '',
+    title: rawDeal?.productName || 'Untitled deal',
+    description: rawDeal?.description || 'No description available.',
+    priceLabel: formatPrice(rawDeal?.price),
+    cityLabel: formatCity(rawDeal?.city),
+    imageUrl: images[0] || '',
+    images,
+    imageCount: images.length,
+    store: normalizeStore(rawDeal?.storeId),
+    status: rawDeal?.status || 'active',
+  };
+};
 
 export const mapDealDetail = (rawDeal) => ({
   ...mapDealSummary(rawDeal),
