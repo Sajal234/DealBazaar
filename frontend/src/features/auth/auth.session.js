@@ -1,4 +1,19 @@
-const AUTH_SESSION_STORAGE_KEY = 'dealbazaar.auth-session';
+export const AUTH_SESSION_STORAGE_KEY = 'dealbazaar.auth-session';
+export const AUTH_SESSION_CHANGE_EVENT = 'dealbazaar:auth-session-change';
+
+function emitAuthSessionChange(session) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent(AUTH_SESSION_CHANGE_EVENT, {
+        detail: session || null,
+      })
+    );
+  } catch {}
+}
 
 function isUsableAuthSession(value) {
   return Boolean(
@@ -38,6 +53,7 @@ export function persistAuthSession(session) {
 
   try {
     window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session));
+    emitAuthSessionChange(session);
   } catch {}
 }
 
@@ -48,5 +64,6 @@ export function clearAuthSession() {
 
   try {
     window.localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+    emitAuthSessionChange(null);
   } catch {}
 }

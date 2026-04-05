@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
+import { AuthSessionSync } from './features/auth/AuthSessionSync';
 import { AppErrorBoundary } from './layout/AppErrorBoundary';
 import './styles/index.css';
 import './styles/commerce.css';
@@ -22,6 +23,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <AuthSessionSync />
         <AppErrorBoundary>
           <App />
         </AppErrorBoundary>

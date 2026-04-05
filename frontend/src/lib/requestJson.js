@@ -1,4 +1,4 @@
-import { readAuthSession } from '../features/auth/auth.session';
+import { clearAuthSession, readAuthSession } from '../features/auth/auth.session';
 
 const API_BASE_URL = typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_API_URL || '').trim() : '';
 
@@ -139,6 +139,30 @@ function getErrorMessage(payload, rawText, response, contentType) {
   return 'Request failed';
 }
 
+function getPayloadMessage(payload) {
+  if (payload && typeof payload.message === 'string') {
+    return payload.message.trim();
+  }
+
+  return '';
+}
+
+function shouldClearSavedSession({ response, payload, session }) {
+  if (!session?.token || response?.status !== 401) {
+    return false;
+  }
+
+  const message = getPayloadMessage(payload);
+
+  return [
+    'Invalid token format',
+    'Not authorized, user no longer exists',
+    'Not authorized, token expired after password change',
+    'Not authorized, token failed',
+    'Not authorized, no token provided',
+  ].includes(message);
+}
+
 function shouldRetryWithAnotherCandidate({ response, payload, rawText, contentType, error }) {
   if (error) {
     return true;
@@ -201,6 +225,10 @@ export async function requestJson(path, options = {}) {
 
     if (shouldRetry) {
       continue;
+    }
+
+    if (shouldClearSavedSession({ response, payload, session })) {
+      clearAuthSession();
     }
 
     const error = new Error(getErrorMessage(payload, rawText, response, contentType));
