@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, KeyRound, LoaderCircle, Mail, UserRound } from 'lucide-react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { signupUser } from '../features/auth/auth.api';
+import { getDefaultAuthenticatedPath, getPostAuthPath } from '../features/auth/auth.redirects';
 import { clearAuthSession, persistAuthSession } from '../features/auth/auth.session';
 import '../styles/login.css';
 
@@ -18,7 +19,7 @@ export function SignupPage({ currentUser, hasSavedSession, isAuthLoading }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (currentUser) {
-    return <Navigate to="/deals" replace />;
+    return <Navigate to={getDefaultAuthenticatedPath(currentUser)} replace />;
   }
 
   const handleSubmit = async (event) => {
@@ -57,9 +58,10 @@ export function SignupPage({ currentUser, hasSavedSession, isAuthLoading }) {
       });
 
       persistAuthSession(session);
-
-      const nextPath =
-        typeof location.state?.from?.pathname === 'string' ? location.state.from.pathname : '/store';
+      const nextPath = getPostAuthPath(
+        session,
+        typeof location.state?.from?.pathname === 'string' ? location.state.from.pathname : '/store'
+      );
 
       navigate(nextPath, { replace: true });
     } catch (submissionError) {

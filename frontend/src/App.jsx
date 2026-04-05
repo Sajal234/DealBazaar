@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { useCurrentUserQuery } from './features/auth/auth.queries';
 import { readAuthSession } from './features/auth/auth.session';
 import { RequireAuth } from './features/auth/RequireAuth';
+import { RequireRole } from './features/auth/RequireRole';
 import { AppLayout } from './layout/AppLayout';
 import { AdminPage } from './pages/AdminPage';
 import { DealDetailPage } from './pages/DealDetailPage';
@@ -86,7 +87,9 @@ export function App() {
               hasSavedSession={hasSavedSession}
               isAuthLoading={isAuthLoading || isAuthFetching}
             >
-              <StorePage currentUser={currentUser} />
+              <RequireRole currentUser={currentUser} deny={['admin']}>
+                <StorePage currentUser={currentUser} />
+              </RequireRole>
             </RequireAuth>
           }
         />
@@ -98,7 +101,9 @@ export function App() {
               hasSavedSession={hasSavedSession}
               isAuthLoading={isAuthLoading || isAuthFetching}
             >
-              <AdminPage currentUser={currentUser} />
+              <RequireRole currentUser={currentUser} allow={['admin']}>
+                <AdminPage currentUser={currentUser} />
+              </RequireRole>
             </RequireAuth>
           }
         />
