@@ -201,6 +201,7 @@
   color: var(--text-soft);
   font-size: 0.8rem;
   line-height: 1.4;
+  cursor: pointer;
 }
 
 .catalog-chip__label {
@@ -210,6 +211,12 @@
 .catalog-chip__value {
   color: var(--text-main);
   font-weight: 600;
+}
+
+.catalog-chip__remove {
+  color: var(--text-soft);
+  font-size: 0.92rem;
+  line-height: 1;
 }
 
 .deal-grid {

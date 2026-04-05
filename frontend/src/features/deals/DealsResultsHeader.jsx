@@ -1,20 +1,29 @@
 import { MapPin, Search } from 'lucide-react';
 
-function FilterChip({ icon: Icon, label, value }) {
+function FilterChip({ icon: Icon, label, value, onClear }) {
   if (!value) {
     return null;
   }
 
   return (
-    <span className="catalog-chip">
+    <button type="button" className="catalog-chip" onClick={onClear}>
       <Icon size={14} />
       <span className="catalog-chip__label">{label}:</span>
       <span className="catalog-chip__value">{value}</span>
-    </span>
+      <span className="catalog-chip__remove" aria-hidden="true">
+        ×
+      </span>
+    </button>
   );
 }
 
-export function DealsResultsHeader({ filters, hasActiveFilters, pagination, dealsCount }) {
+export function DealsResultsHeader({
+  filters,
+  hasActiveFilters,
+  pagination,
+  dealsCount,
+  onClearFilter,
+}) {
   const total = pagination?.total ?? dealsCount;
   const page = pagination?.page ?? 1;
   const pages = pagination?.pages ?? 1;
@@ -34,8 +43,18 @@ export function DealsResultsHeader({ filters, hasActiveFilters, pagination, deal
 
       {hasActiveFilters ? (
         <div className="catalog-resultsbar__filters">
-          <FilterChip icon={Search} label="Search" value={filters.search} />
-          <FilterChip icon={MapPin} label="City" value={filters.city} />
+          <FilterChip
+            icon={Search}
+            label="Search"
+            value={filters.search}
+            onClear={() => onClearFilter('search')}
+          />
+          <FilterChip
+            icon={MapPin}
+            label="City"
+            value={filters.city}
+            onClear={() => onClearFilter('city')}
+          />
         </div>
       ) : null}
     </section>

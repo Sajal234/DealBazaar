@@ -4,6 +4,8 @@ export function DealsFiltersPanel({
   draftFilters,
   setDraftFilters,
   hasActiveFilters,
+  activeFilterCount,
+  hasDraftChanges,
   onSubmit,
   onReset,
 }) {
@@ -11,7 +13,9 @@ export function DealsFiltersPanel({
     <aside className="catalog-sidebar">
       <form className="catalog-filter-panel" onSubmit={onSubmit} aria-label="Deals filters">
         <div className="catalog-filter-panel__header">
-          <p className="catalog-filter-panel__eyebrow">Filters</p>
+          <p className="catalog-filter-panel__eyebrow">
+            Filters{activeFilterCount > 0 ? ` • ${activeFilterCount} active` : ''}
+          </p>
           <h2>Refine your results</h2>
         </div>
 
@@ -56,10 +60,10 @@ export function DealsFiltersPanel({
         </label>
 
         <div className="catalog-filter-panel__actions">
-          <button type="submit" className="button button--primary">
+          <button type="submit" className="button button--primary" disabled={!hasDraftChanges}>
             Apply filters
           </button>
-          {hasActiveFilters ? (
+          {hasActiveFilters || hasDraftChanges ? (
             <button type="button" className="button button--secondary" onClick={onReset}>
               Clear filters
             </button>

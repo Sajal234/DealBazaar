@@ -6,6 +6,11 @@ import { DealsFiltersPanel } from '../features/deals/DealsFiltersPanel';
 import { DealsPagination } from '../features/deals/DealsPagination';
 import { DealsResultsHeader } from '../features/deals/DealsResultsHeader';
 import {
+  areDealsFiltersEqual,
+  countActiveDealsFilters,
+  removeDealsFilter,
+} from '../features/deals/deals.filterState';
+import {
   createDealsSearchParams,
   hasDealsFilters,
   readDealsFilters,
@@ -18,6 +23,8 @@ export function DealsPage() {
   const filters = useMemo(() => readDealsFilters(searchParams), [searchParams]);
   const [draftFilters, setDraftFilters] = useState(filters);
   const hasActiveFilters = hasDealsFilters(filters);
+  const activeFilterCount = countActiveDealsFilters(filters);
+  const hasDraftChanges = !areDealsFiltersEqual(draftFilters, filters);
   const { data, dataUpdatedAt, isLoading, error, refetch, isRefetching, isFetching } = useDealsQuery({
     limit: 12,
     page: filters.page,
@@ -68,6 +75,13 @@ export function DealsPage() {
     setSearchParams(createDealsSearchParams(clearedFilters));
   };
 
+  const handleClearFilter = (key) => {
+    const nextFilters = removeDealsFilter(filters, key);
+
+    setDraftFilters(nextFilters);
+    setSearchParams(createDealsSearchParams(nextFilters));
+  };
+
   const handlePageChange = (nextPage) => {
     const safePage = getSafeDealsPage(nextPage, totalPages);
 
@@ -98,6 +112,8 @@ export function DealsPage() {
           draftFilters={draftFilters}
           setDraftFilters={setDraftFilters}
           hasActiveFilters={hasActiveFilters}
+          activeFilterCount={activeFilterCount}
+          hasDraftChanges={hasDraftChanges}
           onSubmit={handleSubmit}
           onReset={handleReset}
         />
@@ -108,6 +124,7 @@ export function DealsPage() {
             hasActiveFilters={hasActiveFilters}
             pagination={pagination}
             dealsCount={deals.length}
+            onClearFilter={handleClearFilter}
           />
 
           {isLoading ? (
