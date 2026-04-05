@@ -1,7 +1,17 @@
-import { ArrowRight, Clock3, MapPin, Sparkles, Star } from 'lucide-react';
+import { AlertCircle, ArrowRight, LoaderCircle, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { DealCard } from '../features/deals/DealCard';
+import { useDealsQuery } from '../features/deals/deals.queries';
+import { HomeVerifiedStoresList } from '../features/home/HomeVerifiedStoresList';
+import { useStoresQuery } from '../features/store/store.queries';
 
 export function HomePage() {
+  const dealsQuery = useDealsQuery({ limit: 3 });
+  const storesQuery = useStoresQuery({ limit: 4 });
+
+  const deals = dealsQuery.data?.items || [];
+  const stores = storesQuery.data?.items || [];
+
   return (
     <main className="home-storefront">
       <section className="home-hero">
@@ -54,115 +64,128 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="home-deals" aria-label="Marketplace preview">
-        <div className="home-featured__header">
-          <div>
-            <p className="preview-shell__eyebrow">Marketplace preview</p>
-            <h2>Popular deals right now</h2>
+      <section className="home-market" aria-label="Live marketplace">
+        <div className="home-market__main">
+          <div className="home-section__header">
+            <div>
+              <p className="preview-shell__eyebrow">Live deals</p>
+              <h2>Fresh approved offers from verified stores</h2>
+            </div>
+            <Link to="/deals" className="home-featured__link">
+              Browse all deals
+              <ArrowRight size={16} />
+            </Link>
           </div>
-          <Link to="/deals" className="home-featured__link">
-            Browse all deals
-            <ArrowRight size={16} />
-          </Link>
+
+          {dealsQuery.isLoading ? (
+            <section className="state-card" aria-live="polite">
+              <LoaderCircle size={18} className="state-card__spinner" />
+              <div>
+                <h2>Loading live deals</h2>
+                <p>Fetching the latest approved offers from the marketplace.</p>
+              </div>
+            </section>
+          ) : null}
+
+          {!dealsQuery.isLoading && dealsQuery.error ? (
+            <section className="state-card state-card--error" aria-live="polite">
+              <AlertCircle size={18} />
+              <div>
+                <h2>Could not load live deals</h2>
+                <p>{dealsQuery.error.message || 'Unable to load deals right now.'}</p>
+                <div className="state-card__actions">
+                  <button
+                    type="button"
+                    className="button button--secondary state-card__retry"
+                    onClick={() => {
+                      dealsQuery.refetch();
+                    }}
+                    disabled={dealsQuery.isRefetching}
+                  >
+                    {dealsQuery.isRefetching ? 'Retrying...' : 'Try again'}
+                  </button>
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {!dealsQuery.isLoading && !dealsQuery.error && deals.length === 0 ? (
+            <section className="state-card" aria-live="polite">
+              <AlertCircle size={18} />
+              <div>
+                <h2>No live deals yet</h2>
+                <p>Approved offers will appear here as the marketplace fills out.</p>
+              </div>
+            </section>
+          ) : null}
+
+          {!dealsQuery.isLoading && !dealsQuery.error && deals.length > 0 ? (
+            <div className="deal-grid home-market__deals">
+              {deals.map((deal) => (
+                <DealCard key={deal.id} deal={deal} previewTimestamp={dealsQuery.dataUpdatedAt} />
+              ))}
+            </div>
+          ) : null}
         </div>
 
-        <div className="home-featured__grid">
-          <article className="listing-card">
+        <aside className="home-market__sidebar">
+          <div className="home-section__header home-section__header--stacked">
             <div>
-              <p className="preview-shell__eyebrow">Featured</p>
-              <h3>Weekend flagship price drop</h3>
+              <p className="preview-shell__eyebrow">Verified stores</p>
+              <h2>Browse real local sellers before you call</h2>
             </div>
-            <div className="listing-card__topline">
-              <span className="listing-card__badge">Verified store</span>
-              <span className="listing-card__price">From ₹18,999</span>
-            </div>
-            <p className="listing-card__store">Orbit Digital</p>
-            <div className="listing-card__meta">
-              <span>
-                <MapPin size={14} />
-                Koramangala
-              </span>
-              <span>
-                <Star size={14} />
-                4.8 rating
-              </span>
-            </div>
-            <div className="listing-card__footer">
-              <span>
-                <Clock3 size={14} />
-                Ends tonight
-              </span>
-              <span className="listing-card__action" aria-hidden="true">
-                View deal
-              </span>
-            </div>
-          </article>
+            <Link to="/stores" className="home-featured__link">
+              Browse stores
+              <ArrowRight size={16} />
+            </Link>
+          </div>
 
-          <article className="listing-card listing-card--muted">
-            <div>
-              <p className="preview-shell__eyebrow">Latest</p>
-              <h3>Accessory bundle with pickup today</h3>
-            </div>
-            <div className="listing-card__topline">
-              <span className="listing-card__badge">Moderated today</span>
-              <span className="listing-card__price">From ₹2,499</span>
-            </div>
-            <p className="listing-card__store">North Avenue Mobiles</p>
-            <div className="listing-card__meta">
-              <span>
-                <MapPin size={14} />
-                Indiranagar
-              </span>
-              <span>
-                <Star size={14} />
-                Trusted seller
-              </span>
-            </div>
-            <div className="listing-card__footer">
-              <span>
-                <Clock3 size={14} />
-                Freshly listed
-              </span>
-              <span
-                className="listing-card__action listing-card__action--quiet"
-                aria-hidden="true"
-              >
-                Compare
-              </span>
-            </div>
-          </article>
+          {storesQuery.isLoading ? (
+            <section className="state-card" aria-live="polite">
+              <LoaderCircle size={18} className="state-card__spinner" />
+              <div>
+                <h2>Loading stores</h2>
+                <p>Pulling in verified retailers from the marketplace.</p>
+              </div>
+            </section>
+          ) : null}
 
-          <article className="listing-card">
-            <div>
-              <p className="preview-shell__eyebrow">Popular</p>
-              <h3>Same-day pickup on store clearance stock</h3>
-            </div>
-            <div className="listing-card__topline">
-              <span className="listing-card__badge">Trusted seller</span>
-              <span className="listing-card__price">From ₹7,999</span>
-            </div>
-            <p className="listing-card__store">Pixel Point</p>
-            <div className="listing-card__meta">
-              <span>
-                <MapPin size={14} />
-                HSR Layout
-              </span>
-              <span>
-                <Star size={14} />
-                4.7 rating
-              </span>
-            </div>
-            <div className="listing-card__footer">
-              <span>
-                <Clock3 size={14} />
-                Ends in 8h
-              </span>
-              <span className="listing-card__action" aria-hidden="true">
-                View deal
-              </span>
-            </div>
-          </article>
-        </div>
+          {!storesQuery.isLoading && storesQuery.error ? (
+            <section className="state-card state-card--error" aria-live="polite">
+              <AlertCircle size={18} />
+              <div>
+                <h2>Could not load stores</h2>
+                <p>{storesQuery.error.message || 'Unable to load stores right now.'}</p>
+                <div className="state-card__actions">
+                  <button
+                    type="button"
+                    className="button button--secondary state-card__retry"
+                    onClick={() => {
+                      storesQuery.refetch();
+                    }}
+                    disabled={storesQuery.isRefetching}
+                  >
+                    {storesQuery.isRefetching ? 'Retrying...' : 'Try again'}
+                  </button>
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {!storesQuery.isLoading && !storesQuery.error && stores.length === 0 ? (
+            <section className="state-card" aria-live="polite">
+              <AlertCircle size={18} />
+              <div>
+                <h2>No verified stores yet</h2>
+                <p>Approved stores will show up here as seller applications are reviewed.</p>
+              </div>
+            </section>
+          ) : null}
+
+          {!storesQuery.isLoading && !storesQuery.error && stores.length > 0 ? (
+            <HomeVerifiedStoresList stores={stores} />
+          ) : null}
+        </aside>
       </section>
     </main>
   );
