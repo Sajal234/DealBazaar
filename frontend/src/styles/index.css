@@ -517,6 +517,10 @@ body::before {
   font-weight: 600;
 }
 
+.listing-card__badge--muted {
+  border: 1px solid rgba(134, 99, 59, 0.16);
+}
+
 .listing-card__price {
   font-size: 0.9rem;
   font-weight: 600;
@@ -996,6 +1000,16 @@ body::before {
   color: var(--text-soft);
   font-size: 0.84rem;
   font-weight: 500;
+}
+
+.deal-detail__status--notice {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(134, 99, 59, 0.16);
+  border-radius: 14px;
+  background: rgba(134, 99, 59, 0.08);
+  color: var(--accent-strong);
+  line-height: 1.55;
 }
 
 .deal-detail__header h1 {

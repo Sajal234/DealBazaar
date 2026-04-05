@@ -7,6 +7,10 @@ import { StoreRatingPanel } from '../features/store/StoreRatingPanel';
 import { useStoreDetailQuery } from '../features/store/store.queries';
 
 function ContactAction({ deal }) {
+  if (deal.status !== 'active') {
+    return <span className="button button--secondary button--disabled">Contact is available after approval</span>;
+  }
+
   const phone = deal.store?.phone ? String(deal.store.phone).trim() : '';
 
   if (!phone) {
@@ -26,6 +30,29 @@ function ContactAction({ deal }) {
     </a>
   );
 }
+
+const dealStatusCopy = {
+  active: {
+    badge: 'Verified deal',
+    metaLabel: 'Live now',
+    banner: '',
+  },
+  pending: {
+    badge: 'Pending deal',
+    metaLabel: 'Awaiting review',
+    banner: 'You are viewing a private seller preview. This deal is still pending admin review.',
+  },
+  rejected: {
+    badge: 'Rejected deal',
+    metaLabel: 'Needs changes',
+    banner: 'This deal is not visible to shoppers. Update it in your seller workspace and resubmit when ready.',
+  },
+  expired: {
+    badge: 'Expired deal',
+    metaLabel: 'Expired',
+    banner: 'This deal has expired and is no longer visible to shoppers. You can resubmit it from your seller workspace.',
+  },
+};
 
 export function DealDetailPage({ currentUser }) {
   const { dealId } = useParams();
@@ -61,6 +88,7 @@ export function DealDetailPage({ currentUser }) {
         address: '',
       }
     : null);
+  const statusCopy = dealStatusCopy[deal.status] || dealStatusCopy.pending;
 
   if (!hasValidDealId) {
     return (
@@ -144,13 +172,17 @@ export function DealDetailPage({ currentUser }) {
 
         <div className="deal-detail__content">
           <div className="deal-detail__topline">
-            <span className="listing-card__badge">Verified deal</span>
+            <span className={`listing-card__badge listing-card__badge--${deal.status === 'active' ? 'active' : 'muted'}`}>
+              {statusCopy.badge}
+            </span>
             <span className="deal-detail__price">{deal.priceLabel}</span>
           </div>
 
           {isPlaceholderData ? (
             <p className="deal-detail__status">Refreshing live details...</p>
           ) : null}
+
+          {statusCopy.banner ? <p className="deal-detail__status deal-detail__status--notice">{statusCopy.banner}</p> : null}
 
           <div className="deal-detail__header">
             <h1>{deal.title}</h1>
@@ -164,7 +196,7 @@ export function DealDetailPage({ currentUser }) {
             </span>
             <span>
               <Clock3 size={16} />
-              Live now
+              {statusCopy.metaLabel}
             </span>
             {store?.rating ? (
               <span>

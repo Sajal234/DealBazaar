@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, BarChart3, Clock3, Eye, LoaderCircle, PencilLine, RotateCcw } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { DealsPagination } from '../deals/DealsPagination';
 import { StoreDealArchiveControl } from './StoreDealArchiveControl';
 import { StoreDealComposer } from './StoreDealComposer';
@@ -207,6 +208,10 @@ export function StoreDealsSection({ defaultCityLabel }) {
                 </div>
 
                 <div className="owner-deal-card__actions">
+                  <Link to={`/deals/${deal.id}`} className="button button--ghost">
+                    Preview
+                  </Link>
+
                   <button
                     type="button"
                     className="button button--secondary"

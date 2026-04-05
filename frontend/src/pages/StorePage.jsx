@@ -180,6 +180,11 @@ export function StorePage({ currentUser }) {
             </dl>
 
             <div className="store-card__actions">
+              {store.status === 'approved' ? (
+                <Link to={`/stores/${store.id}`} className="button button--secondary">
+                  View public store page
+                </Link>
+              ) : null}
               <Link to="/deals" className="button button--primary">
                 Browse live deals
               </Link>
