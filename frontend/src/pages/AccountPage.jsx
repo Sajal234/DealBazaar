@@ -1,4 +1,4 @@
-import { BadgeCheck, LogIn, Mail, ShieldCheck, Store as StoreIcon, UserRound } from 'lucide-react';
+import { BadgeCheck, Mail, ShieldCheck, UserRound } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { adminKeys } from '../features/admin/admin.queries';
@@ -12,8 +12,8 @@ import '../styles/account.css';
 const roleContent = {
   admin: {
     label: 'Administrator',
-    title: 'You have moderation access.',
-    description: 'Review pending stores and deals, and keep marketplace quality high.',
+    title: 'Moderation access is active.',
+    description: 'Review pending stores and deals from one place.',
     primaryAction: {
       href: '/admin',
       label: 'Open admin workspace',
@@ -21,17 +21,17 @@ const roleContent = {
   },
   store: {
     label: 'Verified seller',
-    title: 'You can manage your storefront and listings.',
-    description: 'Access store tools, manage current deals, and publish new local offers.',
+    title: 'Your seller tools are ready.',
+    description: 'Manage your storefront, current deals, and new submissions.',
     primaryAction: {
       href: '/store',
-      label: 'Open seller workspace',
+      label: 'Open my store',
     },
   },
   user: {
     label: 'Marketplace shopper',
-    title: 'Your account is ready for browsing and rating.',
-    description: 'Explore verified deals, rate stores, and upgrade to a seller workflow when needed.',
+    title: 'Your account is ready to browse.',
+    description: 'Explore deals, rate stores, and apply for seller access when needed.',
     primaryAction: {
       href: '/deals',
       label: 'Browse verified deals',
@@ -39,11 +39,31 @@ const roleContent = {
   },
 };
 
+function getAccountBadgeText(user) {
+  const source = typeof user?.name === 'string' && user.name.trim() ? user.name.trim() : user?.email || '';
+
+  if (!source) {
+    return 'DB';
+  }
+
+  const parts = source
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  return source.replace(/[^a-z0-9]/gi, '').slice(0, 2).toUpperCase() || 'DB';
+}
+
 export function AccountPage({ currentUser }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const roleKey = currentUser?.role === 'admin' ? 'admin' : currentUser?.role === 'store' ? 'store' : 'user';
   const roleInfo = roleContent[roleKey];
+  const showDealsShortcut = roleInfo.primaryAction.href !== '/deals';
 
   const handleSignOut = () => {
     clearAuthSession();
@@ -59,125 +79,82 @@ export function AccountPage({ currentUser }) {
       <section className="page-header">
         <div>
           <p className="page-header__eyebrow">Account</p>
-          <h1>Your DealBazaar profile</h1>
-          <p>Keep track of the account you are using, your marketplace access level, and the next action available to you.</p>
+          <h1>Your DealBazaar account</h1>
+          <p>View your account details, access level, and the one place you should go next.</p>
         </div>
       </section>
 
       <div className="account-layout">
         <section className="account-card account-card--primary">
           <div className="account-card__header">
-            <div>
-              <p className="account-card__eyebrow">Profile</p>
-              <h2>{currentUser?.name || 'DealBazaar member'}</h2>
+            <div className="account-summary">
+              <div className="account-summary__badge" aria-hidden="true">
+                {getAccountBadgeText(currentUser)}
+              </div>
+              <div>
+                <p className="account-card__eyebrow">Profile</p>
+                <h2>{currentUser?.name || 'DealBazaar member'}</h2>
+                <p className="account-card__description">{currentUser?.email || 'Not available'}</p>
+              </div>
             </div>
             <span className="account-role-chip">{roleInfo.label}</span>
           </div>
 
-          <div className="account-facts" aria-label="Account details">
-            <div>
-              <span className="account-facts__label">
-                <UserRound size={16} />
-                Name
-              </span>
-              <strong>{currentUser?.name || 'Not provided'}</strong>
-            </div>
-            <div>
-              <span className="account-facts__label">
-                <Mail size={16} />
-                Email
-              </span>
-              <strong>{currentUser?.email || 'Not available'}</strong>
-            </div>
-            <div>
-              <span className="account-facts__label">
-                <ShieldCheck size={16} />
-                Role
-              </span>
-              <strong>{roleInfo.label}</strong>
-            </div>
-            <div>
-              <span className="account-facts__label">
-                <BadgeCheck size={16} />
-                Session
-              </span>
-              <strong>Signed in</strong>
-            </div>
+          <div className="account-status">
+            <p className="account-card__eyebrow">Access level</p>
+            <h3>{roleInfo.title}</h3>
           </div>
-        </section>
-
-        <aside className="account-card account-card--aside">
-          <p className="account-card__eyebrow">Access level</p>
-          <h2>{roleInfo.title}</h2>
           <p className="account-card__description">{roleInfo.description}</p>
 
           <div className="account-card__actions">
             <Link to={roleInfo.primaryAction.href} className="button button--primary">
               {roleInfo.primaryAction.label}
             </Link>
-            <Link to="/deals" className="button button--secondary">
-              View live deals
-            </Link>
+            {showDealsShortcut ? (
+              <Link to="/deals" className="button button--secondary">
+                View live deals
+              </Link>
+            ) : null}
             <button type="button" className="button button--ghost" onClick={handleSignOut}>
               Sign out
             </button>
           </div>
+        </section>
+
+        <aside className="account-card account-card--details" aria-label="Account details">
+          <p className="account-card__eyebrow">Details</p>
+          <div className="account-detail-list">
+            <div className="account-detail-row">
+              <span className="account-detail-row__label">
+                <UserRound size={16} />
+                Name
+              </span>
+              <strong>{currentUser?.name || 'Not provided'}</strong>
+            </div>
+            <div className="account-detail-row">
+              <span className="account-detail-row__label">
+                <Mail size={16} />
+                Email
+              </span>
+              <strong>{currentUser?.email || 'Not available'}</strong>
+            </div>
+            <div className="account-detail-row">
+              <span className="account-detail-row__label">
+                <ShieldCheck size={16} />
+                Role
+              </span>
+              <strong>{roleInfo.label}</strong>
+            </div>
+            <div className="account-detail-row">
+              <span className="account-detail-row__label">
+                <BadgeCheck size={16} />
+                Session
+              </span>
+              <strong>Signed in</strong>
+            </div>
+          </div>
         </aside>
       </div>
-
-      <section className="account-grid" aria-label="Next actions">
-        <article className="account-card">
-          <div className="account-card__icon">
-            <LogIn size={18} />
-          </div>
-          <div>
-            <p className="account-card__eyebrow">Marketplace</p>
-            <h3>Stay active as a shopper</h3>
-            <p className="account-card__description">
-              Browse verified local offers, compare listings, and open deal details for contact actions.
-            </p>
-          </div>
-          <Link to="/deals" className="account-inline-link">
-            Go to deals
-          </Link>
-        </article>
-
-        <article className="account-card">
-          <div className="account-card__icon">
-            <StoreIcon size={18} />
-          </div>
-          <div>
-            <p className="account-card__eyebrow">Seller tools</p>
-            <h3>{roleKey === 'store' ? 'Manage your storefront' : 'Apply to become a seller'}</h3>
-            <p className="account-card__description">
-              {roleKey === 'store'
-                ? 'Open your store workspace to publish, update, and monitor current listings.'
-                : 'Create a store profile when you want verified local seller access.'}
-            </p>
-          </div>
-          <Link to="/store" className="account-inline-link">
-            {roleKey === 'store' ? 'Open store workspace' : 'Explore seller access'}
-          </Link>
-        </article>
-
-        {roleKey === 'admin' ? (
-          <article className="account-card">
-            <div className="account-card__icon">
-              <ShieldCheck size={18} />
-            </div>
-            <div>
-              <p className="account-card__eyebrow">Moderation</p>
-              <h3>Keep the marketplace verified</h3>
-              <p className="account-card__description">
-                Review pending stores and deals from one queue and apply approvals or rejections quickly.
-              </p>
-            </div>
-            <Link to="/admin" className="account-inline-link">
-              Open moderation queue
-            </Link>
-          </article>
-        ) : null}
-      </section>
 
       <AccountPasswordForm />
     </main>
