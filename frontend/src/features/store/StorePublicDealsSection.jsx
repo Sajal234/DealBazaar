@@ -29,10 +29,10 @@ export function StorePublicDealsSection({ storeId, storeName, cityLabel }) {
           <p>{total > 0 ? `${total} active offer${total === 1 ? '' : 's'} currently visible.` : 'No active offers are visible from this store right now.'}</p>
         </div>
         <Link
-          to={cityLabel ? `/deals?city=${encodeURIComponent(cityLabel)}` : '/deals'}
+          to={`/deals?storeId=${encodeURIComponent(storeId)}&store=${encodeURIComponent(storeName)}`}
           className="button button--secondary"
         >
-          Browse nearby deals
+          View all store deals
         </Link>
       </div>
 

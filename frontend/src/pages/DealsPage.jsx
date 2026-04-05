@@ -30,6 +30,7 @@ export function DealsPage() {
     page: filters.page,
     search: filters.search,
     city: filters.city,
+    storeId: filters.storeId,
   });
   const deals = data?.items || [];
   const pagination = data?.pagination || null;
@@ -52,11 +53,13 @@ export function DealsPage() {
       createDealsSearchParams({
         search: filters.search,
         city: filters.city,
+        storeId: filters.storeId,
+        storeName: filters.storeName,
         page: currentPage,
       }),
       { replace: true }
     );
-  }, [currentPage, filters.city, filters.page, filters.search, setSearchParams, shouldCanonicalizePage]);
+  }, [currentPage, filters.city, filters.page, filters.search, filters.storeId, filters.storeName, setSearchParams, shouldCanonicalizePage]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -69,7 +72,7 @@ export function DealsPage() {
   };
 
   const handleReset = () => {
-    const clearedFilters = { search: '', city: '', page: 1 };
+    const clearedFilters = { search: '', city: '', storeId: '', storeName: '', page: 1 };
 
     setDraftFilters(clearedFilters);
     setSearchParams(createDealsSearchParams(clearedFilters));
@@ -102,8 +105,12 @@ export function DealsPage() {
       <section className="page-header">
         <div>
           <p className="page-header__eyebrow">Marketplace</p>
-          <h1>Browse verified local deals.</h1>
-          <p>Search products, narrow by city, and move through the catalog the way shoppers expect.</p>
+          <h1>{filters.storeId ? `Browse deals from ${filters.storeName || 'this verified store'}.` : 'Browse verified local deals.'}</h1>
+          <p>
+            {filters.storeId
+              ? 'You are viewing a store-scoped catalog. Clear the store filter anytime to return to the full marketplace.'
+              : 'Search products, narrow by city, and move through the catalog the way shoppers expect.'}
+          </p>
         </div>
       </section>
 

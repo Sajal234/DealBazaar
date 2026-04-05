@@ -11,17 +11,32 @@ export function countActiveDealsFilters(filters) {
     count += 1;
   }
 
+  if (normalizeValue(filters?.storeId)) {
+    count += 1;
+  }
+
   return count;
 }
 
 export function areDealsFiltersEqual(left, right) {
   return (
     normalizeValue(left?.search) === normalizeValue(right?.search) &&
-    normalizeValue(left?.city) === normalizeValue(right?.city)
+    normalizeValue(left?.city) === normalizeValue(right?.city) &&
+    normalizeValue(left?.storeId) === normalizeValue(right?.storeId) &&
+    normalizeValue(left?.storeName) === normalizeValue(right?.storeName)
   );
 }
 
 export function removeDealsFilter(filters, key) {
+  if (key === 'store') {
+    return {
+      ...filters,
+      storeId: '',
+      storeName: '',
+      page: 1,
+    };
+  }
+
   return {
     ...filters,
     [key]: '',
