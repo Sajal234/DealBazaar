@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, BadgeCheck, Clock3, LoaderCircle, ShieldAlert, ShieldCheck, Store as StoreIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AdminDealMedia } from '../features/admin/AdminDealMedia';
 import { AdminStoreOwnerSummary } from '../features/admin/AdminStoreOwnerSummary';
 import { AdminStoreContextLinks } from '../features/admin/AdminStoreContextLinks';
+import { createAdminSearchParams, readAdminSearchParams } from '../features/admin/admin.searchParams';
 import { DealsPagination } from '../features/deals/DealsPagination';
 import {
   useDealModerationMutation,
@@ -22,14 +23,13 @@ const moderationCopy = {
 
 export function AdminPage({ currentUser }) {
   const isAdmin = currentUser?.role === 'admin';
-  const [storesPage, setStoresPage] = useState(1);
-  const [dealsPage, setDealsPage] = useState(1);
-  const [dealApprovalWindowHours, setDealApprovalWindowHours] = useState('48');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = readAdminSearchParams(searchParams);
   const [feedback, setFeedback] = useState('');
   const [activeAction, setActiveAction] = useState(null);
 
-  const storesQuery = usePendingStoresQuery({ enabled: isAdmin, page: storesPage, limit: 6 });
-  const dealsQuery = usePendingDealsQuery({ enabled: isAdmin, page: dealsPage, limit: 6 });
+  const storesQuery = usePendingStoresQuery({ enabled: isAdmin, page: filters.storesPage, limit: 6 });
+  const dealsQuery = usePendingDealsQuery({ enabled: isAdmin, page: filters.dealsPage, limit: 6 });
   const storeModerationMutation = useStoreModerationMutation();
   const dealModerationMutation = useDealModerationMutation();
 
@@ -39,20 +39,34 @@ export function AdminPage({ currentUser }) {
   const pendingDeals = dealsQuery.data?.items || [];
 
   useEffect(() => {
-    const safeStoresPage = Math.min(Math.max(1, storesPagination.page || storesPage), Math.max(1, storesPagination.pages || 1));
+    const safeStoresPage = Math.min(Math.max(1, storesPagination.page || filters.storesPage), Math.max(1, storesPagination.pages || 1));
 
-    if (safeStoresPage !== storesPage) {
-      setStoresPage(safeStoresPage);
+    if (safeStoresPage !== filters.storesPage) {
+      setSearchParams(
+        createAdminSearchParams({
+          storesPage: safeStoresPage,
+          dealsPage: filters.dealsPage,
+          hours: filters.hours,
+        }),
+        { replace: true }
+      );
     }
-  }, [storesPage, storesPagination.page, storesPagination.pages]);
+  }, [filters.dealsPage, filters.hours, filters.storesPage, setSearchParams, storesPagination.page, storesPagination.pages]);
 
   useEffect(() => {
-    const safeDealsPage = Math.min(Math.max(1, dealsPagination.page || dealsPage), Math.max(1, dealsPagination.pages || 1));
+    const safeDealsPage = Math.min(Math.max(1, dealsPagination.page || filters.dealsPage), Math.max(1, dealsPagination.pages || 1));
 
-    if (safeDealsPage !== dealsPage) {
-      setDealsPage(safeDealsPage);
+    if (safeDealsPage !== filters.dealsPage) {
+      setSearchParams(
+        createAdminSearchParams({
+          storesPage: filters.storesPage,
+          dealsPage: safeDealsPage,
+          hours: filters.hours,
+        }),
+        { replace: true }
+      );
     }
-  }, [dealsPage, dealsPagination.page, dealsPagination.pages]);
+  }, [dealsPagination.page, dealsPagination.pages, filters.dealsPage, filters.hours, filters.storesPage, setSearchParams]);
 
   const handleStoreModeration = async (storeId, status) => {
     setActiveAction({ type: 'store', targetId: storeId, status });
@@ -76,7 +90,7 @@ export function AdminPage({ currentUser }) {
       const result = await dealModerationMutation.mutateAsync({
         dealId,
         status,
-        hoursValid: Number(dealApprovalWindowHours) || 48,
+        hoursValid: Number(filters.hours) || 48,
       });
       setFeedback(result.message);
     } catch (error) {
@@ -132,7 +146,7 @@ export function AdminPage({ currentUser }) {
         </article>
         <article className="admin-overview__card">
           <span className="admin-overview__label">Deal approval window</span>
-          <strong>{dealApprovalWindowHours} hours</strong>
+          <strong>{filters.hours} hours</strong>
         </article>
       </section>
 
@@ -257,7 +271,13 @@ export function AdminPage({ currentUser }) {
                 const safePage = Math.min(Math.max(1, nextPage), Math.max(1, storesPagination.pages || 1));
 
                 if (safePage !== storesPagination.page) {
-                  setStoresPage(safePage);
+                  setSearchParams(
+                    createAdminSearchParams({
+                      storesPage: safePage,
+                      dealsPage: filters.dealsPage,
+                      hours: filters.hours,
+                    })
+                  );
                 }
               }}
               isDisabled={storesQuery.isFetching}
@@ -276,9 +296,15 @@ export function AdminPage({ currentUser }) {
             <label className="admin-window-field">
               <span className="admin-window-field__label">Active for</span>
               <select
-                value={dealApprovalWindowHours}
+                value={filters.hours}
                 onChange={(event) => {
-                  setDealApprovalWindowHours(event.target.value);
+                  setSearchParams(
+                    createAdminSearchParams({
+                      storesPage: filters.storesPage,
+                      dealsPage: filters.dealsPage,
+                      hours: event.target.value,
+                    })
+                  );
                 }}
               >
                 <option value="24">24h</option>
@@ -385,7 +411,7 @@ export function AdminPage({ currentUser }) {
                         disabled={isApproving || isRejecting}
                       >
                         <BadgeCheck size={16} />
-                        {isApproving ? 'Approving...' : `${moderationCopy.approveDeal} (${dealApprovalWindowHours}h)`}
+                        {isApproving ? 'Approving...' : `${moderationCopy.approveDeal} (${filters.hours}h)`}
                       </button>
                       <button
                         type="button"
@@ -413,7 +439,13 @@ export function AdminPage({ currentUser }) {
                 const safePage = Math.min(Math.max(1, nextPage), Math.max(1, dealsPagination.pages || 1));
 
                 if (safePage !== dealsPagination.page) {
-                  setDealsPage(safePage);
+                  setSearchParams(
+                    createAdminSearchParams({
+                      storesPage: filters.storesPage,
+                      dealsPage: safePage,
+                      hours: filters.hours,
+                    })
+                  );
                 }
               }}
               isDisabled={dealsQuery.isFetching}
