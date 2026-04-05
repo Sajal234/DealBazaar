@@ -33,6 +33,10 @@
   justify-self: end;
 }
 
+.topbar__desktop-only {
+  display: inline-flex;
+}
+
 .brand__mark {
   width: 42px;
   height: 42px;
@@ -100,6 +104,23 @@
   width: 42px;
   height: 42px;
   border-radius: 12px;
+}
+
+.topbar__menu-toggle,
+.mobile-nav {
+  display: none;
+}
+
+.topbar__menu-toggle {
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-main);
+  cursor: pointer;
 }
 
 .page-shell {
@@ -554,13 +575,92 @@
   }
 
   .topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand actions"
+      "mobile mobile";
+    align-items: center;
     margin-bottom: 18px;
     padding: 10px;
+    gap: 10px;
+  }
+
+  .topbar__brand {
+    grid-area: brand;
+    min-width: 0;
   }
 
   .topbar__actions {
-    flex-wrap: wrap;
+    grid-area: actions;
+    flex-direction: row;
+    align-items: center;
+    justify-self: end;
+    justify-content: flex-end;
     gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .topbar__desktop-only {
+    display: none;
+  }
+
+  .topbar__menu-toggle {
+    display: inline-flex;
+  }
+
+  .theme-toggle {
+    width: 38px;
+    height: 38px;
+  }
+
+  .site-nav {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: none;
+    grid-area: mobile;
+    gap: 12px;
+    padding-top: 6px;
+  }
+
+  .mobile-nav--open {
+    display: grid;
+  }
+
+  .mobile-nav__links {
+    display: grid;
+    gap: 8px;
+  }
+
+  .mobile-nav__link {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1px solid var(--stroke);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text-soft);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .mobile-nav__link--active {
+    background: var(--surface-strong);
+    color: var(--text-main);
+  }
+
+  .mobile-nav__actions {
+    display: grid;
+    gap: 8px;
+  }
+
+  .mobile-nav__actions .button,
+  .mobile-nav__actions .topbar__account {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
   }
 
   .home-storefront {
