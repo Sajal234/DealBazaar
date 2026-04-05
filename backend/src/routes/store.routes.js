@@ -1,6 +1,13 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { applyForStore, getStores, getMyStore, getStoreById, submitStoreRating } from '../controllers/store.controller.js';
+import {
+  applyForStore,
+  getStores,
+  getMyStore,
+  getStoreById,
+  resubmitStoreApplication,
+  submitStoreRating,
+} from '../controllers/store.controller.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
 import { publicRateLimiter, storeRatingRateLimiter, storeWriteRateLimiter } from '../middleware/rateLimit.js';
 
@@ -37,6 +44,27 @@ router.get('/', publicRateLimiter, getStores);
 // @desc    Get the authenticated user's store
 // @access  Private
 router.get('/me', protect, getMyStore);
+
+// @route   PATCH /api/stores/me
+// @desc    Update and resubmit a rejected store application
+// @access  Private
+router.patch(
+  '/me',
+  protect,
+  storeWriteRateLimiter,
+  [
+    body('name', 'Store name is strictly required').trim().notEmpty(),
+    body('address', 'Physical address is required').trim().notEmpty(),
+    body('state', 'State is required').trim().notEmpty(),
+    body('city', 'City is required').trim().notEmpty(),
+    body('phone', 'A valid contact phone number is required')
+      .trim()
+      .notEmpty()
+      .matches(/^[0-9\-\+\s\(\)]+$/)
+      .withMessage('Phone contains invalid characters'),
+  ],
+  resubmitStoreApplication
+);
 
 // @route   POST /api/stores/:id/ratings
 // @desc    Create or update the authenticated user's rating for a store

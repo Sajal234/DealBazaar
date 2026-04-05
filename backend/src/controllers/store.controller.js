@@ -3,6 +3,14 @@ import Store from '../models/Store.js';
 import StoreRating from '../models/StoreRating.js';
 import { serializeStore } from '../utils/serializers.js';
 
+const normalizeStoreInput = (body = {}) => ({
+  name: String(body.name || '').trim(),
+  address: String(body.address || '').trim(),
+  state: String(body.state || '').toLowerCase().trim(),
+  city: String(body.city || '').toLowerCase().trim(),
+  phone: String(body.phone || '').replace(/\D/g, ''),
+});
+
 const syncStoreRatingAggregate = async (storeId) => {
   // Recompute from source-of-truth ratings to avoid aggregate drift under concurrent writes.
   const [summary] = await StoreRating.aggregate([
@@ -52,8 +60,7 @@ export const applyForStore = async (req, res) => {
       });
     }
 
-    const { name, address, state, city } = req.body;
-    const phone = (req.body.phone || '').replace(/\D/g, ''); 
+    const { name, address, state, city, phone } = normalizeStoreInput(req.body);
     if (phone.length !== 10) {
       return res.status(400).json({
         success: false,
@@ -83,6 +90,75 @@ export const applyForStore = async (req, res) => {
     }
     console.error('[Store Application Error]', error);
     return res.status(500).json({ success: false, message: 'Server error during store registration' });
+  }
+};
+
+// @desc    Update and resubmit a rejected store application
+// @route   PATCH /api/stores/me
+// @access  Private
+export const resubmitStoreApplication = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  try {
+    const existingStore = await Store.findOne({ ownerId: req.user._id });
+
+    if (!existingStore) {
+      return res.status(404).json({ success: false, message: 'No store found for this account' });
+    }
+
+    if (existingStore.status !== 'rejected') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only rejected store applications can be resubmitted',
+      });
+    }
+
+    const { name, address, state, city, phone } = normalizeStoreInput(req.body);
+
+    if (phone.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number must be exactly 10 digits',
+      });
+    }
+
+    const store = await Store.findOneAndUpdate(
+      { _id: existingStore._id, status: 'rejected' },
+      {
+        $set: {
+          name,
+          address,
+          state,
+          city,
+          phone,
+          status: 'pending',
+          isVerified: false,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!store) {
+      return res.status(409).json({
+        success: false,
+        message: 'Store status changed before resubmission could be completed',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Store application updated and resubmitted for review.',
+      data: serializeStore(store),
+    });
+  } catch (error) {
+    console.error('[Store Resubmission Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error while resubmitting the store application' });
   }
 };
 

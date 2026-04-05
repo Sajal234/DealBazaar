@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dealsKeys } from '../deals/deals.keys';
-import { applyForStore, getMyStore, getStoreById, submitStoreRating } from './store.api';
+import { applyForStore, getMyStore, getStoreById, resubmitStoreApplication, submitStoreRating } from './store.api';
 
 export const storeKeys = {
   all: ['store'],
@@ -34,6 +34,17 @@ export function useApplyForStoreMutation() {
 
   return useMutation({
     mutationFn: applyForStore,
+    onSuccess: ({ store }) => {
+      queryClient.setQueryData(storeKeys.myStore(), store);
+    },
+  });
+}
+
+export function useResubmitStoreMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: resubmitStoreApplication,
     onSuccess: ({ store }) => {
       queryClient.setQueryData(storeKeys.myStore(), store);
     },

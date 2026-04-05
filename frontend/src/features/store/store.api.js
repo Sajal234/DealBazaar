@@ -28,6 +28,21 @@ export async function applyForStore(input) {
   };
 }
 
+export async function resubmitStoreApplication(input) {
+  const payload = await requestJson('/api/stores/me', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(input),
+  });
+
+  return {
+    store: mapStore(payload.data),
+    message: payload.message || 'Store application updated and resubmitted for review.',
+  };
+}
+
 export async function submitStoreRating({ storeId, rating }) {
   const payload = await requestJson(`/api/stores/${encodeURIComponent(storeId)}/ratings`, {
     method: 'POST',

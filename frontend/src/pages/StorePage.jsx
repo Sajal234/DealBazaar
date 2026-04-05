@@ -1,17 +1,10 @@
 import { useEffect, useState } from 'react';
-import { AlertCircle, BadgeCheck, Clock3, LoaderCircle, ShieldCheck, Store as StoreIcon } from 'lucide-react';
+import { AlertCircle, BadgeCheck, Clock3, LoaderCircle, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { StoreApplicationForm } from '../features/store/StoreApplicationForm';
 import { StoreDealsSection } from '../features/store/StoreDealsSection';
-import { useApplyForStoreMutation, useMyStoreQuery } from '../features/store/store.queries';
+import { useApplyForStoreMutation, useMyStoreQuery, useResubmitStoreMutation } from '../features/store/store.queries';
 import '../styles/store.css';
-
-const initialForm = {
-  name: '',
-  address: '',
-  state: '',
-  city: '',
-  phone: '',
-};
 
 const storeStatusCopy = {
   pending: {
@@ -27,13 +20,12 @@ const storeStatusCopy = {
   rejected: {
     label: 'Needs updates',
     title: 'Your store needs changes before approval.',
-    description: 'Review the details below and submit an updated application after the required fixes.',
+    description: 'Review the details below, update what is inaccurate, and send the application back for review.',
   },
 };
 
 export function StorePage({ currentUser }) {
-  const [form, setForm] = useState(initialForm);
-  const [formError, setFormError] = useState('');
+  const [applicationFeedback, setApplicationFeedback] = useState('');
   const {
     data: store,
     error,
@@ -42,42 +34,35 @@ export function StorePage({ currentUser }) {
     isRefetching,
   } = useMyStoreQuery({ enabled: Boolean(currentUser) && currentUser.role !== 'admin' });
   const applyMutation = useApplyForStoreMutation();
+  const resubmitMutation = useResubmitStoreMutation();
   const hasNoStore = error?.status === 404;
   const isAdmin = currentUser?.role === 'admin';
 
   useEffect(() => {
-    if (!applyMutation.isSuccess) {
-      return;
+    if (applyMutation.isSuccess) {
+      setApplicationFeedback(applyMutation.data?.message || 'Store application submitted successfully.');
     }
+  }, [applyMutation.data, applyMutation.isSuccess]);
 
-    setForm(initialForm);
-  }, [applyMutation.isSuccess]);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    const normalizedForm = {
-      name: form.name.trim(),
-      address: form.address.trim(),
-      state: form.state.trim(),
-      city: form.city.trim(),
-      phone: form.phone.trim(),
-    };
-
-    if (!normalizedForm.name || !normalizedForm.address || !normalizedForm.state || !normalizedForm.city || !normalizedForm.phone) {
-      setFormError('Fill in every store field before submitting your application.');
-      return;
+  useEffect(() => {
+    if (resubmitMutation.isSuccess) {
+      setApplicationFeedback(resubmitMutation.data?.message || 'Store application updated and resubmitted for review.');
     }
+  }, [resubmitMutation.data, resubmitMutation.isSuccess]);
 
-    if (normalizedForm.phone.replace(/\D/g, '').length !== 10) {
-      setFormError('Enter a valid 10-digit phone number for the store.');
-      return;
-    }
-
-    setFormError('');
+  const handleApply = async (normalizedForm) => {
+    setApplicationFeedback('');
 
     try {
       await applyMutation.mutateAsync(normalizedForm);
+    } catch {}
+  };
+
+  const handleResubmit = async (normalizedForm) => {
+    setApplicationFeedback('');
+
+    try {
+      await resubmitMutation.mutateAsync(normalizedForm);
     } catch {}
   };
 
@@ -145,6 +130,13 @@ export function StorePage({ currentUser }) {
 
   if (store) {
     const statusContent = storeStatusCopy[store.status] || storeStatusCopy.pending;
+    const rejectedStoreInitialValues = {
+      name: store.name,
+      address: store.address,
+      state: store.stateValue || store.stateLabel,
+      city: store.cityValue || store.cityLabel,
+      phone: store.phone,
+    };
 
     return (
       <main className="page-shell store-page">
@@ -220,11 +212,22 @@ export function StorePage({ currentUser }) {
               <ul>
                 <li>Approved stores can publish and manage deals.</li>
                 <li>Pending stores stay private until moderation is complete.</li>
-                <li>Rejected stores will be able to resubmit after fixes.</li>
+                <li>Rejected stores can now fix details and resubmit for review.</li>
               </ul>
             </div>
           </aside>
         </section>
+
+        {store.status === 'rejected' ? (
+          <StoreApplicationForm
+            mode="resubmit"
+            initialValues={rejectedStoreInitialValues}
+            isSubmitting={resubmitMutation.isPending}
+            errorMessage={resubmitMutation.isError ? resubmitMutation.error?.message : ''}
+            successMessage={resubmitMutation.isSuccess ? applicationFeedback : ''}
+            onSubmit={handleResubmit}
+          />
+        ) : null}
 
         {store.status === 'approved' ? <StoreDealsSection defaultCityLabel={store.cityLabel} /> : null}
       </main>
@@ -242,119 +245,14 @@ export function StorePage({ currentUser }) {
       </section>
 
       <section className="store-onboarding">
-        <article className="store-card store-card--primary">
-          <div className="store-card__header">
-            <div>
-              <p className="store-card__eyebrow">Store application</p>
-              <h2>Tell us about your shop</h2>
-            </div>
-            <StoreIcon size={18} />
-          </div>
-
-          <form className="store-form" onSubmit={handleSubmit}>
-            <div className="store-form__grid">
-              <label className="filter-field">
-                <span className="filter-field__label">Store name</span>
-                <div className="filter-field__control">
-                  <input
-                    type="text"
-                    name="name"
-                    value={form.name}
-                    onChange={(event) => {
-                      setForm((currentForm) => ({ ...currentForm, name: event.target.value }));
-                    }}
-                    placeholder="Orbit Digital"
-                  />
-                </div>
-              </label>
-
-              <label className="filter-field filter-field--full">
-                <span className="filter-field__label">Address</span>
-                <div className="filter-field__control">
-                  <input
-                    type="text"
-                    name="address"
-                    value={form.address}
-                    onChange={(event) => {
-                      setForm((currentForm) => ({ ...currentForm, address: event.target.value }));
-                    }}
-                    placeholder="123 Market Road"
-                  />
-                </div>
-              </label>
-
-              <label className="filter-field">
-                <span className="filter-field__label">State</span>
-                <div className="filter-field__control">
-                  <input
-                    type="text"
-                    name="state"
-                    value={form.state}
-                    onChange={(event) => {
-                      setForm((currentForm) => ({ ...currentForm, state: event.target.value }));
-                    }}
-                    placeholder="Karnataka"
-                  />
-                </div>
-              </label>
-
-              <label className="filter-field">
-                <span className="filter-field__label">City</span>
-                <div className="filter-field__control">
-                  <input
-                    type="text"
-                    name="city"
-                    value={form.city}
-                    onChange={(event) => {
-                      setForm((currentForm) => ({ ...currentForm, city: event.target.value }));
-                    }}
-                    placeholder="Bengaluru"
-                  />
-                </div>
-              </label>
-
-              <label className="filter-field">
-                <span className="filter-field__label">Phone</span>
-                <div className="filter-field__control">
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={form.phone}
-                    onChange={(event) => {
-                      setForm((currentForm) => ({ ...currentForm, phone: event.target.value }));
-                    }}
-                    placeholder="9876543210"
-                    inputMode="numeric"
-                  />
-                </div>
-              </label>
-            </div>
-
-            {formError ? (
-              <p className="store-form__error" role="alert">
-                {formError}
-              </p>
-            ) : null}
-
-            {applyMutation.isError ? (
-              <p className="store-form__error" role="alert">
-                {applyMutation.error?.message || 'Could not submit your store application right now.'}
-              </p>
-            ) : null}
-
-            {applyMutation.isSuccess ? (
-              <p className="store-form__success" role="status">
-                {applyMutation.data?.message || 'Store application submitted successfully.'}
-              </p>
-            ) : null}
-
-            <div className="store-card__actions">
-              <button type="submit" className="button button--primary" disabled={applyMutation.isPending}>
-                {applyMutation.isPending ? 'Submitting...' : 'Submit for review'}
-              </button>
-            </div>
-          </form>
-        </article>
+        <StoreApplicationForm
+          mode="apply"
+          initialValues={null}
+          isSubmitting={applyMutation.isPending}
+          errorMessage={applyMutation.isError ? applyMutation.error?.message : ''}
+          successMessage={applyMutation.isSuccess ? applicationFeedback : ''}
+          onSubmit={handleApply}
+        />
 
         <aside className="store-card store-card--aside">
           <p className="store-card__eyebrow">Verification flow</p>
@@ -378,7 +276,7 @@ export function StorePage({ currentUser }) {
             </div>
             <div>
               <Clock3 size={16} />
-              <span>Moderated onboarding in 48–72 hours</span>
+              <span>Moderated onboarding in 48-72 hours</span>
             </div>
           </div>
         </aside>
