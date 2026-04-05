@@ -1,5 +1,11 @@
 import { BadgeCheck, LogIn, Mail, ShieldCheck, Store as StoreIcon, UserRound } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { Link, useNavigate } from 'react-router-dom';
+import { adminKeys } from '../features/admin/admin.queries';
+import { authKeys } from '../features/auth/auth.queries';
+import { clearAuthSession } from '../features/auth/auth.session';
+import { storeKeys } from '../features/store/store.queries';
+import { storeDealsKeys } from '../features/store/storeDeals.queries';
 import { AccountPasswordForm } from '../features/auth/AccountPasswordForm';
 import '../styles/account.css';
 
@@ -34,8 +40,19 @@ const roleContent = {
 };
 
 export function AccountPage({ currentUser }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const roleKey = currentUser?.role === 'admin' ? 'admin' : currentUser?.role === 'store' ? 'store' : 'user';
   const roleInfo = roleContent[roleKey];
+
+  const handleSignOut = () => {
+    clearAuthSession();
+    queryClient.removeQueries({ queryKey: authKeys.all });
+    queryClient.removeQueries({ queryKey: storeKeys.all });
+    queryClient.removeQueries({ queryKey: storeDealsKeys.all });
+    queryClient.removeQueries({ queryKey: adminKeys.all });
+    navigate('/', { replace: true });
+  };
 
   return (
     <main className="page-shell account-page">
@@ -101,6 +118,9 @@ export function AccountPage({ currentUser }) {
             <Link to="/deals" className="button button--secondary">
               View live deals
             </Link>
+            <button type="button" className="button button--ghost" onClick={handleSignOut}>
+              Sign out
+            </button>
           </div>
         </aside>
       </div>
