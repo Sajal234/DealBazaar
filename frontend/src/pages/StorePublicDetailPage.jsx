@@ -1,5 +1,6 @@
 import { AlertCircle, ArrowLeft, BadgeCheck, LoaderCircle, MapPin, Phone, Star } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import { ResourceNotFoundState } from '../components/ResourceNotFoundState';
 import { StorePublicDealsSection } from '../features/store/StorePublicDealsSection';
 import { StoreRatingPanel } from '../features/store/StoreRatingPanel';
 import { useStoreDetailQuery } from '../features/store/store.queries';
@@ -23,6 +24,19 @@ export function StorePublicDetailPage({ currentUser }) {
           </div>
         </section>
       </main>
+    );
+  }
+
+  if (error?.status === 404) {
+    return (
+      <ResourceNotFoundState
+        title="This store is no longer available"
+        message="The store may have been removed or this link may be outdated."
+        backTo="/stores"
+        backLabel="Back to stores"
+        secondaryTo="/deals"
+        secondaryLabel="Browse deals"
+      />
     );
   }
 

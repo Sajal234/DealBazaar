@@ -1,5 +1,6 @@
 import { AlertCircle, ArrowLeft, Clock3, LoaderCircle, MapPin, Phone, Search, Star } from 'lucide-react';
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { ResourceNotFoundState } from '../components/ResourceNotFoundState';
 import { trackDealClick } from '../features/deals/deals.api';
 import { isValidDealId } from '../features/deals/deals.keys';
 import { useDealDetailQuery } from '../features/deals/deals.queries';
@@ -92,20 +93,12 @@ export function DealDetailPage({ currentUser }) {
 
   if (!hasValidDealId) {
     return (
-      <main className="page-shell">
-        <section className="state-card state-card--error" aria-live="polite">
-          <AlertCircle size={18} />
-          <div>
-            <h2>Invalid deal link</h2>
-            <p>The deal address is malformed or no longer available.</p>
-            <div className="state-card__actions">
-              <Link to="/deals" className="button button--secondary">
-                Back to deals
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
+      <ResourceNotFoundState
+        title="Invalid deal link"
+        message="The deal address is malformed or no longer available."
+        backTo="/deals"
+        backLabel="Back to deals"
+      />
     );
   }
 
@@ -120,6 +113,19 @@ export function DealDetailPage({ currentUser }) {
           </div>
         </section>
       </main>
+    );
+  }
+
+  if (error?.status === 404) {
+    return (
+      <ResourceNotFoundState
+        title="This deal is no longer available"
+        message="It may have expired, been removed, or never existed at this address."
+        backTo="/deals"
+        backLabel="Back to deals"
+        secondaryTo="/stores"
+        secondaryLabel="Browse stores"
+      />
     );
   }
 
