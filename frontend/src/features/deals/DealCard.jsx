@@ -20,38 +20,40 @@ export function DealCard({ deal, previewTimestamp }) {
       </div>
 
       <div className="deal-card__body">
-        <div className="deal-card__topline">
+        <div className="deal-card__eyebrow">
           <span className="listing-card__badge">Active deal</span>
-          <span className="deal-card__price">{deal.priceLabel}</span>
+          {deal.store?.rating ? (
+            <span className="deal-card__rating">
+              <Star size={14} />
+              {deal.store.rating}
+            </span>
+          ) : null}
         </div>
 
-        <h2>{deal.title}</h2>
+        <div className="deal-card__headline">
+          <h2>{deal.title}</h2>
+          <p className="deal-card__price">{deal.priceLabel}</p>
+        </div>
+
         <p className="deal-card__description">{deal.description}</p>
 
-        {deal.store ? (
-          <div className="deal-card__storeline">
-            <span className="deal-card__store">{deal.store.name}</span>
-            {deal.store.rating ? (
-              <span className="deal-card__rating">
-                <Star size={14} />
-                {deal.store.rating}
-              </span>
-            ) : null}
+        <div className="deal-card__storeline">
+          <div className="deal-card__storecopy">
+            <span className="deal-card__store">{deal.store?.name || 'Verified local store'}</span>
+            <span className="deal-card__city">
+              <MapPin size={13} />
+              {deal.cityLabel}
+            </span>
           </div>
-        ) : null}
+        </div>
 
         <div className="deal-card__meta">
-          <span>
-            <MapPin size={14} />
-            {deal.cityLabel}
-          </span>
           <span>
             <Clock3 size={14} />
             Live offer
           </span>
+          <span className="deal-card__meta-link">View details</span>
         </div>
-
-        <span className="deal-card__cta">View details</span>
       </div>
     </Link>
   );
