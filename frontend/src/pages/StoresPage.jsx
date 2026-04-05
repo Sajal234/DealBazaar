@@ -37,6 +37,8 @@ export function StoresPage() {
   const filters = useMemo(() => readStoreFilters(searchParams), [searchParams]);
   const [draftSearch, setDraftSearch] = useState(filters.search);
   const [draftCity, setDraftCity] = useState(filters.city);
+  const hasActiveFilters = Boolean(filters.search || filters.city);
+  const hasDraftChanges = draftSearch.trim() !== filters.search || draftCity.trim() !== filters.city;
   const { data, isLoading, error, refetch, isRefetching, isFetching } = useStoresQuery({
     limit: 12,
     page: filters.page,
@@ -133,10 +135,15 @@ export function StoresPage() {
           </label>
 
           <div className="stores-toolbar__actions">
-            <button type="submit" className="button button--primary">
+            <button type="submit" className="button button--primary" disabled={!hasDraftChanges}>
               Filter stores
             </button>
-            <button type="button" className="button button--secondary" onClick={handleReset}>
+            <button
+              type="button"
+              className="button button--secondary"
+              onClick={handleReset}
+              disabled={!hasActiveFilters && !hasDraftChanges}
+            >
               Clear
             </button>
           </div>
