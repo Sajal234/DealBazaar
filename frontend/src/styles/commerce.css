@@ -521,7 +521,7 @@
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       "brand actions"
-      "nav nav";
+      "mobile mobile";
     margin-bottom: 24px;
     padding: 12px;
     gap: 12px;
@@ -549,68 +549,10 @@
     justify-content: start;
   }
 
-  .topbar__browse {
-    display: none;
-  }
-
   .topbar__actions {
     grid-area: actions;
     justify-self: end;
     justify-content: flex-end;
-    flex-wrap: nowrap;
-  }
-
-  .site-nav {
-    grid-area: nav;
-    justify-self: center;
-  }
-
-  .home-storefront {
-    gap: 30px;
-  }
-
-  .home-hero__copy h1 {
-    max-width: 100%;
-    font-size: clamp(1.85rem, 6vw, 2.8rem);
-  }
-
-  .home-hero__copy p {
-    max-width: 100%;
-  }
-
-  .home-market,
-  .home-stores {
-    gap: 14px;
-  }
-
-  .home-section__header h2 {
-    max-width: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .app-shell {
-    padding: 12px 12px 48px;
-  }
-
-  .topbar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "brand actions"
-      "mobile mobile";
-    align-items: center;
-    margin-bottom: 18px;
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .topbar__actions {
-    grid-area: actions;
-    flex-direction: row;
-    align-items: center;
-    justify-self: end;
-    justify-content: flex-end;
-    gap: 8px;
     flex-wrap: nowrap;
   }
 
@@ -622,11 +564,6 @@
     display: inline-flex;
   }
 
-  .theme-toggle {
-    width: 38px;
-    height: 38px;
-  }
-
   .site-nav {
     display: none;
   }
@@ -635,7 +572,7 @@
     display: none;
     grid-area: mobile;
     gap: 12px;
-    padding-top: 6px;
+    padding-top: 4px;
   }
 
   .mobile-nav--open {
@@ -675,6 +612,54 @@
     width: 100%;
     min-height: 42px;
     justify-content: center;
+  }
+
+  .home-storefront {
+    gap: 30px;
+  }
+
+  .home-hero__copy h1 {
+    max-width: 100%;
+    font-size: clamp(1.85rem, 6vw, 2.8rem);
+  }
+
+  .home-hero__copy p {
+    max-width: 100%;
+  }
+
+  .home-market,
+  .home-stores {
+    gap: 14px;
+  }
+
+  .home-section__header h2 {
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 12px 12px 48px;
+  }
+
+  .topbar {
+    margin-bottom: 18px;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .topbar__actions {
+    flex-direction: row;
+    align-items: center;
+    justify-self: end;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .theme-toggle {
+    width: 38px;
+    height: 38px;
   }
 
   .home-storefront {
