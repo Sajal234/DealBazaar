@@ -605,7 +605,7 @@
 
   .mobile-nav__links {
     display: grid;
-    gap: 8px;
+    gap: 4px;
   }
 
   .mobile-nav__link {
@@ -613,15 +613,16 @@
     align-items: center;
     min-height: 42px;
     padding: 0 14px;
-    border: 1px solid var(--stroke);
+    border: 1px solid transparent;
     border-radius: 14px;
-    background: var(--surface);
+    background: transparent;
     color: var(--text-soft);
     font-size: 0.9rem;
     font-weight: 500;
   }
 
   .mobile-nav__link--active {
+    border-color: var(--stroke);
     background: var(--surface-strong);
     color: var(--text-main);
   }
@@ -629,6 +630,8 @@
   .mobile-nav__actions {
     display: grid;
     gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--stroke);
   }
 
   .mobile-nav__actions .button,
@@ -636,6 +639,10 @@
     width: 100%;
     min-height: 42px;
     justify-content: center;
+  }
+
+  .mobile-nav__actions .topbar__account {
+    background: var(--surface-strong);
   }
 
   .home-storefront {

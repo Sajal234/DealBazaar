@@ -196,10 +196,6 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
           </nav>
 
           <div className="mobile-nav__actions">
-            <NavLink to="/deals" className="button button--ghost">
-              Browse deals
-            </NavLink>
-
             {currentUser ? (
               <>
                 <NavLink to="/account" className="topbar__account topbar__account--link">
