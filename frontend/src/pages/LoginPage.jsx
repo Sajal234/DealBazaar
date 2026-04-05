@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, KeyRound, LoaderCircle, Mail } from 'lucide-react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { loginUser } from '../features/auth/auth.api';
-import { getDefaultAuthenticatedPath, getPostAuthPath } from '../features/auth/auth.redirects';
+import { getPostAuthPath } from '../features/auth/auth.redirects';
 import { clearAuthSession, persistAuthSession } from '../features/auth/auth.session';
 import '../styles/login.css';
 
@@ -15,9 +15,10 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const requestedLocation = location.state?.from;
 
   if (currentUser) {
-    return <Navigate to={getDefaultAuthenticatedPath(currentUser)} replace />;
+    return <Navigate to={getPostAuthPath(currentUser, requestedLocation)} replace />;
   }
 
   const handleSubmit = async (event) => {
@@ -38,10 +39,7 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
       });
 
       persistAuthSession(session);
-      const nextPath = getPostAuthPath(
-        session,
-        typeof location.state?.from?.pathname === 'string' ? location.state.from.pathname : undefined
-      );
+      const nextPath = getPostAuthPath(session, requestedLocation);
 
       navigate(nextPath, { replace: true });
     } catch (submissionError) {
@@ -139,7 +137,7 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
           </div>
 
           <p className="login-form__switch">
-            New to DealBazaar? <Link to="/signup">Create an account</Link>
+            New to DealBazaar? <Link to="/signup" state={{ from: requestedLocation }}>Create an account</Link>
           </p>
         </form>
       </section>
