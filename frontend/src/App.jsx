@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { useCurrentUserQuery } from './features/auth/auth.queries';
 import { readAuthSession } from './features/auth/auth.session';
 import { RequireAuth } from './features/auth/RequireAuth';
@@ -11,6 +11,7 @@ import { DealDetailPage } from './pages/DealDetailPage';
 import { DealsPage } from './pages/DealsPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { SignupPage } from './pages/SignupPage';
 import { StorePublicDetailPage } from './pages/StorePublicDetailPage';
 import { StorePage } from './pages/StorePage';
@@ -124,7 +125,7 @@ export function App() {
             </RequireAuth>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage currentUser={currentUser} />} />
       </Routes>
     </AppLayout>
   );

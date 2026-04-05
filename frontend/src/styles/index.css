@@ -756,6 +756,28 @@ body::before {
   animation: spin 1s linear infinite;
 }
 
+.not-found-page {
+  min-height: 56vh;
+  align-content: center;
+}
+
+.not-found-card {
+  max-width: 760px;
+}
+
+.not-found-card h2,
+.not-found-card p {
+  margin: 0;
+}
+
+.not-found-card p:last-of-type {
+  margin-top: 10px;
+}
+
+.not-found-card__actions {
+  margin-top: 18px;
+}
+
 .deal-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
