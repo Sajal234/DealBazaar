@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AlertCircle, BarChart3, Clock3, Eye, LoaderCircle, RotateCcw, Trash2 } from 'lucide-react';
+import { StoreDealComposer } from './StoreDealComposer';
 import { useArchiveOwnedDealMutation, useMyDealsQuery, useResubmitOwnedDealMutation } from './storeDeals.queries';
 
 const actionCopy = {
@@ -13,7 +14,7 @@ const actionCopy = {
   },
 };
 
-export function StoreDealsSection() {
+export function StoreDealsSection({ defaultCityLabel }) {
   const [feedback, setFeedback] = useState('');
   const [activeAction, setActiveAction] = useState(null);
   const { data, isLoading, error, refetch, isRefetching } = useMyDealsQuery({ enabled: true, limit: 6, page: 1 });
@@ -63,6 +64,8 @@ export function StoreDealsSection() {
 
   return (
     <section className="store-workspace" aria-label="Your deals">
+      <StoreDealComposer defaultCityLabel={defaultCityLabel} />
+
       <div className="store-workspace__header">
         <div>
           <p className="store-card__eyebrow">Your deals</p>
@@ -129,7 +132,7 @@ export function StoreDealsSection() {
           <BarChart3 size={18} />
           <div>
             <h2>No seller deals yet</h2>
-            <p>Your latest deals will show up here as soon as deal publishing is added in the next step.</p>
+            <p>Your first submitted listing will appear here after you create a new deal.</p>
           </div>
         </section>
       ) : null}

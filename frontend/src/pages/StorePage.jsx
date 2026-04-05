@@ -223,7 +223,7 @@ export function StorePage({ currentUser }) {
           </aside>
         </section>
 
-        {store.status === 'approved' ? <StoreDealsSection /> : null}
+        {store.status === 'approved' ? <StoreDealsSection defaultCityLabel={store.cityLabel} /> : null}
       </main>
     );
   }

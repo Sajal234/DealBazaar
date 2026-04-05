@@ -41,3 +41,29 @@ export async function archiveOwnedDeal(dealId) {
     message: payload.message || 'Deal archived successfully.',
   };
 }
+
+export async function createOwnedDeal({ productName, description, price, city, images = [] }) {
+  const formData = new FormData();
+
+  formData.append('productName', productName);
+  formData.append('description', description);
+  formData.append('price', price);
+
+  if (typeof city === 'string' && city.trim()) {
+    formData.append('city', city.trim());
+  }
+
+  images.forEach((image) => {
+    formData.append('images', image);
+  });
+
+  const payload = await requestJson('/api/deals', {
+    method: 'POST',
+    body: formData,
+  });
+
+  return {
+    deal: payload.data ? mapOwnedDeal(payload.data) : null,
+    message: payload.message || 'Deal securely submitted. Pending admin approval.',
+  };
+}

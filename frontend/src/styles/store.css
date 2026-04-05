@@ -251,6 +251,109 @@
   margin-top: 6px;
 }
 
+.store-composer {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--stroke);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.store-composer__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.store-composer__header h2,
+.store-composer__header p {
+  margin: 0;
+}
+
+.store-composer__header h2 {
+  font-size: 1.14rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.store-composer__header p:last-child {
+  max-width: 580px;
+  margin-top: 8px;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.store-deal-form {
+  display: grid;
+  gap: 16px;
+}
+
+.filter-field__control--textarea {
+  align-items: start;
+  min-height: 138px;
+  padding: 14px 16px;
+}
+
+.filter-field__control--textarea textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  border: 0;
+  background: transparent;
+  color: var(--text-main);
+  font: inherit;
+  outline: none;
+}
+
+.filter-field__control--textarea textarea::placeholder {
+  color: var(--text-soft);
+}
+
+.store-file-input {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px dashed var(--stroke);
+  border-radius: 16px;
+  background: var(--surface-strong);
+}
+
+.store-file-input__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.store-file-input input[type="file"] {
+  color: var(--text-soft);
+  font: inherit;
+}
+
+.store-file-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.store-file-list li {
+  padding: 10px 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  background: var(--surface-strong);
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
 .store-workspace__header {
   display: flex;
   align-items: end;
@@ -397,6 +500,11 @@
 
 @media (max-width: 980px) {
   .store-workspace__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .store-composer__header {
     align-items: stretch;
     flex-direction: column;
   }
