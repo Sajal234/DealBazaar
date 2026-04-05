@@ -47,8 +47,8 @@ function createApiCandidates(path) {
     }
 
     if (isLocalHostname(hostname)) {
-      candidates.push(`http://localhost:5001${normalizedPath}`);
-      candidates.push(`http://127.0.0.1:5001${normalizedPath}`);
+      candidates.push(`http://localhost:5050${normalizedPath}`);
+      candidates.push(`http://127.0.0.1:5050${normalizedPath}`);
     }
   }
 
