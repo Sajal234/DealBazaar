@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, BadgeCheck, Clock3, LoaderCircle, ShieldAlert, ShieldCheck, Store as StoreIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AdminDealMedia } from '../features/admin/AdminDealMedia';
+import { AdminStoreContextLinks } from '../features/admin/AdminStoreContextLinks';
 import { DealsPagination } from '../features/deals/DealsPagination';
 import {
   useDealModerationMutation,
@@ -209,6 +210,8 @@ export function AdminPage({ currentUser }) {
                       <span>Owner ID: {store.ownerId}</span>
                     </div>
 
+                    <AdminStoreContextLinks phone={store.phone} viewLabel="Open public store page" />
+
                     <div className="admin-card__actions">
                       <button
                         type="button"
@@ -350,6 +353,8 @@ export function AdminPage({ currentUser }) {
                         {deal.storeName} • {deal.storeCityLabel} • {deal.storeRatingLabel}
                       </span>
                     </div>
+
+                    <AdminStoreContextLinks storeId={deal.storeId} phone={deal.storePhone} />
 
                     <div className="admin-card__metrics">
                       <span>
