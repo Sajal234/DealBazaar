@@ -316,12 +316,12 @@
 }
 
 .home-hero__copy {
-  max-width: 640px;
+  max-width: 620px;
 }
 
 .home-hero__copy h1 {
   margin: 0;
-  max-width: 620px;
+  max-width: 580px;
   font-size: clamp(2rem, 4vw, 3.2rem);
   font-weight: 600;
   line-height: 1.02;
@@ -360,28 +360,28 @@
 
 .home-market {
   display: grid;
-  gap: 18px;
-  padding-top: 10px;
+  gap: 16px;
+  padding-top: 12px;
   border-top: 1px solid var(--stroke);
 }
 
 .home-stores {
   display: grid;
-  gap: 18px;
-  padding-top: 10px;
+  gap: 14px;
+  padding-top: 12px;
   border-top: 1px solid var(--stroke);
 }
 
 .home-section__header {
   display: flex;
-  align-items: end;
+  align-items: start;
   justify-content: space-between;
   gap: 14px;
 }
 
 .home-section__header h2 {
   margin: 0;
-  max-width: 560px;
+  max-width: 460px;
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.03em;
@@ -401,7 +401,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--stroke);
 }
 
@@ -524,6 +524,28 @@
     justify-self: stretch;
     justify-content: space-between;
   }
+
+  .home-storefront {
+    gap: 30px;
+  }
+
+  .home-hero__copy h1 {
+    max-width: 100%;
+    font-size: clamp(1.85rem, 6vw, 2.8rem);
+  }
+
+  .home-hero__copy p {
+    max-width: 100%;
+  }
+
+  .home-market,
+  .home-stores {
+    gap: 14px;
+  }
+
+  .home-section__header h2 {
+    max-width: none;
+  }
 }
 
 @media (max-width: 640px) {
@@ -539,6 +561,14 @@
   .topbar__actions {
     flex-wrap: wrap;
     gap: 8px;
+  }
+
+  .home-storefront {
+    gap: 24px;
+  }
+
+  .home-hero {
+    padding-top: 10px;
   }
 
   .page-shell {
@@ -563,6 +593,10 @@
     flex-direction: column;
   }
 
+  .home-section__header h2 {
+    font-size: 0.95rem;
+  }
+
   .home-market__deals {
     grid-template-columns: 1fr;
   }
@@ -573,5 +607,15 @@
 
   .home-hero__actions {
     flex-direction: column;
+  }
+
+  .home-store-row {
+    align-items: start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .home-store-row__action {
+    font-size: 0.82rem;
   }
 }
