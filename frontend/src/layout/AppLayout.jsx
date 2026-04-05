@@ -20,6 +20,27 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
     setIsMobileNavOpen(false);
   }, [location.pathname, location.search, location.hash]);
 
+  useEffect(() => {
+    if (!isMobileNavOpen) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsMobileNavOpen(false);
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMobileNavOpen]);
+
   const handleSignOut = () => {
     setIsMobileNavOpen(false);
     clearAuthSession();
@@ -196,6 +217,17 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
           </div>
         </div>
       </header>
+
+      {isMobileNavOpen ? (
+        <button
+          type="button"
+          className="mobile-nav__backdrop"
+          onClick={() => {
+            setIsMobileNavOpen(false);
+          }}
+          aria-label="Close navigation menu"
+        />
+      ) : null}
 
       <div className="app-content">{children}</div>
     </div>
