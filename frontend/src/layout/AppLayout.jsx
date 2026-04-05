@@ -1,8 +1,19 @@
 import { Moon, SunMedium } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { authKeys } from '../features/auth/auth.queries';
+import { clearAuthSession } from '../features/auth/auth.session';
 
-export function AppLayout({ children, theme, setTheme }) {
+export function AppLayout({ children, theme, setTheme, currentUser }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const nextThemeLabel = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+
+  const handleSignOut = () => {
+    clearAuthSession();
+    queryClient.removeQueries({ queryKey: authKeys.all });
+    navigate('/', { replace: true });
+  };
 
   return (
     <div className="app-shell">
@@ -36,9 +47,20 @@ export function AppLayout({ children, theme, setTheme }) {
             Browse deals
           </NavLink>
 
-          <NavLink to="/login" className="button button--secondary">
-            Sign in
-          </NavLink>
+          {currentUser ? (
+            <>
+              <span className="topbar__account">
+                {currentUser.name || currentUser.email}
+              </span>
+              <button type="button" className="button button--secondary" onClick={handleSignOut}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <NavLink to="/login" className="button button--secondary">
+              Sign in
+            </NavLink>
+          )}
 
           <button
             type="button"

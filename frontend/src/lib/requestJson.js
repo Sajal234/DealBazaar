@@ -38,7 +38,9 @@ export async function requestJson(path, options = {}) {
   const payload = await parseJson(response);
 
   if (!response.ok || !payload?.success) {
-    throw new Error(getErrorMessage(payload));
+    const error = new Error(getErrorMessage(payload));
+    error.status = response.status;
+    throw error;
   }
 
   return payload;

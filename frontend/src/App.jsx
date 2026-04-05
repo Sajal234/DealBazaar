@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { useCurrentUserQuery } from './features/auth/auth.queries';
+import { readAuthSession } from './features/auth/auth.session';
 import { AppLayout } from './layout/AppLayout';
 import { DealDetailPage } from './pages/DealDetailPage';
 import { DealsPage } from './pages/DealsPage';
@@ -30,6 +32,8 @@ function getInitialTheme() {
 
 export function App() {
   const [theme, setTheme] = useState(getInitialTheme);
+  const { data: currentUser, isLoading: isAuthLoading, isFetching: isAuthFetching } = useCurrentUserQuery();
+  const hasSavedSession = Boolean(readAuthSession()?.token);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -45,12 +49,21 @@ export function App() {
   }, [theme]);
 
   return (
-    <AppLayout theme={theme} setTheme={setTheme}>
+    <AppLayout theme={theme} setTheme={setTheme} currentUser={currentUser}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/deals" element={<DealsPage />} />
         <Route path="/deals/:dealId" element={<DealDetailPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/login"
+          element={
+            <LoginPage
+              currentUser={currentUser}
+              hasSavedSession={hasSavedSession}
+              isAuthLoading={isAuthLoading || isAuthFetching}
+            />
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>

@@ -14,3 +14,9 @@ export async function loginUser({ email, password }) {
 
   return payload.data;
 }
+
+export async function getCurrentUser() {
+  const payload = await requestJson('/api/auth/me');
+
+  return payload.data;
+}

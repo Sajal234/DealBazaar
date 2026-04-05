@@ -1,21 +1,23 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ArrowRight, KeyRound, LoaderCircle, Mail } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { loginUser } from '../features/auth/auth.api';
-import { clearAuthSession, persistAuthSession, readAuthSession } from '../features/auth/auth.session';
+import { clearAuthSession, persistAuthSession } from '../features/auth/auth.session';
 import '../styles/login.css';
 
-export function LoginPage() {
+export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const existingSession = useMemo(() => readAuthSession(), []);
-  const [hasSavedSession, setHasSavedSession] = useState(Boolean(existingSession?.token));
   const [form, setForm] = useState({
     email: '',
     password: '',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (currentUser) {
+    return <Navigate to="/deals" replace />;
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -49,7 +51,7 @@ export function LoginPage() {
 
   const handleClearSession = () => {
     clearAuthSession();
-    setHasSavedSession(false);
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -64,11 +66,12 @@ export function LoginPage() {
         <form className="login-form" onSubmit={handleSubmit}>
           {hasSavedSession ? (
             <div className="login-form__session-note">
-              <p>You already have a saved session on this browser.</p>
+              <p>
+                {isAuthLoading
+                  ? 'Checking your saved session...'
+                  : 'A saved session was found on this browser.'}
+              </p>
               <div className="login-form__session-actions">
-                <Link to="/deals" className="button button--secondary">
-                  Continue to deals
-                </Link>
                 <button type="button" className="button button--ghost" onClick={handleClearSession}>
                   Sign out here
                 </button>
