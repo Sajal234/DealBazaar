@@ -12,7 +12,9 @@ import { DealsPage } from './pages/DealsPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
+import { StorePublicDetailPage } from './pages/StorePublicDetailPage';
 import { StorePage } from './pages/StorePage';
+import { StoresPage } from './pages/StoresPage';
 
 const themeStorageKey = 'dealbazaar.theme';
 
@@ -60,6 +62,8 @@ export function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/deals" element={<DealsPage />} />
         <Route path="/deals/:dealId" element={<DealDetailPage currentUser={currentUser} />} />
+        <Route path="/stores" element={<StoresPage />} />
+        <Route path="/stores/:storeId" element={<StorePublicDetailPage currentUser={currentUser} />} />
         <Route
           path="/login"
           element={

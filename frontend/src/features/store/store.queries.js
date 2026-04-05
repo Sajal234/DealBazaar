@@ -1,13 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dealsKeys } from '../deals/deals.keys';
-import { applyForStore, getMyStore, getStoreById, resubmitStoreApplication, submitStoreRating } from './store.api';
+import { applyForStore, getMyStore, getStoreById, listStores, resubmitStoreApplication, submitStoreRating } from './store.api';
 
 export const storeKeys = {
   all: ['store'],
+  lists: () => [...storeKeys.all, 'list'],
+  list: ({ limit = 12, page = 1, city = '' } = {}) => [...storeKeys.lists(), limit, page, city.trim().toLowerCase()],
   details: () => [...storeKeys.all, 'detail'],
   detail: (storeId) => [...storeKeys.details(), storeId],
   myStore: () => [...storeKeys.all, 'me'],
 };
+
+export function useStoresQuery({ limit = 12, page = 1, city = '' } = {}) {
+  return useQuery({
+    queryKey: storeKeys.list({ limit, page, city }),
+    queryFn: ({ signal }) => listStores({ limit, page, city, signal }),
+    staleTime: 60 * 1000,
+  });
+}
 
 export function useStoreDetailQuery({ storeId, enabled }) {
   return useQuery({
@@ -70,6 +80,7 @@ export function useStoreRatingMutation(storeId) {
         };
       });
 
+      queryClient.invalidateQueries({ queryKey: storeKeys.lists() });
       queryClient.invalidateQueries({ queryKey: dealsKeys.all });
     },
   });

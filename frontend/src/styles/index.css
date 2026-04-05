@@ -1054,6 +1054,15 @@ body::before {
   margin-top: 8px;
 }
 
+.detail-store-card__link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  color: var(--accent-strong);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .store-rating-panel {
   display: grid;
   gap: 14px;

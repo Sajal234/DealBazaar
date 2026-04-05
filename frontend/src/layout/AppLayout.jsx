@@ -45,6 +45,12 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
             >
               Deals
             </NavLink>
+            <NavLink
+              to="/stores"
+              className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
+            >
+              Stores
+            </NavLink>
             {currentUser?.role === 'admin' ? (
               <NavLink
                 to="/admin"

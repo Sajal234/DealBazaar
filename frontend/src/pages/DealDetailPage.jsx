@@ -182,6 +182,11 @@ export function DealDetailPage({ currentUser }) {
               {store?.isVerified ? ' • Verified retailer' : ''}
             </p>
             {store?.address ? <p className="detail-store-card__address">{store.address}</p> : null}
+            {store?.id ? (
+              <Link to={`/stores/${store.id}`} className="detail-store-card__link">
+                View store page
+              </Link>
+            ) : null}
           </div>
 
           {store?.id ? <StoreRatingPanel store={store} currentUser={currentUser} /> : null}

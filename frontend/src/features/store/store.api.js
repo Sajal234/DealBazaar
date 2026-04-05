@@ -1,6 +1,28 @@
 import { requestJson } from '../../lib/requestJson';
 import { mapStore } from './store.mappers';
 
+function createStoresQueryString({ limit = 12, page = 1, city = '' } = {}) {
+  const params = new URLSearchParams();
+
+  params.set('limit', String(limit));
+  params.set('page', String(page));
+
+  if (typeof city === 'string' && city.trim()) {
+    params.set('city', city.trim());
+  }
+
+  return params.toString();
+}
+
+export async function listStores({ limit = 12, page = 1, city = '', signal } = {}) {
+  const payload = await requestJson(`/api/stores?${createStoresQueryString({ limit, page, city })}`, { signal });
+
+  return {
+    items: Array.isArray(payload.data) ? payload.data.map(mapStore) : [],
+    pagination: payload.pagination || null,
+  };
+}
+
 export async function getStoreById(storeId, { signal } = {}) {
   const payload = await requestJson(`/api/stores/${encodeURIComponent(storeId)}`, { signal });
 
