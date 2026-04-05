@@ -1,30 +1,5 @@
+import { requestJson } from '../../lib/requestJson';
 import { mapDealDetail, mapDealSummary } from './deals.mappers';
-
-async function parseJson(response) {
-  try {
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
-
-async function requestJson(path, options = {}) {
-  const response = await fetch(path, {
-    headers: {
-      Accept: 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
-
-  const payload = await parseJson(response);
-
-  if (!response.ok || !payload?.success) {
-    throw new Error(payload?.message || 'Request failed');
-  }
-
-  return payload;
-}
 
 function createDealsQueryString({ limit = 12, page = 1, search = '', city = '' } = {}) {
   const params = new URLSearchParams();

@@ -40,3 +40,13 @@ export function persistAuthSession(session) {
     window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session));
   } catch {}
 }
+
+export function clearAuthSession() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+  } catch {}
+}

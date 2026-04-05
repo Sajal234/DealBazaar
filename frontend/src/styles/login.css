@@ -59,6 +59,28 @@
   background: var(--surface-strong);
 }
 
+.login-form__session-note {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.login-form__session-note p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.login-form__session-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .login-field {
   display: grid;
   gap: 8px;
@@ -135,6 +157,10 @@
   }
 
   .login-form__actions {
+    flex-direction: column;
+  }
+
+  .login-form__session-actions {
     flex-direction: column;
   }
 }

@@ -1,24 +1,21 @@
 import { useMemo, useState } from 'react';
 import { ArrowRight, KeyRound, LoaderCircle, Mail } from 'lucide-react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { loginUser } from '../features/auth/auth.api';
-import { persistAuthSession, readAuthSession } from '../features/auth/auth.session';
+import { clearAuthSession, persistAuthSession, readAuthSession } from '../features/auth/auth.session';
 import '../styles/login.css';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const existingSession = useMemo(() => readAuthSession(), []);
+  const [hasSavedSession, setHasSavedSession] = useState(Boolean(existingSession?.token));
   const [form, setForm] = useState({
     email: '',
     password: '',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  if (existingSession?.token) {
-    return <Navigate to="/deals" replace />;
-  }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -50,6 +47,11 @@ export function LoginPage() {
     }
   };
 
+  const handleClearSession = () => {
+    clearAuthSession();
+    setHasSavedSession(false);
+  };
+
   return (
     <main className="login-page">
       <section className="login-panel">
@@ -60,6 +62,20 @@ export function LoginPage() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
+          {hasSavedSession ? (
+            <div className="login-form__session-note">
+              <p>You already have a saved session on this browser.</p>
+              <div className="login-form__session-actions">
+                <Link to="/deals" className="button button--secondary">
+                  Continue to deals
+                </Link>
+                <button type="button" className="button button--ghost" onClick={handleClearSession}>
+                  Sign out here
+                </button>
+              </div>
+            </div>
+          ) : null}
+
           <label className="login-field">
             <span className="login-field__label">Email</span>
             <div className="login-field__control">
