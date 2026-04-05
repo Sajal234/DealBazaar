@@ -9,6 +9,8 @@ const routeTitleRules = [
   { pattern: '/stores/:storeId', title: 'Store Details | DealBazaar' },
   { pattern: '/login', end: true, title: 'Sign In | DealBazaar' },
   { pattern: '/signup', end: true, title: 'Create Account | DealBazaar' },
+  { pattern: '/forgot-password', end: true, title: 'Reset Password | DealBazaar' },
+  { pattern: '/reset-password/:token', title: 'Choose a New Password | DealBazaar' },
   { pattern: '/account', end: true, title: 'Your Account | DealBazaar' },
   { pattern: '/store', end: true, title: 'Seller Workspace | DealBazaar' },
   { pattern: '/admin', end: true, title: 'Admin Moderation | DealBazaar' },
