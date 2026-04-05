@@ -6,6 +6,7 @@ import { authKeys } from '../features/auth/auth.queries';
 import { clearAuthSession } from '../features/auth/auth.session';
 import { storeKeys } from '../features/store/store.queries';
 import { storeDealsKeys } from '../features/store/storeDeals.queries';
+import { AppRouteEffects } from './AppRouteEffects';
 
 export function AppLayout({ children, theme, setTheme, currentUser }) {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
 
   return (
     <div className="app-shell">
+      <AppRouteEffects />
+
       <header className="topbar">
         <div className="topbar__cluster">
           <NavLink to="/" className="brand brand--link" aria-label="DealBazaar home">
