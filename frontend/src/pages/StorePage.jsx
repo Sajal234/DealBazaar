@@ -88,8 +88,11 @@ export function StorePage({ currentUser }) {
           <ShieldCheck size={18} />
           <div>
             <h2>Admin account detected</h2>
-            <p>The seller workspace is for store owners. Admin moderation screens will be added separately.</p>
+            <p>The seller workspace is for store owners. Open the moderation workspace to review pending stores and deals.</p>
             <div className="state-card__actions">
+              <Link to="/admin" className="button button--primary">
+                Open admin workspace
+              </Link>
               <Link to="/deals" className="button button--secondary">
                 Browse deals
               </Link>

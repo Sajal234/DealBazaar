@@ -4,6 +4,7 @@ import { useCurrentUserQuery } from './features/auth/auth.queries';
 import { readAuthSession } from './features/auth/auth.session';
 import { RequireAuth } from './features/auth/RequireAuth';
 import { AppLayout } from './layout/AppLayout';
+import { AdminPage } from './pages/AdminPage';
 import { DealDetailPage } from './pages/DealDetailPage';
 import { DealsPage } from './pages/DealsPage';
 import { HomePage } from './pages/HomePage';
@@ -86,6 +87,18 @@ export function App() {
               isAuthLoading={isAuthLoading || isAuthFetching}
             >
               <StorePage currentUser={currentUser} />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth
+              currentUser={currentUser}
+              hasSavedSession={hasSavedSession}
+              isAuthLoading={isAuthLoading || isAuthFetching}
+            >
+              <AdminPage currentUser={currentUser} />
             </RequireAuth>
           }
         />

@@ -1,9 +1,11 @@
 import { Moon, SunMedium } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { adminKeys } from '../features/admin/admin.queries';
 import { authKeys } from '../features/auth/auth.queries';
 import { clearAuthSession } from '../features/auth/auth.session';
 import { storeKeys } from '../features/store/store.queries';
+import { storeDealsKeys } from '../features/store/storeDeals.queries';
 
 export function AppLayout({ children, theme, setTheme, currentUser }) {
   const navigate = useNavigate();
@@ -14,6 +16,8 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
     clearAuthSession();
     queryClient.removeQueries({ queryKey: authKeys.all });
     queryClient.removeQueries({ queryKey: storeKeys.all });
+    queryClient.removeQueries({ queryKey: storeDealsKeys.all });
+    queryClient.removeQueries({ queryKey: adminKeys.all });
     navigate('/', { replace: true });
   };
 
@@ -41,7 +45,15 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
             >
               Deals
             </NavLink>
-            {currentUser ? (
+            {currentUser?.role === 'admin' ? (
+              <NavLink
+                to="/admin"
+                className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
+              >
+                Admin
+              </NavLink>
+            ) : null}
+            {currentUser && currentUser.role !== 'admin' ? (
               <NavLink
                 to="/store"
                 className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
