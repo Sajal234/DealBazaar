@@ -48,6 +48,7 @@ export function StoresPage() {
   const pagination = data?.pagination || null;
   const totalPages = Math.max(1, pagination?.pages || 1);
   const currentPage = Math.min(Math.max(1, pagination?.page || filters.page), totalPages);
+  const shouldCanonicalizePage = !isLoading && !error && currentPage !== filters.page;
 
   useEffect(() => {
     setDraftSearch(filters.search);
@@ -56,6 +57,21 @@ export function StoresPage() {
   useEffect(() => {
     setDraftCity(filters.city);
   }, [filters.city]);
+
+  useEffect(() => {
+    if (!shouldCanonicalizePage) {
+      return;
+    }
+
+    setSearchParams(
+      createStoreSearchParams({
+        search: filters.search,
+        city: filters.city,
+        page: currentPage,
+      }),
+      { replace: true }
+    );
+  }, [currentPage, filters.city, filters.page, filters.search, setSearchParams, shouldCanonicalizePage]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
