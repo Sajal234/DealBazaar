@@ -74,6 +74,20 @@
   font-weight: 600;
 }
 
+.topbar__account--link {
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.topbar__account--link:hover,
+.topbar__account--active {
+  border-color: rgba(134, 99, 59, 0.2);
+  background: rgba(134, 99, 59, 0.08);
+  color: var(--text-main);
+}
+
 .theme-toggle {
   width: 42px;
   height: 42px;

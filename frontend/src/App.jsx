@@ -6,6 +6,7 @@ import { RequireAuth } from './features/auth/RequireAuth';
 import { RequireRole } from './features/auth/RequireRole';
 import { AppLayout } from './layout/AppLayout';
 import { AdminPage } from './pages/AdminPage';
+import { AccountPage } from './pages/AccountPage';
 import { DealDetailPage } from './pages/DealDetailPage';
 import { DealsPage } from './pages/DealsPage';
 import { HomePage } from './pages/HomePage';
@@ -77,6 +78,18 @@ export function App() {
               hasSavedSession={hasSavedSession}
               isAuthLoading={isAuthLoading || isAuthFetching}
             />
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <RequireAuth
+              currentUser={currentUser}
+              hasSavedSession={hasSavedSession}
+              isAuthLoading={isAuthLoading || isAuthFetching}
+            >
+              <AccountPage currentUser={currentUser} />
+            </RequireAuth>
           }
         />
         <Route

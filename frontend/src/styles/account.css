@@ -1,0 +1,161 @@
+.account-page {
+  gap: 18px;
+}
+
+.account-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.account-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--stroke);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.account-card--primary,
+.account-card--aside {
+  min-height: 100%;
+}
+
+.account-card__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.account-card__eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account-card__header h2,
+.account-card h3,
+.account-card__description {
+  margin: 0;
+}
+
+.account-card__header h2,
+.account-card h3 {
+  font-size: 1.14rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.account-card__description {
+  color: var(--text-soft);
+  font-size: 0.92rem;
+  line-height: 1.62;
+}
+
+.account-role-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(134, 99, 59, 0.18);
+  border-radius: 999px;
+  background: rgba(134, 99, 59, 0.12);
+  color: var(--accent-strong);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.account-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.account-facts div {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: var(--surface-strong);
+}
+
+.account-facts__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.account-facts strong {
+  font-size: 0.96rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.account-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.account-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  background: var(--surface-strong);
+  color: var(--accent-strong);
+}
+
+.account-inline-link {
+  color: var(--accent-strong);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .account-layout,
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .account-card {
+    padding: 18px;
+  }
+
+  .account-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .account-card__header {
+    display: grid;
+  }
+
+  .account-card__actions {
+    flex-direction: column;
+  }
+}

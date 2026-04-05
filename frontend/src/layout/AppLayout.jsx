@@ -71,9 +71,14 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
 
           {currentUser ? (
             <>
-              <span className="topbar__account">
+              <NavLink
+                to="/account"
+                className={({ isActive }) =>
+                  `topbar__account topbar__account--link${isActive ? ' topbar__account--active' : ''}`
+                }
+              >
                 {currentUser.name || currentUser.email}
-              </span>
+              </NavLink>
               <button type="button" className="button button--secondary" onClick={handleSignOut}>
                 Sign out
               </button>
