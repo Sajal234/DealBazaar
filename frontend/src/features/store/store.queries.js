@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dealsKeys } from '../deals/deals.keys';
 import { applyForStore, getMyStore, getStoreById, listStores, resubmitStoreApplication, submitStoreRating } from './store.api';
+import { isValidStoreId } from './store.ids';
 
 export const storeKeys = {
   all: ['store'],
@@ -26,10 +27,12 @@ export function useStoresQuery({ limit = 12, page = 1, city = '', search = '' } 
 }
 
 export function useStoreDetailQuery({ storeId, enabled }) {
+  const hasValidStoreId = isValidStoreId(storeId);
+
   return useQuery({
-    queryKey: storeId ? storeKeys.detail(storeId) : [...storeKeys.details(), 'invalid'],
+    queryKey: hasValidStoreId ? storeKeys.detail(storeId) : [...storeKeys.details(), 'invalid'],
     queryFn: ({ signal }) => getStoreById(storeId, { signal }),
-    enabled: enabled && typeof storeId === 'string' && storeId.trim().length > 0,
+    enabled: enabled && hasValidStoreId,
     retry: (failureCount, error) => error?.status !== 404 && failureCount < 1,
     staleTime: 60 * 1000,
   });

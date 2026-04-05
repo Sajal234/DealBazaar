@@ -1,6 +1,7 @@
 import { AlertCircle, ArrowLeft, BadgeCheck, LoaderCircle, MapPin, Phone, Star } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { ResourceNotFoundState } from '../components/ResourceNotFoundState';
+import { isValidStoreId } from '../features/store/store.ids';
 import { StorePublicDealsSection } from '../features/store/StorePublicDealsSection';
 import { StoreRatingPanel } from '../features/store/StoreRatingPanel';
 import { useStoreDetailQuery } from '../features/store/store.queries';
@@ -8,10 +9,24 @@ import '../styles/stores.css';
 
 export function StorePublicDetailPage({ currentUser }) {
   const { storeId } = useParams();
+  const hasValidStoreId = isValidStoreId(storeId);
   const { data: store, isLoading, error, refetch, isRefetching } = useStoreDetailQuery({
     storeId,
-    enabled: true,
+    enabled: hasValidStoreId,
   });
+
+  if (!hasValidStoreId) {
+    return (
+      <ResourceNotFoundState
+        title="Invalid store link"
+        message="The store address is malformed or no longer available."
+        backTo="/stores"
+        backLabel="Back to stores"
+        secondaryTo="/deals"
+        secondaryLabel="Browse deals"
+      />
+    );
+  }
 
   if (isLoading) {
     return (
