@@ -88,6 +88,7 @@ export function mapAdminStore(rawStore) {
 
 export function mapAdminDeal(rawDeal) {
   const store = rawDeal?.storeId && typeof rawDeal.storeId === 'object' ? rawDeal.storeId : null;
+  const images = Array.isArray(rawDeal?.images) ? rawDeal.images.filter((entry) => typeof entry === 'string' && entry.trim()) : [];
 
   return {
     id: rawDeal?._id || '',
@@ -99,7 +100,8 @@ export function mapAdminDeal(rawDeal) {
     updatedAtLabel: formatDateLabel(rawDeal?.updatedAt),
     views: Number.isFinite(Number(rawDeal?.views)) ? Number(rawDeal.views) : 0,
     clicks: Number.isFinite(Number(rawDeal?.clicks)) ? Number(rawDeal.clicks) : 0,
-    imageCount: Array.isArray(rawDeal?.images) ? rawDeal.images.length : 0,
+    imageUrl: images[0] || '',
+    imageCount: images.length,
     storeName: store?.name || 'Store not available',
     storeCityLabel: toTitleCase(store?.city, 'Local area'),
     storePhoneLabel: formatPhone(store?.phone),

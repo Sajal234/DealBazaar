@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, BadgeCheck, Clock3, LoaderCircle, ShieldAlert, ShieldCheck, Store as StoreIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { AdminDealMedia } from '../features/admin/AdminDealMedia';
 import { DealsPagination } from '../features/deals/DealsPagination';
 import {
   useDealModerationMutation,
@@ -322,6 +323,12 @@ export function AdminPage({ currentUser }) {
 
                 return (
                   <article key={deal.id} className="admin-card">
+                    <AdminDealMedia
+                      title={deal.title}
+                      imageUrl={deal.imageUrl}
+                      imageCount={deal.imageCount}
+                    />
+
                     <div className="admin-card__header">
                       <div>
                         <h3>{deal.title}</h3>
