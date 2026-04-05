@@ -1,5 +1,6 @@
 import { AlertCircle, ArrowLeft, BadgeCheck, LoaderCircle, MapPin, Phone, Star } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import { StorePublicDealsSection } from '../features/store/StorePublicDealsSection';
 import { StoreRatingPanel } from '../features/store/StoreRatingPanel';
 import { useStoreDetailQuery } from '../features/store/store.queries';
 import '../styles/stores.css';
@@ -108,6 +109,12 @@ export function StorePublicDetailPage({ currentUser }) {
 
         <StoreRatingPanel store={store} currentUser={currentUser} />
       </section>
+
+      <StorePublicDealsSection
+        storeId={store.id}
+        storeName={store.name}
+        cityLabel={store.cityValue || store.cityLabel}
+      />
     </main>
   );
 }

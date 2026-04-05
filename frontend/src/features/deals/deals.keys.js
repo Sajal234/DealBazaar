@@ -9,12 +9,13 @@ const normalizeTextPart = (value) => {
 export const dealsKeys = {
   all: ['deals'],
   lists: () => [...dealsKeys.all, 'list'],
-  list: ({ limit = 12, page = 1, city = '', search = '' } = {}) => [
+  list: ({ limit = 12, page = 1, city = '', search = '', storeId = '' } = {}) => [
     ...dealsKeys.lists(),
     limit,
     page,
     normalizeTextPart(city),
     normalizeTextPart(search),
+    normalizeTextPart(storeId),
   ],
   details: () => [...dealsKeys.all, 'detail'],
   detail: (dealId) => [...dealsKeys.details(), dealId],

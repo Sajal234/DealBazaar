@@ -1,7 +1,7 @@
 import { createApiUrl, requestJson } from '../../lib/requestJson';
 import { mapDealDetail, mapDealSummary } from './deals.mappers';
 
-function createDealsQueryString({ limit = 12, page = 1, search = '', city = '' } = {}) {
+function createDealsQueryString({ limit = 12, page = 1, search = '', city = '', storeId = '' } = {}) {
   const params = new URLSearchParams();
 
   params.set('limit', String(limit));
@@ -15,11 +15,15 @@ function createDealsQueryString({ limit = 12, page = 1, search = '', city = '' }
     params.set('city', city.trim());
   }
 
+  if (typeof storeId === 'string' && storeId.trim()) {
+    params.set('storeId', storeId.trim());
+  }
+
   return params.toString();
 }
 
-export async function listDeals({ limit = 12, page = 1, search = '', city = '', signal } = {}) {
-  const queryString = createDealsQueryString({ limit, page, search, city });
+export async function listDeals({ limit = 12, page = 1, search = '', city = '', storeId = '', signal } = {}) {
+  const queryString = createDealsQueryString({ limit, page, search, city, storeId });
   const payload = await requestJson(`/api/deals?${queryString}`, {
     signal,
   });
