@@ -518,10 +518,18 @@
   }
 
   .topbar {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand actions"
+      "nav nav";
     margin-bottom: 24px;
     padding: 12px;
-    justify-items: stretch;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .topbar__brand {
+    grid-area: brand;
   }
 
   .catalog-layout {
@@ -541,9 +549,20 @@
     justify-content: start;
   }
 
+  .topbar__browse {
+    display: none;
+  }
+
   .topbar__actions {
-    justify-self: stretch;
-    justify-content: space-between;
+    grid-area: actions;
+    justify-self: end;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+  }
+
+  .site-nav {
+    grid-area: nav;
+    justify-self: center;
   }
 
   .home-storefront {
@@ -583,11 +602,6 @@
     margin-bottom: 18px;
     padding: 10px;
     gap: 10px;
-  }
-
-  .topbar__brand {
-    grid-area: brand;
-    min-width: 0;
   }
 
   .topbar__actions {
