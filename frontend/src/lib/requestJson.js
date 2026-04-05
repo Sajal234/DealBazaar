@@ -183,6 +183,10 @@ function shouldRetryWithAnotherCandidate({ response, payload, rawText, contentTy
   return false;
 }
 
+function isAbortError(error) {
+  return Boolean(error && typeof error === 'object' && error.name === 'AbortError');
+}
+
 export async function requestJson(path, options = {}) {
   const session = readAuthSession();
   const requestHeaders = {
@@ -202,6 +206,10 @@ export async function requestJson(path, options = {}) {
         headers: requestHeaders,
       });
     } catch (error) {
+      if (isAbortError(error)) {
+        throw error;
+      }
+
       lastError = error;
 
       if (shouldRetryWithAnotherCandidate({ error }) && candidate !== apiCandidates[apiCandidates.length - 1]) {
