@@ -26,7 +26,7 @@ test('store schema keeps the expected production indexes', () => {
   assert.ok(hasIndex(indexes, { ownerId: 1 }, { unique: true }));
   assert.ok(hasIndex(indexes, { status: 1, createdAt: -1 }));
   assert.ok(hasIndex(indexes, { status: 1, city: 1, createdAt: -1 }));
-  assert.equal(hasIndex(indexes, { name: 'text' }), false);
+  assert.ok(hasIndex(indexes, { name: 'text' }));
   assert.equal(hasIndex(indexes, { city: 1 }), false);
   assert.equal(hasIndex(indexes, { status: 1 }), false);
 });

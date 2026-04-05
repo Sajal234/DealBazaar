@@ -88,6 +88,9 @@ test('unknown routes return the JSON 404 fallback', async () => {
 test('auth router exposes the expected route contract', () => {
   assert.deepEqual(listRoutes(authRoutes), [
     'GET /me',
+    'PATCH /password',
+    'PATCH /reset-password/:token',
+    'POST /forgot-password',
     'POST /login',
     'POST /signup',
   ]);
@@ -98,6 +101,7 @@ test('store router exposes the expected route contract', () => {
     'GET /',
     'GET /:id',
     'GET /me',
+    'PATCH /me',
     'POST /',
     'POST /:id/ratings',
   ]);
