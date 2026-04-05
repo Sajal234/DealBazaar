@@ -9,6 +9,25 @@ import { storeKeys } from '../features/store/store.queries';
 import { storeDealsKeys } from '../features/store/storeDeals.queries';
 import { AppRouteEffects } from './AppRouteEffects';
 
+function getProfileBadgeText(user) {
+  const source = typeof user?.name === 'string' && user.name.trim() ? user.name.trim() : user?.email || '';
+
+  if (!source) {
+    return 'DB';
+  }
+
+  const parts = source
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  return source.replace(/[^a-z0-9]/gi, '').slice(0, 2).toUpperCase() || 'DB';
+}
+
 export function AppLayout({ children, theme, setTheme, currentUser }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -97,7 +116,7 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
               to="/store"
               className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
             >
-              Store
+              My Store
             </NavLink>
           ) : null}
         </nav>
@@ -112,20 +131,16 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
               <NavLink
                 to="/account"
                 className={({ isActive }) =>
-                  `topbar__account topbar__account--link topbar__desktop-only${
+                  `topbar__account topbar__account--badge topbar__account--link topbar__desktop-only${
                     isActive ? ' topbar__account--active' : ''
                   }`
                 }
+                aria-label={`Open account for ${currentUser.name || currentUser.email}`}
               >
-                {currentUser.name || currentUser.email}
+                <span className="topbar__account-badge" aria-hidden="true">
+                  {getProfileBadgeText(currentUser)}
+                </span>
               </NavLink>
-              <button
-                type="button"
-                className="button button--secondary topbar__desktop-only"
-                onClick={handleSignOut}
-              >
-                Sign out
-              </button>
             </>
           ) : (
             <NavLink to="/login" className="button button--secondary topbar__desktop-only">
@@ -190,7 +205,7 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
                 to="/store"
                 className={({ isActive }) => `mobile-nav__link${isActive ? ' mobile-nav__link--active' : ''}`}
               >
-                Store
+                My Store
               </NavLink>
             ) : null}
           </nav>
