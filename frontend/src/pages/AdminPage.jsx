@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AlertCircle, BadgeCheck, Clock3, LoaderCircle, ShieldAlert, ShieldCheck, Store as StoreIcon } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { AdminConfirmActionButton } from '../features/admin/AdminConfirmActionButton';
 import { AdminDealMedia } from '../features/admin/AdminDealMedia';
 import { AdminStoreOwnerSummary } from '../features/admin/AdminStoreOwnerSummary';
 import { AdminStoreContextLinks } from '../features/admin/AdminStoreContextLinks';
@@ -234,27 +235,29 @@ export function AdminPage({ currentUser }) {
                     <AdminStoreContextLinks phone={store.phone} viewLabel="Open public store page" />
 
                     <div className="admin-card__actions">
-                      <button
-                        type="button"
+                      <AdminConfirmActionButton
+                        icon={<BadgeCheck />}
                         className="button button--primary"
-                        onClick={() => {
+                        onConfirm={() => {
                           handleStoreModeration(store.id, 'approved');
                         }}
                         disabled={isApproving || isRejecting}
-                      >
-                        <BadgeCheck size={16} />
-                        {isApproving ? 'Approving...' : moderationCopy.approveStore}
-                      </button>
-                      <button
-                        type="button"
+                        isPending={isApproving}
+                        label={moderationCopy.approveStore}
+                        confirmLabel="Confirm approve"
+                        pendingLabel="Approving..."
+                      />
+                      <AdminConfirmActionButton
                         className="button button--secondary"
-                        onClick={() => {
+                        onConfirm={() => {
                           handleStoreModeration(store.id, 'rejected');
                         }}
                         disabled={isApproving || isRejecting}
-                      >
-                        {isRejecting ? 'Rejecting...' : moderationCopy.rejectStore}
-                      </button>
+                        isPending={isRejecting}
+                        label={moderationCopy.rejectStore}
+                        confirmLabel="Confirm reject"
+                        pendingLabel="Rejecting..."
+                      />
                     </div>
                   </article>
                 );
@@ -402,27 +405,29 @@ export function AdminPage({ currentUser }) {
                     </div>
 
                     <div className="admin-card__actions">
-                      <button
-                        type="button"
+                      <AdminConfirmActionButton
+                        icon={<BadgeCheck />}
                         className="button button--primary"
-                        onClick={() => {
+                        onConfirm={() => {
                           handleDealModeration(deal.id, 'active');
                         }}
                         disabled={isApproving || isRejecting}
-                      >
-                        <BadgeCheck size={16} />
-                        {isApproving ? 'Approving...' : `${moderationCopy.approveDeal} (${filters.hours}h)`}
-                      </button>
-                      <button
-                        type="button"
+                        isPending={isApproving}
+                        label={`${moderationCopy.approveDeal} (${filters.hours}h)`}
+                        confirmLabel={`Confirm approve (${filters.hours}h)`}
+                        pendingLabel="Approving..."
+                      />
+                      <AdminConfirmActionButton
                         className="button button--secondary"
-                        onClick={() => {
+                        onConfirm={() => {
                           handleDealModeration(deal.id, 'rejected');
                         }}
                         disabled={isApproving || isRejecting}
-                      >
-                        {isRejecting ? 'Rejecting...' : moderationCopy.rejectDeal}
-                      </button>
+                        isPending={isRejecting}
+                        label={moderationCopy.rejectDeal}
+                        confirmLabel="Confirm reject"
+                        pendingLabel="Rejecting..."
+                      />
                     </div>
                   </article>
                 );

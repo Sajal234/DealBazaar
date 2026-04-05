@@ -312,6 +312,11 @@
   gap: 10px;
 }
 
+.admin-confirm-button--armed {
+  border-color: rgba(134, 99, 59, 0.28) !important;
+  box-shadow: 0 0 0 3px rgba(134, 99, 59, 0.12);
+}
+
 @media (max-width: 1080px) {
   .admin-overview,
   .admin-layout {
