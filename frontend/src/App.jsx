@@ -8,6 +8,7 @@ import { DealDetailPage } from './pages/DealDetailPage';
 import { DealsPage } from './pages/DealsPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
 import { StorePage } from './pages/StorePage';
 
 const themeStorageKey = 'dealbazaar.theme';
@@ -60,6 +61,16 @@ export function App() {
           path="/login"
           element={
             <LoginPage
+              currentUser={currentUser}
+              hasSavedSession={hasSavedSession}
+              isAuthLoading={isAuthLoading || isAuthFetching}
+            />
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <SignupPage
               currentUser={currentUser}
               hasSavedSession={hasSavedSession}
               isAuthLoading={isAuthLoading || isAuthFetching}

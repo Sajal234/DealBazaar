@@ -150,6 +150,19 @@
   gap: 10px;
 }
 
+.login-form__hint,
+.login-form__switch {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.login-form__switch a {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
 .login-form__spinner {
   animation: spin 1s linear infinite;
 }

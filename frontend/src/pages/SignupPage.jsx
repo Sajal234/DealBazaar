@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { ArrowRight, KeyRound, LoaderCircle, Mail } from 'lucide-react';
+import { ArrowRight, KeyRound, LoaderCircle, Mail, UserRound } from 'lucide-react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { loginUser } from '../features/auth/auth.api';
+import { signupUser } from '../features/auth/auth.api';
 import { clearAuthSession, persistAuthSession } from '../features/auth/auth.session';
 import '../styles/login.css';
 
-export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
+export function SignupPage({ currentUser, hasSavedSession, isAuthLoading }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState({
+    name: '',
     email: '',
     password: '',
+    confirmPassword: '',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,8 +24,25 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!form.email.trim() || !form.password) {
-      setError('Enter your email and password to continue.');
+    const normalizedForm = {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      password: form.password,
+      confirmPassword: form.confirmPassword,
+    };
+
+    if (!normalizedForm.name || !normalizedForm.email || !normalizedForm.password || !normalizedForm.confirmPassword) {
+      setError('Fill in every field to create your account.');
+      return;
+    }
+
+    if (normalizedForm.password.length < 6 || !/\d/.test(normalizedForm.password)) {
+      setError('Password must be at least 6 characters long and include at least one number.');
+      return;
+    }
+
+    if (normalizedForm.password !== normalizedForm.confirmPassword) {
+      setError('Password confirmation does not match.');
       return;
     }
 
@@ -31,19 +50,20 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
     setError('');
 
     try {
-      const session = await loginUser({
-        email: form.email.trim(),
-        password: form.password,
+      const session = await signupUser({
+        name: normalizedForm.name,
+        email: normalizedForm.email,
+        password: normalizedForm.password,
       });
 
       persistAuthSession(session);
 
       const nextPath =
-        typeof location.state?.from?.pathname === 'string' ? location.state.from.pathname : '/deals';
+        typeof location.state?.from?.pathname === 'string' ? location.state.from.pathname : '/store';
 
       navigate(nextPath, { replace: true });
     } catch (submissionError) {
-      setError(submissionError.message || 'Could not sign you in right now.');
+      setError(submissionError.message || 'Could not create your account right now.');
     } finally {
       setIsSubmitting(false);
     }
@@ -51,16 +71,16 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
 
   const handleClearSession = () => {
     clearAuthSession();
-    navigate('/login', { replace: true });
+    navigate('/signup', { replace: true });
   };
 
   return (
     <main className="login-page">
       <section className="login-panel">
         <div className="login-panel__intro">
-          <p className="login-panel__eyebrow">Account access</p>
-          <h1>Sign in to your DealBazaar account</h1>
-          <p>Access store tools, saved activity, and marketplace actions from one place.</p>
+          <p className="login-panel__eyebrow">Create account</p>
+          <h1>Set up your DealBazaar account</h1>
+          <p>Create one account to browse deals, rate stores, and unlock seller access when you are ready.</p>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
@@ -78,6 +98,26 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
               </div>
             </div>
           ) : null}
+
+          <label className="login-field">
+            <span className="login-field__label">Full name</span>
+            <div className="login-field__control">
+              <UserRound size={16} />
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={(event) => {
+                  setForm((currentForm) => ({
+                    ...currentForm,
+                    name: event.target.value,
+                  }));
+                }}
+                placeholder="Your name"
+                autoComplete="name"
+              />
+            </div>
+          </label>
 
           <label className="login-field">
             <span className="login-field__label">Email</span>
@@ -113,11 +153,33 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
                     password: event.target.value,
                   }));
                 }}
-                placeholder="Enter your password"
-                autoComplete="current-password"
+                placeholder="Create a password"
+                autoComplete="new-password"
               />
             </div>
           </label>
+
+          <label className="login-field">
+            <span className="login-field__label">Confirm password</span>
+            <div className="login-field__control">
+              <KeyRound size={16} />
+              <input
+                type="password"
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={(event) => {
+                  setForm((currentForm) => ({
+                    ...currentForm,
+                    confirmPassword: event.target.value,
+                  }));
+                }}
+                placeholder="Repeat your password"
+                autoComplete="new-password"
+              />
+            </div>
+          </label>
+
+          <p className="login-form__hint">Passwords must be at least 6 characters and include at least one number.</p>
 
           {error ? (
             <p className="login-form__error" role="alert">
@@ -128,17 +190,13 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
           <div className="login-form__actions">
             <button type="submit" className="button button--primary" disabled={isSubmitting}>
               {isSubmitting ? <LoaderCircle size={18} className="login-form__spinner" /> : <ArrowRight size={18} />}
-              {isSubmitting ? 'Signing in...' : 'Sign in'}
+              {isSubmitting ? 'Creating account...' : 'Create account'}
             </button>
 
-            <Link to="/deals" className="button button--secondary">
-              Back to deals
+            <Link to="/login" className="button button--secondary">
+              Already have an account?
             </Link>
           </div>
-
-          <p className="login-form__switch">
-            New to DealBazaar? <Link to="/signup">Create an account</Link>
-          </p>
         </form>
       </section>
     </main>
