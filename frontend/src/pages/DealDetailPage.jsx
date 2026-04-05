@@ -23,7 +23,7 @@ function ContactAction({ deal }) {
       href={`tel:${phone}`}
       className="button button--primary"
       onClick={() => {
-        trackDealClick(deal.id);
+        void trackDealClick(deal.id);
       }}
     >
       <Phone size={18} />
