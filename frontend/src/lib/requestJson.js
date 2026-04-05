@@ -1,5 +1,26 @@
 import { readAuthSession } from '../features/auth/auth.session';
 
+const API_BASE_URL = typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_API_URL || '').trim() : '';
+
+function createApiUrl(path) {
+  if (typeof path !== 'string' || !path.trim()) {
+    return path;
+  }
+
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  if (!API_BASE_URL) {
+    return path;
+  }
+
+  const normalizedBaseUrl = API_BASE_URL.replace(/\/+$/, '');
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  return `${normalizedBaseUrl}${normalizedPath}`;
+}
+
 async function parseResponse(response) {
   const clonedResponse = response.clone();
   const contentType = response.headers.get('content-type') || '';
@@ -73,6 +94,10 @@ function getErrorMessage(payload, rawText, response, contentType) {
     return 'Backend request failed. Make sure the API server is running and reachable.';
   }
 
+  if (response?.ok) {
+    return 'The frontend received an unexpected response from the server. Restart the frontend after environment changes and make sure VITE_API_URL points to the backend API.';
+  }
+
   if (response?.status) {
     return `Request failed with status ${response.status}`;
   }
@@ -85,7 +110,7 @@ export async function requestJson(path, options = {}) {
   let response;
 
   try {
-    response = await fetch(path, {
+    response = await fetch(createApiUrl(path), {
       ...options,
       headers: {
         Accept: 'application/json',
@@ -109,3 +134,5 @@ export async function requestJson(path, options = {}) {
 
   return payload;
 }
+
+export { createApiUrl };
