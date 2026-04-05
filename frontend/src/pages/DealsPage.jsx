@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { DealCard } from '../features/deals/DealCard';
 import { DealsFiltersPanel } from '../features/deals/DealsFiltersPanel';
 import { DealsPagination } from '../features/deals/DealsPagination';
+import { DealsResultsHeader } from '../features/deals/DealsResultsHeader';
 import {
   createDealsSearchParams,
   hasDealsFilters,
@@ -102,18 +103,12 @@ export function DealsPage() {
         />
 
         <div className="catalog-main">
-          <section className="catalog-resultsbar" aria-live="polite">
-            <div>
-              <p className="catalog-resultsbar__eyebrow">Results</p>
-              <h2>{hasActiveFilters ? 'Filtered marketplace view' : 'All live marketplace deals'}</h2>
-            </div>
-
-            <p className="catalog-resultsbar__summary">
-              {hasActiveFilters
-                ? `${pagination?.total ?? deals.length} matching deal${(pagination?.total ?? deals.length) === 1 ? '' : 's'}`
-                : `${pagination?.total ?? deals.length} live deal${(pagination?.total ?? deals.length) === 1 ? '' : 's'} available`}
-            </p>
-          </section>
+          <DealsResultsHeader
+            filters={filters}
+            hasActiveFilters={hasActiveFilters}
+            pagination={pagination}
+            dealsCount={deals.length}
+          />
 
           {isLoading ? (
             <section className="state-card" aria-live="polite">
