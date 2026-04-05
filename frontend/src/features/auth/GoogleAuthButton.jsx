@@ -111,13 +111,15 @@ export function GoogleAuthButton({ label = 'Continue with Google', onCredential,
     return null;
   }
 
+  const shouldRenderInlineError = !onError;
+
   return (
     <div className="google-auth">
       <div className="google-auth__divider" aria-hidden="true">
         <span>or</span>
       </div>
       <div id={htmlId} ref={containerRef} className="google-auth__button" />
-      {buttonError ? (
+      {shouldRenderInlineError && buttonError ? (
         <p className="login-form__error" role="alert">
           {buttonError}
         </p>
