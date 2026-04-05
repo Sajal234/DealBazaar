@@ -119,6 +119,12 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
             </div>
           </label>
 
+          <div className="login-form__support">
+            <Link to="/forgot-password" className="login-form__support-link">
+              Forgot your password?
+            </Link>
+          </div>
+
           {error ? (
             <p className="login-form__error" role="alert">
               {error}

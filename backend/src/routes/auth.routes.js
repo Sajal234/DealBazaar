@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { signup, login, getMe, changePassword } from '../controllers/auth.controller.js';
+import { signup, login, getMe, changePassword, forgotPassword, resetPassword } from '../controllers/auth.controller.js';
 import { protect } from '../middleware/auth.js';
 import { authRateLimiter, passwordWriteRateLimiter } from '../middleware/rateLimit.js';
 
@@ -30,6 +30,27 @@ router.post(
     body('password', 'Password is required').notEmpty()
   ],
   login
+);
+
+// @route   POST /api/auth/forgot-password
+router.post(
+  '/forgot-password',
+  authRateLimiter,
+  [body('email', 'Please include a strictly valid email').isEmail().normalizeEmail()],
+  forgotPassword
+);
+
+// @route   PATCH /api/auth/reset-password/:token
+router.patch(
+  '/reset-password/:token',
+  passwordWriteRateLimiter,
+  [
+    body('password', 'Please enter a securely long password (6+ characters)')
+      .isLength({ min: 6 })
+      .matches(/\d/)
+      .withMessage('Password must contain at least one number'),
+  ],
+  resetPassword
 );
 
 // @route   GET /api/auth/me

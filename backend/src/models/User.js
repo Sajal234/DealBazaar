@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema(
   {
@@ -27,6 +28,14 @@ const userSchema = new mongoose.Schema(
     },
     passwordChangedAt: {
       type: Date,
+    },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
     },
     role: {
       type: String,
@@ -66,6 +75,18 @@ userSchema.methods.changedPasswordAfter = function (jwtIssuedAt) {
   const passwordChangedAtSeconds = Math.floor(this.passwordChangedAt.getTime() / 1000);
 
   return passwordChangedAtSeconds > jwtIssuedAt;
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  this.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);

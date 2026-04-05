@@ -51,3 +51,30 @@ export async function changePassword({ currentPassword, newPassword }) {
 
   return payload.data;
 }
+
+export async function requestPasswordReset({ email }) {
+  const payload = await requestJson('/api/auth/forgot-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  return {
+    message: payload.message,
+    debugResetPath: payload.data?.debugResetPath || '',
+  };
+}
+
+export async function resetPasswordWithToken({ token, password }) {
+  const payload = await requestJson(`/api/auth/reset-password/${encodeURIComponent(token)}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ password }),
+  });
+
+  return payload.data;
+}

@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { validationResult } from 'express-validator';
 import User from '../models/User.js';
 
@@ -171,5 +172,85 @@ export const changePassword = async (req, res) => {
   } catch (error) {
     console.error('[Change Password Error]', error);
     return res.status(500).json({ success: false, message: 'Server error during password update' });
+  }
+};
+
+// @desc    Request a password reset token
+// @route   POST /api/auth/forgot-password
+// @access  Public
+export const forgotPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  try {
+    const normalizedEmail = req.body.email.toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail }).select('+passwordResetToken +passwordResetExpires');
+    const genericMessage = 'If an account exists for that email, password reset instructions are ready.';
+
+    if (!user) {
+      return res.status(200).json({ success: true, message: genericMessage });
+    }
+
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    const response = {
+      success: true,
+      message: genericMessage,
+    };
+
+    if ((process.env.NODE_ENV || 'development') !== 'production') {
+      response.data = {
+        debugResetPath: `/reset-password/${resetToken}`,
+      };
+    }
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error('[Forgot Password Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error during password recovery request' });
+  }
+};
+
+// @desc    Reset password with a valid reset token
+// @route   PATCH /api/auth/reset-password/:token
+// @access  Public
+export const resetPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  try {
+    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: new Date() },
+    }).select('+passwordResetToken +passwordResetExpires');
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'This password reset link is invalid or has expired' });
+    }
+
+    user.password = req.body.password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successfully.',
+      data: {
+        ...serializeAuthUser(user),
+        token: generateToken(user._id),
+      },
+    });
+  } catch (error) {
+    console.error('[Reset Password Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error during password reset' });
   }
 };

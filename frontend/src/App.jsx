@@ -9,9 +9,11 @@ import { AdminPage } from './pages/AdminPage';
 import { AccountPage } from './pages/AccountPage';
 import { DealDetailPage } from './pages/DealDetailPage';
 import { DealsPage } from './pages/DealsPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { SignupPage } from './pages/SignupPage';
 import { StorePublicDetailPage } from './pages/StorePublicDetailPage';
 import { StorePage } from './pages/StorePage';
@@ -84,6 +86,14 @@ export function App() {
               isAuthLoading={isAuthLoading || isAuthFetching}
             />
           }
+        />
+        <Route
+          path="/forgot-password"
+          element={<ForgotPasswordPage currentUser={currentUser} />}
+        />
+        <Route
+          path="/reset-password/:token"
+          element={<ResetPasswordPage currentUser={currentUser} />}
         />
         <Route
           path="/account"
