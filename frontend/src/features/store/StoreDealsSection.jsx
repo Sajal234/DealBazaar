@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { AlertCircle, BarChart3, Clock3, Eye, LoaderCircle, PencilLine, RotateCcw, Trash2 } from 'lucide-react';
+import { AlertCircle, BarChart3, Clock3, Eye, LoaderCircle, PencilLine, RotateCcw } from 'lucide-react';
 import { DealsPagination } from '../deals/DealsPagination';
+import { StoreDealArchiveControl } from './StoreDealArchiveControl';
 import { StoreDealComposer } from './StoreDealComposer';
 import { StoreDealEditor } from './StoreDealEditor';
 import { getOwnerDealStatusLabel, normalizeOwnerDealStatus } from './storeDeals.filters';
@@ -11,10 +12,6 @@ const actionCopy = {
   resubmit: {
     label: 'Resubmit',
     loading: 'Resubmitting...',
-  },
-  archive: {
-    label: 'Archive',
-    loading: 'Archiving...',
   },
 };
 
@@ -230,17 +227,12 @@ export function StoreDealsSection({ defaultCityLabel }) {
                     </button>
                   ) : null}
 
-                  <button
-                    type="button"
-                    className="button button--ghost owner-deal-card__archive"
-                    onClick={() => {
+                  <StoreDealArchiveControl
+                    isPending={isArchivePending}
+                    onConfirm={() => {
                       handleArchive(deal.id);
                     }}
-                    disabled={isArchivePending || isResubmitPending}
-                  >
-                    <Trash2 size={16} />
-                    {isArchivePending ? actionCopy.archive.loading : actionCopy.archive.label}
-                  </button>
+                  />
                 </div>
 
                 {isEditing ? (
