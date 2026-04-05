@@ -113,7 +113,7 @@ function getErrorMessage(payload, rawText, response, contentType) {
   }
 
   if (contentType.includes('text/html') || /<!doctype html>|<html/i.test(rawText)) {
-    return 'We could not reach the signup service correctly. Please make sure the backend server is running and try again.';
+    return 'We could not complete this request right now. Please try again in a moment.';
   }
 
   if (typeof rawText === 'string' && rawText.trim()) {
@@ -125,7 +125,7 @@ function getErrorMessage(payload, rawText, response, contentType) {
   }
 
   if (response?.status >= 500) {
-    return 'Backend request failed. Make sure the API server is running and reachable.';
+    return 'Something went wrong on our side. Please try again in a moment.';
   }
 
   if (response?.ok) {
@@ -136,7 +136,7 @@ function getErrorMessage(payload, rawText, response, contentType) {
     return `Request failed with status ${response.status}`;
   }
 
-  return 'Request failed';
+  return 'We could not complete this request right now. Please try again.';
 }
 
 function getPayloadMessage(payload) {
@@ -208,7 +208,7 @@ export async function requestJson(path, options = {}) {
         continue;
       }
 
-      const networkError = new Error('Could not reach the backend API. Check that the backend server is running.');
+      const networkError = new Error('We could not reach the service right now. Please try again in a moment.');
       networkError.cause = error;
       throw networkError;
     }
@@ -236,7 +236,7 @@ export async function requestJson(path, options = {}) {
     throw error;
   }
 
-  const fallbackError = new Error('Could not reach the backend API. Check that the backend server is running.');
+  const fallbackError = new Error('We could not reach the service right now. Please try again in a moment.');
   fallbackError.cause = lastError;
   throw fallbackError;
 }
