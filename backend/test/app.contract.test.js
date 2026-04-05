@@ -91,6 +91,7 @@ test('auth router exposes the expected route contract', () => {
     'PATCH /password',
     'PATCH /reset-password/:token',
     'POST /forgot-password',
+    'POST /google',
     'POST /login',
     'POST /signup',
   ]);

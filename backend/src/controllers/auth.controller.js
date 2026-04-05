@@ -20,6 +20,66 @@ const serializeAuthUser = (user) => ({
   role: user.role,
 });
 
+const GOOGLE_ISSUERS = new Set(['accounts.google.com', 'https://accounts.google.com']);
+
+const getGoogleClientId = () => {
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
+
+  if (!clientId) {
+    throw new Error('GOOGLE_CLIENT_ID is not defined in environment variables');
+  }
+
+  return clientId;
+};
+
+const createGeneratedPassword = () => `${crypto.randomBytes(24).toString('hex')}0`;
+
+const verifyGoogleIdToken = async (credential) => {
+  const googleClientId = getGoogleClientId();
+  const tokenInfoUrl = `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`;
+  const response = await fetch(tokenInfoUrl, {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  let payload = null;
+
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok || !payload) {
+    throw new Error('Google token verification failed');
+  }
+
+  if (payload.aud !== googleClientId) {
+    throw new Error('Google token audience mismatch');
+  }
+
+  if (!GOOGLE_ISSUERS.has(payload.iss)) {
+    throw new Error('Google token issuer mismatch');
+  }
+
+  if (payload.email_verified !== 'true' && payload.email_verified !== true) {
+    throw new Error('Google account email is not verified');
+  }
+
+  if (typeof payload.email !== 'string' || !payload.email.trim()) {
+    throw new Error('Google account email is missing');
+  }
+
+  return {
+    email: payload.email.trim().toLowerCase(),
+    name:
+      typeof payload.name === 'string' && payload.name.trim()
+        ? payload.name.trim()
+        : payload.email.split('@')[0],
+  };
+};
+
 // @desc    Register a new user
 // @route   POST /api/auth/signup
 // @access  Public
@@ -111,6 +171,62 @@ export const login = async (req, res) => {
   } catch (error) {
     console.error('[Login Error]', error);
     return res.status(500).json({ success: false, message: 'Server error during login' });
+  }
+};
+
+// @desc    Authenticate or create a user with Google
+// @route   POST /api/auth/google
+// @access  Public
+export const googleAuth = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  try {
+    const { credential } = req.body;
+    const googleProfile = await verifyGoogleIdToken(credential);
+    let user = await User.findOne({ email: googleProfile.email });
+
+    if (user?.role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Administrator accounts must sign in with email and password.',
+      });
+    }
+
+    if (!user) {
+      user = await User.create({
+        name: googleProfile.name,
+        email: googleProfile.email,
+        password: createGeneratedPassword(),
+        role: 'user',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...serializeAuthUser(user),
+        token: generateToken(user._id),
+      },
+    });
+  } catch (error) {
+    if (
+      error.message === 'Google token verification failed' ||
+      error.message === 'Google token audience mismatch' ||
+      error.message === 'Google token issuer mismatch' ||
+      error.message === 'Google account email is not verified' ||
+      error.message === 'Google account email is missing'
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: 'Google sign-in could not be verified. Please try again.',
+      });
+    }
+
+    console.error('[Google Auth Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error during Google sign-in' });
   }
 };
 

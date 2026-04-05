@@ -7,7 +7,7 @@ process.env.CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || 'test-key';
 process.env.CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'test-secret';
 
 const [
-  { signup, login },
+  { signup, login, googleAuth },
   { applyForStore, submitStoreRating },
   { updateDeal, trackDealClick },
   { updateStoreStatus, updateDealStatus },
@@ -82,6 +82,53 @@ test('login rejects invalid credentials without leaking which field failed', asy
   assert.deepEqual(res.body, {
     success: false,
     message: 'Invalid email or password',
+  });
+});
+
+test('googleAuth blocks administrator accounts from signing in through Google', async () => {
+  const req = {
+    body: {
+      credential: 'google-id-token',
+    },
+  };
+  const res = createMockResponse();
+
+  await withPatchedProperties(
+    [
+      {
+        target: globalThis,
+        key: 'fetch',
+        value: async () => ({
+          ok: true,
+          json: async () => ({
+            aud: process.env.GOOGLE_CLIENT_ID || 'test-google-client-id',
+            iss: 'https://accounts.google.com',
+            email_verified: true,
+            email: 'admin@example.com',
+            name: 'Admin User',
+          }),
+        }),
+      },
+      {
+        target: User,
+        key: 'findOne',
+        value: async () => ({
+          _id: 'admin-1',
+          role: 'admin',
+          email: 'admin@example.com',
+        }),
+      },
+    ],
+    async () => {
+      process.env.GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'test-google-client-id';
+      await googleAuth(req, res);
+    }
+  );
+
+  assert.equal(res.statusCode, 403);
+  assert.deepEqual(res.body, {
+    success: false,
+    message: 'Administrator accounts must sign in with email and password.',
   });
 });
 

@@ -31,6 +31,20 @@ export async function loginUser({ email, password }) {
   return payload.data;
 }
 
+export async function loginWithGoogle({ credential }) {
+  const payload = await requestJson('/api/auth/google', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      credential,
+    }),
+  });
+
+  return payload.data;
+}
+
 export async function getCurrentUser() {
   const payload = await requestJson('/api/auth/me');
 

@@ -166,6 +166,34 @@
   gap: 10px;
 }
 
+.google-auth {
+  display: grid;
+  gap: 12px;
+}
+
+.google-auth__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.google-auth__divider::before,
+.google-auth__divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--stroke);
+}
+
+.google-auth__button {
+  display: flex;
+  justify-content: center;
+}
+
 .login-form__support {
   display: flex;
   justify-content: flex-end;

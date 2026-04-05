@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { ArrowRight, KeyRound, LoaderCircle, Mail, UserRound } from 'lucide-react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { signupUser } from '../features/auth/auth.api';
+import { GoogleAuthButton } from '../features/auth/GoogleAuthButton';
+import { loginWithGoogle, signupUser } from '../features/auth/auth.api';
 import { getPostAuthPath } from '../features/auth/auth.redirects';
 import { clearAuthSession, persistAuthSession } from '../features/auth/auth.session';
 import '../styles/login.css';
@@ -72,6 +73,23 @@ export function SignupPage({ currentUser, hasSavedSession, isAuthLoading }) {
   const handleClearSession = () => {
     clearAuthSession();
     navigate('/signup', { replace: true });
+  };
+
+  const handleGoogleCredential = async (credential) => {
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const session = await loginWithGoogle({ credential });
+
+      persistAuthSession(session);
+      navigate(getPostAuthPath(session, requestedLocation || '/store'), { replace: true });
+    } catch (submissionError) {
+      setError(submissionError.message || 'Could not create your account with Google right now.');
+      throw submissionError;
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -197,6 +215,15 @@ export function SignupPage({ currentUser, hasSavedSession, isAuthLoading }) {
               Already have an account?
             </Link>
           </div>
+
+          <GoogleAuthButton
+            label="Create account with Google"
+            disabled={isSubmitting}
+            onCredential={handleGoogleCredential}
+            onError={(googleError) => {
+              setError(googleError.message || 'Could not create your account with Google right now.');
+            }}
+          />
         </form>
       </section>
     </main>

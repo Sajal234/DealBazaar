@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { ArrowRight, KeyRound, LoaderCircle, Mail } from 'lucide-react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { loginUser } from '../features/auth/auth.api';
+import { GoogleAuthButton } from '../features/auth/GoogleAuthButton';
+import { loginUser, loginWithGoogle } from '../features/auth/auth.api';
 import { getPostAuthPath } from '../features/auth/auth.redirects';
 import { clearAuthSession, persistAuthSession } from '../features/auth/auth.session';
 import '../styles/login.css';
@@ -52,6 +53,23 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
   const handleClearSession = () => {
     clearAuthSession();
     navigate('/login', { replace: true });
+  };
+
+  const handleGoogleCredential = async (credential) => {
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const session = await loginWithGoogle({ credential });
+
+      persistAuthSession(session);
+      navigate(getPostAuthPath(session, requestedLocation), { replace: true });
+    } catch (submissionError) {
+      setError(submissionError.message || 'Could not sign you in with Google right now.');
+      throw submissionError;
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -141,6 +159,15 @@ export function LoginPage({ currentUser, hasSavedSession, isAuthLoading }) {
               Back to deals
             </Link>
           </div>
+
+          <GoogleAuthButton
+            label="Continue with Google"
+            disabled={isSubmitting}
+            onCredential={handleGoogleCredential}
+            onError={(googleError) => {
+              setError(googleError.message || 'Could not sign you in with Google right now.');
+            }}
+          />
 
           <p className="login-form__switch">
             New to DealBazaar? <Link to="/signup" state={{ from: requestedLocation }}>Create an account</Link>

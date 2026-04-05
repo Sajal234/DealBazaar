@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { signup, login, getMe, changePassword, forgotPassword, resetPassword } from '../controllers/auth.controller.js';
+import { signup, login, googleAuth, getMe, changePassword, forgotPassword, resetPassword } from '../controllers/auth.controller.js';
 import { protect } from '../middleware/auth.js';
 import { authRateLimiter, passwordWriteRateLimiter } from '../middleware/rateLimit.js';
 
@@ -30,6 +30,14 @@ router.post(
     body('password', 'Password is required').notEmpty()
   ],
   login
+);
+
+// @route   POST /api/auth/google
+router.post(
+  '/google',
+  authRateLimiter,
+  [body('credential', 'Google credential is required').isString().trim().notEmpty()],
+  googleAuth
 );
 
 // @route   POST /api/auth/forgot-password
