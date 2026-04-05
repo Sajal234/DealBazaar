@@ -7,7 +7,7 @@ import cleanupImagesJob from './jobs/cleanupImages.js';
 import app from './app.js';
 import connectDB from './config/db.js';
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Connect to MongoDB before starting the Express server
 connectDB().then(() => {
