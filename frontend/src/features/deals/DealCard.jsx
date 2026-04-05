@@ -1,5 +1,6 @@
-import { Clock3, MapPin, Search, Star } from 'lucide-react';
+import { Clock3, MapPin, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { DealCardMedia } from './DealCardMedia';
 import { createDealPreviewEntry } from './deals.preview';
 
 export function DealCard({ deal, previewTimestamp }) {
@@ -9,15 +10,7 @@ export function DealCard({ deal, previewTimestamp }) {
       state={{ dealPreviewEntry: createDealPreviewEntry(deal, previewTimestamp) }}
       className="deal-card"
     >
-      <div className="deal-card__image-wrap">
-        {deal.imageUrl ? (
-          <img src={deal.imageUrl} alt={deal.title} className="deal-card__image" />
-        ) : (
-          <div className="deal-card__image deal-card__image--placeholder" aria-hidden="true">
-            <Search size={18} />
-          </div>
-        )}
-      </div>
+      <DealCardMedia title={deal.title} imageUrl={deal.imageUrl} priceLabel={deal.priceLabel} />
 
       <div className="deal-card__body">
         <div className="deal-card__eyebrow">
