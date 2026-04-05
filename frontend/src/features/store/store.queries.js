@@ -5,16 +5,22 @@ import { applyForStore, getMyStore, getStoreById, listStores, resubmitStoreAppli
 export const storeKeys = {
   all: ['store'],
   lists: () => [...storeKeys.all, 'list'],
-  list: ({ limit = 12, page = 1, city = '' } = {}) => [...storeKeys.lists(), limit, page, city.trim().toLowerCase()],
+  list: ({ limit = 12, page = 1, city = '', search = '' } = {}) => [
+    ...storeKeys.lists(),
+    limit,
+    page,
+    city.trim().toLowerCase(),
+    search.trim().toLowerCase(),
+  ],
   details: () => [...storeKeys.all, 'detail'],
   detail: (storeId) => [...storeKeys.details(), storeId],
   myStore: () => [...storeKeys.all, 'me'],
 };
 
-export function useStoresQuery({ limit = 12, page = 1, city = '' } = {}) {
+export function useStoresQuery({ limit = 12, page = 1, city = '', search = '' } = {}) {
   return useQuery({
-    queryKey: storeKeys.list({ limit, page, city }),
-    queryFn: ({ signal }) => listStores({ limit, page, city, signal }),
+    queryKey: storeKeys.list({ limit, page, city, search }),
+    queryFn: ({ signal }) => listStores({ limit, page, city, search, signal }),
     staleTime: 60 * 1000,
   });
 }

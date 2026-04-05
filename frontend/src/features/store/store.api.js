@@ -1,7 +1,7 @@
 import { requestJson } from '../../lib/requestJson';
 import { mapStore } from './store.mappers';
 
-function createStoresQueryString({ limit = 12, page = 1, city = '' } = {}) {
+function createStoresQueryString({ limit = 12, page = 1, city = '', search = '' } = {}) {
   const params = new URLSearchParams();
 
   params.set('limit', String(limit));
@@ -11,11 +11,15 @@ function createStoresQueryString({ limit = 12, page = 1, city = '' } = {}) {
     params.set('city', city.trim());
   }
 
+  if (typeof search === 'string' && search.trim()) {
+    params.set('search', search.trim());
+  }
+
   return params.toString();
 }
 
-export async function listStores({ limit = 12, page = 1, city = '', signal } = {}) {
-  const payload = await requestJson(`/api/stores?${createStoresQueryString({ limit, page, city })}`, { signal });
+export async function listStores({ limit = 12, page = 1, city = '', search = '', signal } = {}) {
+  const payload = await requestJson(`/api/stores?${createStoresQueryString({ limit, page, city, search })}`, { signal });
 
   return {
     items: Array.isArray(payload.data) ? payload.data.map(mapStore) : [],

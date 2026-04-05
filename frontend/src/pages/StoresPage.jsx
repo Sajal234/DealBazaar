@@ -7,14 +7,19 @@ import { useStoresQuery } from '../features/store/store.queries';
 import '../styles/stores.css';
 
 function readStoreFilters(searchParams) {
+  const search = (searchParams.get('search') || '').trim();
   const city = (searchParams.get('city') || '').trim();
   const page = Math.max(1, Number.parseInt(searchParams.get('page') || '1', 10) || 1);
 
-  return { city, page };
+  return { search, city, page };
 }
 
-function createStoreSearchParams({ city = '', page = 1 } = {}) {
+function createStoreSearchParams({ search = '', city = '', page = 1 } = {}) {
   const params = new URLSearchParams();
+
+  if (search.trim()) {
+    params.set('search', search.trim());
+  }
 
   if (city.trim()) {
     params.set('city', city.trim());
@@ -30,17 +35,23 @@ function createStoreSearchParams({ city = '', page = 1 } = {}) {
 export function StoresPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => readStoreFilters(searchParams), [searchParams]);
+  const [draftSearch, setDraftSearch] = useState(filters.search);
   const [draftCity, setDraftCity] = useState(filters.city);
   const { data, isLoading, error, refetch, isRefetching, isFetching } = useStoresQuery({
     limit: 12,
     page: filters.page,
     city: filters.city,
+    search: filters.search,
   });
 
   const stores = data?.items || [];
   const pagination = data?.pagination || null;
   const totalPages = Math.max(1, pagination?.pages || 1);
   const currentPage = Math.min(Math.max(1, pagination?.page || filters.page), totalPages);
+
+  useEffect(() => {
+    setDraftSearch(filters.search);
+  }, [filters.search]);
 
   useEffect(() => {
     setDraftCity(filters.city);
@@ -50,6 +61,7 @@ export function StoresPage() {
     event.preventDefault();
     setSearchParams(
       createStoreSearchParams({
+        search: draftSearch,
         city: draftCity,
         page: 1,
       })
@@ -57,8 +69,9 @@ export function StoresPage() {
   };
 
   const handleReset = () => {
+    setDraftSearch('');
     setDraftCity('');
-    setSearchParams(createStoreSearchParams({ city: '', page: 1 }));
+    setSearchParams(createStoreSearchParams({ search: '', city: '', page: 1 }));
   };
 
   return (
@@ -73,6 +86,21 @@ export function StoresPage() {
 
       <section className="stores-toolbar">
         <form className="stores-toolbar__form" onSubmit={handleSubmit}>
+          <label className="filter-field">
+            <span className="filter-field__label">Search</span>
+            <div className="filter-field__control">
+              <Search size={16} />
+              <input
+                type="search"
+                value={draftSearch}
+                onChange={(event) => {
+                  setDraftSearch(event.target.value);
+                }}
+                placeholder="Search by store name"
+              />
+            </div>
+          </label>
+
           <label className="filter-field">
             <span className="filter-field__label">City</span>
             <div className="filter-field__control">
@@ -100,6 +128,7 @@ export function StoresPage() {
 
         <div className="stores-toolbar__summary">
           <span>{pagination?.total || stores.length} verified stores</span>
+          {filters.search ? <span>Search: {filters.search}</span> : null}
           {filters.city ? <span>City: {filters.city}</span> : <span>All cities</span>}
         </div>
       </section>
@@ -140,8 +169,8 @@ export function StoresPage() {
           <div>
             <h2>{filters.city ? 'No stores found for this city' : 'No verified stores yet'}</h2>
             <p>
-              {filters.city
-                ? 'Try another city to see stores that are already verified.'
+              {filters.search || filters.city
+                ? 'Try another store name or city to see verified retailers already listed.'
                 : 'Verified stores will appear here as seller applications get approved.'}
             </p>
           </div>
@@ -167,6 +196,7 @@ export function StoresPage() {
             if (safePage !== currentPage) {
               setSearchParams(
                 createStoreSearchParams({
+                  search: filters.search,
                   city: filters.city,
                   page: safePage,
                 })

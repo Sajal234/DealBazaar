@@ -11,6 +11,8 @@ const normalizeStoreInput = (body = {}) => ({
   phone: String(body.phone || '').replace(/\D/g, ''),
 });
 
+const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const syncStoreRatingAggregate = async (storeId) => {
   // Recompute from source-of-truth ratings to avoid aggregate drift under concurrent writes.
   const [summary] = await StoreRating.aggregate([
@@ -177,6 +179,13 @@ export const getStores = async (req, res) => {
     // Enable frontend to easily filter stores by city
     if (req.query.city) {
       query.city = req.query.city.toLowerCase().trim();
+    }
+
+    if (req.query.search && req.query.search.trim()) {
+      query.name = {
+        $regex: escapeRegex(req.query.search.trim()),
+        $options: 'i',
+      };
     }
 
     const stores = await Store.find(query)
