@@ -1,11 +1,16 @@
 import { LoaderCircle, Star } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useStoreRatingMutation } from './store.queries';
+import { useMyStoreQuery, useStoreRatingMutation } from './store.queries';
 
 export function StoreRatingPanel({ store, currentUser }) {
   const location = useLocation();
   const ratingMutation = useStoreRatingMutation(store.id);
   const hasActiveSession = Boolean(currentUser);
+  const { data: ownedStore } = useMyStoreQuery({
+    enabled: currentUser?.role === 'store',
+  });
+  const isOwnStore = currentUser?.role === 'store' && ownedStore?.id === store.id;
+  const canRateStore = hasActiveSession && !isOwnStore;
 
   return (
     <section className="store-rating-panel">
@@ -30,13 +35,13 @@ export function StoreRatingPanel({ store, currentUser }) {
               type="button"
               className={`store-rating-star${isActive ? ' store-rating-star--active' : ''}`}
               onClick={() => {
-                if (!hasActiveSession) {
+                if (!canRateStore) {
                   return;
                 }
 
                 ratingMutation.mutate(value);
               }}
-              disabled={!hasActiveSession || ratingMutation.isPending}
+              disabled={!canRateStore || ratingMutation.isPending}
               aria-label={`Rate this store ${value} star${value > 1 ? 's' : ''}`}
             >
               <Star size={16} />
@@ -46,7 +51,9 @@ export function StoreRatingPanel({ store, currentUser }) {
         })}
       </div>
 
-      {hasActiveSession ? (
+      {isOwnStore ? (
+        <p className="store-rating-panel__hint">You cannot rate your own store.</p>
+      ) : hasActiveSession ? (
         <p className="store-rating-panel__hint">
           {store.myRating
             ? `Your rating: ${store.myRating} / 5`
