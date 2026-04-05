@@ -45,25 +45,6 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="home-highlights" aria-label="Marketplace highlights">
-        <div className="home-highlights__item">
-          <strong>48–72h</strong>
-          <span>Moderated deal lifecycle</span>
-        </div>
-        <div className="home-highlights__item">
-          <strong>1 flow</strong>
-          <span>From discovery to store contact</span>
-        </div>
-        <div className="home-highlights__item">
-          <strong>0 noise</strong>
-          <span>Cleaner than crowded classifieds</span>
-        </div>
-        <div className="home-highlights__item">
-          <strong>Trusted</strong>
-          <span>Verification-first marketplace design</span>
-        </div>
-      </section>
-
       <section className="home-market" aria-label="Live marketplace">
         <div className="home-section__header">
           <div>
