@@ -1,31 +1,50 @@
 import { readAuthSession } from '../features/auth/auth.session';
 
 async function parseResponse(response) {
+  const clonedResponse = response.clone();
+  const contentType = response.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    try {
+      const payload = await response.json();
+
+      return {
+        payload,
+        rawText: '',
+        contentType,
+      };
+    } catch {
+      // Fall through to text parsing below so we can surface the raw failure.
+    }
+  }
+
   try {
-    const payload = await response.json();
+    const rawText = await clonedResponse.text();
+    let payload = null;
+
+    if (rawText.trim().startsWith('{') || rawText.trim().startsWith('[')) {
+      try {
+        payload = JSON.parse(rawText);
+      } catch {
+        payload = null;
+      }
+    }
 
     return {
       payload,
-      rawText: '',
+      rawText,
+      contentType,
     };
   } catch {
-    try {
-      const rawText = await response.text();
-
-      return {
-        payload: null,
-        rawText,
-      };
-    } catch {
-      return {
-        payload: null,
-        rawText: '',
-      };
-    }
+    return {
+      payload: null,
+      rawText: '',
+      contentType,
+    };
   }
 }
 
-function getErrorMessage(payload, rawText, response) {
+function getErrorMessage(payload, rawText, response, contentType) {
   if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
     const firstError = payload.errors[0];
 
@@ -36,6 +55,10 @@ function getErrorMessage(payload, rawText, response) {
 
   if (payload && typeof payload.message === 'string' && payload.message.trim()) {
     return payload.message;
+  }
+
+  if (contentType.includes('text/html') || /<!doctype html>|<html/i.test(rawText)) {
+    return 'The frontend received an HTML page instead of API JSON. Restart the frontend after changing VITE_API_URL, and make sure the backend is running on the expected port.';
   }
 
   if (typeof rawText === 'string' && rawText.trim()) {
@@ -76,10 +99,10 @@ export async function requestJson(path, options = {}) {
     throw networkError;
   }
 
-  const { payload, rawText } = await parseResponse(response);
+  const { payload, rawText, contentType } = await parseResponse(response);
 
   if (!response.ok || !payload?.success) {
-    const error = new Error(getErrorMessage(payload, rawText, response));
+    const error = new Error(getErrorMessage(payload, rawText, response, contentType));
     error.status = response.status;
     throw error;
   }
