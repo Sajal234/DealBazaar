@@ -386,26 +386,112 @@
 }
 
 .store-file-input input[type="file"] {
-  color: var(--text-soft);
-  font: inherit;
+  display: none;
 }
 
-.store-file-list {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.store-file-list li {
-  padding: 10px 12px;
+.store-file-input__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  width: fit-content;
+  padding: 0 14px;
   border: 1px solid var(--stroke);
-  border-radius: 14px;
-  background: var(--surface-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-main);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.store-file-input__trigger:hover {
+  border-color: rgba(134, 99, 59, 0.2);
+  background: rgba(134, 99, 59, 0.08);
+}
+
+.store-file-input__trigger--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.store-file-input__meta {
+  margin: 0;
   color: var(--text-soft);
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   line-height: 1.5;
+}
+
+.store-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.store-image-card {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: var(--surface-strong);
+}
+
+.store-image-card__media {
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(20, 23, 26, 0.05);
+}
+
+.store-image-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.store-image-card__body {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.store-image-card__name,
+.store-image-card__size {
+  display: grid;
+  margin: 0;
+}
+
+.store-image-card__name {
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.store-image-card__size {
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.store-image-card__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
 }
 
 .store-workspace__header {

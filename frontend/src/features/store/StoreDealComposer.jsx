@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
-import { ImagePlus, LoaderCircle, Plus, X } from 'lucide-react';
+import { useState } from 'react';
+import { LoaderCircle, Plus, X } from 'lucide-react';
+import { StoreDealImagePicker } from './StoreDealImagePicker';
 import { useCreateOwnedDealMutation } from './storeDeals.queries';
 
 const initialForm = {
@@ -16,8 +17,6 @@ export function StoreDealComposer({ defaultCityLabel }) {
   const [feedback, setFeedback] = useState('');
   const [error, setError] = useState('');
   const createDealMutation = useCreateOwnedDealMutation();
-
-  const selectedFileNames = useMemo(() => files.map((file) => file.name), [files]);
 
   const handleReset = () => {
     setForm(initialForm);
@@ -42,11 +41,6 @@ export function StoreDealComposer({ defaultCityLabel }) {
 
     if (Number.isNaN(Number(normalizedForm.price)) || Number(normalizedForm.price) < 0) {
       setError('Enter a valid price greater than or equal to 0.');
-      return;
-    }
-
-    if (files.length > 5) {
-      setError('You can upload up to 5 images for one deal.');
       return;
     }
 
@@ -163,32 +157,14 @@ export function StoreDealComposer({ defaultCityLabel }) {
 
             <label className="filter-field filter-field--full">
               <span className="filter-field__label">Images</span>
-              <div className="store-file-input">
-                <div className="store-file-input__hint">
-                  <ImagePlus size={16} />
-                  <span>Upload up to 5 JPG, PNG, or WebP images. Max 2MB each.</span>
-                </div>
-
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  multiple
-                  onChange={(event) => {
-                    const nextFiles = Array.from(event.target.files || []).slice(0, 5);
-                    setFiles(nextFiles);
-                  }}
-                />
-              </div>
+              <StoreDealImagePicker
+                files={files}
+                onChange={setFiles}
+                onError={setError}
+                disabled={createDealMutation.isPending}
+              />
             </label>
           </div>
-
-          {selectedFileNames.length > 0 ? (
-            <ul className="store-file-list" aria-label="Selected images">
-              {selectedFileNames.map((fileName) => (
-                <li key={fileName}>{fileName}</li>
-              ))}
-            </ul>
-          ) : null}
 
           {error ? (
             <p className="store-form__error" role="alert">
