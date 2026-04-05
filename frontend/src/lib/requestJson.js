@@ -128,12 +128,16 @@ function getErrorMessage(payload, rawText, response, contentType) {
     return 'Something went wrong on our side. Please try again in a moment.';
   }
 
-  if (response?.ok) {
-    return 'We received an unexpected response from the server. Please try again in a moment.';
+  if (response?.status === 404) {
+    return 'We could not find what you were looking for.';
   }
 
-  if (response?.status) {
-    return `Request failed with status ${response.status}`;
+  if (response?.status === 401 || response?.status === 403) {
+    return 'You do not have access to do that right now.';
+  }
+
+  if (response?.status >= 400 || response?.ok) {
+    return 'We could not complete this request right now. Please try again in a moment.';
   }
 
   return 'We could not complete this request right now. Please try again.';
