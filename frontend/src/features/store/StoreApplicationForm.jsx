@@ -9,13 +9,17 @@ const emptyForm = {
   phone: '',
 };
 
+function normalizePhoneInput(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, 10);
+}
+
 function createFormState(initialValues = {}) {
   return {
     name: initialValues.name || '',
     address: initialValues.address || '',
     state: initialValues.state || '',
     city: initialValues.city || '',
-    phone: initialValues.phone || '',
+    phone: normalizePhoneInput(initialValues.phone || ''),
   };
 }
 
@@ -142,10 +146,15 @@ export function StoreApplicationForm({
                 name="phone"
                 value={form.phone}
                 onChange={(event) => {
-                  setForm((currentForm) => ({ ...currentForm, phone: event.target.value }));
+                  setForm((currentForm) => ({
+                    ...currentForm,
+                    phone: normalizePhoneInput(event.target.value),
+                  }));
                 }}
                 placeholder="9876543210"
                 inputMode="numeric"
+                pattern="[0-9]{10}"
+                maxLength={10}
               />
             </div>
           </label>
