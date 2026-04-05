@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useCurrentUserQuery } from './features/auth/auth.queries';
 import { readAuthSession } from './features/auth/auth.session';
+import { RequireAuth } from './features/auth/RequireAuth';
 import { AppLayout } from './layout/AppLayout';
 import { DealDetailPage } from './pages/DealDetailPage';
 import { DealsPage } from './pages/DealsPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
+import { StorePage } from './pages/StorePage';
 
 const themeStorageKey = 'dealbazaar.theme';
 
@@ -62,6 +64,18 @@ export function App() {
               hasSavedSession={hasSavedSession}
               isAuthLoading={isAuthLoading || isAuthFetching}
             />
+          }
+        />
+        <Route
+          path="/store"
+          element={
+            <RequireAuth
+              currentUser={currentUser}
+              hasSavedSession={hasSavedSession}
+              isAuthLoading={isAuthLoading || isAuthFetching}
+            >
+              <StorePage currentUser={currentUser} />
+            </RequireAuth>
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />

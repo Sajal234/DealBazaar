@@ -22,7 +22,7 @@ export function HomePage() {
               Explore deals
               <ArrowRight size={18} />
             </Link>
-            <Link to="/login" className="button button--secondary">
+            <Link to="/store" className="button button--secondary">
               Sell on DealBazaar
             </Link>
           </div>

@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { authKeys } from '../features/auth/auth.queries';
 import { clearAuthSession } from '../features/auth/auth.session';
+import { storeKeys } from '../features/store/store.queries';
 
 export function AppLayout({ children, theme, setTheme, currentUser }) {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
   const handleSignOut = () => {
     clearAuthSession();
     queryClient.removeQueries({ queryKey: authKeys.all });
+    queryClient.removeQueries({ queryKey: storeKeys.all });
     navigate('/', { replace: true });
   };
 
@@ -39,6 +41,14 @@ export function AppLayout({ children, theme, setTheme, currentUser }) {
             >
               Deals
             </NavLink>
+            {currentUser ? (
+              <NavLink
+                to="/store"
+                className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
+              >
+                Store
+              </NavLink>
+            ) : null}
           </nav>
         </div>
 
