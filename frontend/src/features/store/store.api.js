@@ -80,3 +80,11 @@ export async function submitStoreRating({ storeId, rating }) {
 
   return payload.data;
 }
+
+export async function clearStoreRating({ storeId }) {
+  const payload = await requestJson(`/api/stores/${encodeURIComponent(storeId)}/ratings`, {
+    method: 'DELETE',
+  });
+
+  return payload.data;
+}

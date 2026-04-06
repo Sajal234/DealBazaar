@@ -293,6 +293,56 @@ export const submitStoreRating = async (req, res) => {
   }
 };
 
+// @desc    Remove the authenticated user's rating for a store
+// @route   DELETE /api/stores/:id/ratings
+// @access  Private
+export const clearStoreRating = async (req, res) => {
+  try {
+    const store = await Store.findOne({
+      _id: req.params.id,
+      status: 'approved',
+    }).select('_id ownerId rating totalRatings');
+
+    if (!store) {
+      return res.status(404).json({ success: false, message: 'Store not found or not available for rating' });
+    }
+
+    if (store.ownerId.toString() === req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You cannot rate your own store' });
+    }
+
+    const deletionResult = await StoreRating.deleteOne({
+      storeId: store._id,
+      userId: req.user._id,
+    });
+
+    const ratingSummary =
+      deletionResult.deletedCount > 0
+        ? await syncStoreRatingAggregate(store._id)
+        : {
+            rating: Number(store.rating) > 0 ? Number(store.rating) : 0,
+            totalRatings: Number.isFinite(Number(store.totalRatings)) ? Number(store.totalRatings) : 0,
+          };
+
+    return res.status(200).json({
+      success: true,
+      message: deletionResult.deletedCount > 0 ? 'Store rating removed successfully' : 'No store rating was set',
+      data: {
+        storeId: store._id,
+        myRating: null,
+        rating: ratingSummary.rating,
+        totalRatings: ratingSummary.totalRatings,
+      },
+    });
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ success: false, message: 'Store not found (Invalid ID)' });
+    }
+    console.error('[Clear Store Rating Error]', error);
+    return res.status(500).json({ success: false, message: 'Server error while removing the store rating' });
+  }
+};
+
 // @desc    Get single store by ID
 // @route   GET /api/stores/:id
 // @access  Public

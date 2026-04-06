@@ -30,7 +30,10 @@ const normalizeStore = (rawStore) => {
     name: rawStore.name || 'Verified local store',
     city: formatCity(rawStore.city),
     phone: rawStore.phone || '',
-    rating: Number.isFinite(Number(rawStore.rating)) ? Number(rawStore.rating).toFixed(1) : null,
+    rating:
+      Number.isFinite(Number(rawStore.rating)) && Number(rawStore.rating) > 0
+        ? Number(rawStore.rating).toFixed(1)
+        : null,
     isVerified: Boolean(rawStore.isVerified),
   };
 };

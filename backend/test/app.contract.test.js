@@ -99,6 +99,7 @@ test('auth router exposes the expected route contract', () => {
 
 test('store router exposes the expected route contract', () => {
   assert.deepEqual(listRoutes(storeRoutes), [
+    'DELETE /:id/ratings',
     'GET /',
     'GET /:id',
     'GET /me',

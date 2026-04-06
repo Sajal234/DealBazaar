@@ -2,6 +2,7 @@ import express from 'express';
 import { body } from 'express-validator';
 import {
   applyForStore,
+  clearStoreRating,
   getStores,
   getMyStore,
   getStoreById,
@@ -80,6 +81,11 @@ router.post(
   ],
   submitStoreRating
 );
+
+// @route   DELETE /api/stores/:id/ratings
+// @desc    Remove the authenticated user's rating for a store
+// @access  Private
+router.delete('/:id/ratings', protect, storeRatingRateLimiter, clearStoreRating);
 
 // @route   GET /api/stores/:id
 // @desc    Get single store by ID

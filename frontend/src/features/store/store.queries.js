@@ -1,6 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dealsKeys } from '../deals/deals.keys';
-import { applyForStore, getMyStore, getStoreById, listStores, resubmitStoreApplication, submitStoreRating } from './store.api';
+import {
+  applyForStore,
+  clearStoreRating,
+  getMyStore,
+  getStoreById,
+  listStores,
+  resubmitStoreApplication,
+  submitStoreRating,
+} from './store.api';
 import { isValidStoreId } from './store.ids';
 
 export const storeKeys = {
@@ -74,18 +82,27 @@ export function useStoreRatingMutation(storeId) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (rating) => submitStoreRating({ storeId, rating }),
+    mutationFn: ({ rating, clear = false }) => {
+      if (clear) {
+        return clearStoreRating({ storeId });
+      }
+
+      return submitStoreRating({ storeId, rating });
+    },
     onSuccess: (result) => {
       queryClient.setQueryData(storeKeys.detail(storeId), (currentStore) => {
         if (!currentStore) {
           return currentStore;
         }
 
+        const normalizedRating = Number(result?.rating);
+        const hasMyRating = result?.myRating !== null && result?.myRating !== undefined;
+
         return {
           ...currentStore,
-          rating: Number.isFinite(Number(result?.rating)) ? Number(result.rating).toFixed(1) : currentStore.rating,
+          rating: Number.isFinite(normalizedRating) && normalizedRating > 0 ? normalizedRating.toFixed(1) : null,
           totalRatings: Number.isFinite(Number(result?.totalRatings)) ? Number(result.totalRatings) : currentStore.totalRatings,
-          myRating: Number.isFinite(Number(result?.myRating)) ? Number(result.myRating) : currentStore.myRating,
+          myRating: hasMyRating && Number.isFinite(Number(result.myRating)) ? Number(result.myRating) : null,
         };
       });
 

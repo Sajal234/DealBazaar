@@ -11,6 +11,7 @@ export function StoreRatingPanel({ store, currentUser }) {
   });
   const isOwnStore = currentUser?.role === 'store' && ownedStore?.id === store.id;
   const canRateStore = hasActiveSession && !isOwnStore;
+  const hasExistingRating = Number.isFinite(Number(store.myRating)) && Number(store.myRating) > 0;
 
   return (
     <section className="store-rating-panel">
@@ -39,7 +40,12 @@ export function StoreRatingPanel({ store, currentUser }) {
                   return;
                 }
 
-                ratingMutation.mutate(value);
+                if (Number(store.myRating) === value) {
+                  ratingMutation.mutate({ clear: true });
+                  return;
+                }
+
+                ratingMutation.mutate({ rating: value });
               }}
               disabled={!canRateStore || ratingMutation.isPending}
               aria-label={`Rate this store ${value} star${value > 1 ? 's' : ''}`}
@@ -55,8 +61,8 @@ export function StoreRatingPanel({ store, currentUser }) {
         <p className="store-rating-panel__hint">You cannot rate your own store.</p>
       ) : hasActiveSession ? (
         <p className="store-rating-panel__hint">
-          {store.myRating
-            ? `Your rating: ${store.myRating} / 5`
+          {hasExistingRating
+            ? `Your rating: ${store.myRating} / 5. Tap the same star again to remove it.`
             : 'Select a rating to share your experience with this store.'}
         </p>
       ) : (
@@ -77,7 +83,7 @@ export function StoreRatingPanel({ store, currentUser }) {
 
       {ratingMutation.isSuccess ? (
         <p className="store-rating-panel__status" role="status">
-          Your rating has been saved.
+          {hasExistingRating ? 'Your rating has been saved.' : 'Your rating has been removed.'}
         </p>
       ) : null}
 

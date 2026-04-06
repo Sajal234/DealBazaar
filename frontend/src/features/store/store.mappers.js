@@ -21,6 +21,8 @@ const formatPhone = (value) => {
 };
 
 export function mapStore(rawStore) {
+  const numericRating = Number(rawStore?.rating);
+
   return {
     id: rawStore?._id || '',
     name: rawStore?.name || 'Verified local store',
@@ -33,7 +35,7 @@ export function mapStore(rawStore) {
     phone: rawStore?.phone || '',
     status: rawStore?.status || 'pending',
     isVerified: Boolean(rawStore?.isVerified),
-    rating: Number.isFinite(Number(rawStore?.rating)) ? Number(rawStore.rating).toFixed(1) : null,
+    rating: Number.isFinite(numericRating) && numericRating > 0 ? numericRating.toFixed(1) : null,
     totalRatings: Number.isFinite(Number(rawStore?.totalRatings)) ? Number(rawStore.totalRatings) : 0,
     myRating: Number.isFinite(Number(rawStore?.myRating)) ? Number(rawStore.myRating) : null,
     createdAt: rawStore?.createdAt || null,

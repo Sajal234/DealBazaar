@@ -8,7 +8,7 @@ process.env.CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || 'test-s
 
 const [
   { signup, login, googleAuth },
-  { applyForStore, submitStoreRating },
+  { applyForStore, clearStoreRating, submitStoreRating },
   { updateDeal, trackDealClick },
   { updateStoreStatus, updateDealStatus, removeStore, removeDeal },
   { default: User },
@@ -285,6 +285,82 @@ test('submitStoreRating upserts the rating and recomputes store aggregates', asy
       myRating: 4,
       rating: 4.5,
       totalRatings: 2,
+    },
+  });
+});
+
+test('clearStoreRating deletes the viewer rating and recomputes store aggregates', async () => {
+  const req = {
+    params: { id: 'store-1' },
+    user: { _id: 'user-2' },
+  };
+  const res = createMockResponse();
+  const ratingDeleteCalls = [];
+  const aggregateCalls = [];
+  const storeUpdateCalls = [];
+
+  await withPatchedProperties(
+    [
+      {
+        target: Store,
+        key: 'findOne',
+        value: () => ({
+          select: async () => ({
+            _id: 'store-1',
+            ownerId: {
+              toString: () => 'owner-1',
+            },
+            rating: 4.5,
+            totalRatings: 2,
+          }),
+        }),
+      },
+      {
+        target: StoreRating,
+        key: 'deleteOne',
+        value: async (...args) => {
+          ratingDeleteCalls.push(args);
+          return { deletedCount: 1 };
+        },
+      },
+      {
+        target: StoreRating,
+        key: 'aggregate',
+        value: async (pipeline) => {
+          aggregateCalls.push(pipeline);
+          return [{ averageRating: 5, totalRatings: 1 }];
+        },
+      },
+      {
+        target: Store,
+        key: 'updateOne',
+        value: async (...args) => {
+          storeUpdateCalls.push(args);
+          return { acknowledged: true };
+        },
+      },
+    ],
+    async () => {
+      await clearStoreRating(req, res);
+    }
+  );
+
+  assert.equal(ratingDeleteCalls.length, 1);
+  assert.deepEqual(ratingDeleteCalls[0][0], {
+    storeId: 'store-1',
+    userId: 'user-2',
+  });
+  assert.equal(aggregateCalls.length, 1);
+  assert.equal(storeUpdateCalls.length, 1);
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, {
+    success: true,
+    message: 'Store rating removed successfully',
+    data: {
+      storeId: 'store-1',
+      myRating: null,
+      rating: 5,
+      totalRatings: 1,
     },
   });
 });
