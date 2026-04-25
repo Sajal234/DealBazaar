@@ -29,7 +29,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ success: true, message: 'DealBazaar API is running' });
+  res.status(200).json({ success: true, message: 'DealGrab API is running' });
 });
 
 // Core API Route Mounting

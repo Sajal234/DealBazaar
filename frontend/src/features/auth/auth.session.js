@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-export const AUTH_SESSION_STORAGE_KEY = 'dealbazaar.auth-session';
-export const AUTH_SESSION_CHANGE_EVENT = 'dealbazaar:auth-session-change';
+export const AUTH_SESSION_STORAGE_KEY = 'dealgrab.auth-session';
+export const AUTH_SESSION_CHANGE_EVENT = 'dealgrab:auth-session-change';
 
 function emitAuthSessionChange(session) {
   if (typeof window === 'undefined') {

@@ -28,6 +28,7 @@ const normalizeStore = (rawStore) => {
   return {
     id: rawStore._id || '',
     name: rawStore.name || 'Verified local store',
+    address: rawStore.address || '',
     city: formatCity(rawStore.city),
     phone: rawStore.phone || '',
     rating:
@@ -54,11 +55,14 @@ export const mapDealSummary = (rawDeal) => {
     imageCount: images.length,
     store: normalizeStore(rawDeal?.storeId),
     status: rawDeal?.status || 'active',
+    createdAt: rawDeal?.createdAt || null,
+    updatedAt: rawDeal?.updatedAt || null,
   };
 };
 
 export const mapDealDetail = (rawDeal) => ({
   ...mapDealSummary(rawDeal),
-  createdAt: rawDeal?.createdAt || null,
-  updatedAt: rawDeal?.updatedAt || null,
+  views: Number.isFinite(Number(rawDeal?.views)) ? Number(rawDeal.views) : 0,
+  clicks: Number.isFinite(Number(rawDeal?.clicks)) ? Number(rawDeal.clicks) : 0,
+  expiresAt: rawDeal?.expiresAt || null,
 });

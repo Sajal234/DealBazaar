@@ -66,7 +66,7 @@ test('health endpoint responds successfully', async () => {
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.body, {
     success: true,
-    message: 'DealBazaar API is running',
+    message: 'DealGrab API is running',
   });
 });
 

@@ -43,7 +43,7 @@ function getAccountBadgeText(user) {
   const source = typeof user?.name === 'string' && user.name.trim() ? user.name.trim() : user?.email || '';
 
   if (!source) {
-    return 'DB';
+    return 'DG';
   }
 
   const parts = source
@@ -55,7 +55,7 @@ function getAccountBadgeText(user) {
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }
 
-  return source.replace(/[^a-z0-9]/gi, '').slice(0, 2).toUpperCase() || 'DB';
+  return source.replace(/[^a-z0-9]/gi, '').slice(0, 2).toUpperCase() || 'DG';
 }
 
 export function AccountPage({ currentUser }) {
@@ -79,7 +79,7 @@ export function AccountPage({ currentUser }) {
       <section className="page-header">
         <div>
           <p className="page-header__eyebrow">Account</p>
-          <h1>Your DealBazaar account</h1>
+          <h1>Your DealGrab account</h1>
           <p>View your account details, access level, and the one place you should go next.</p>
         </div>
       </section>
@@ -93,7 +93,7 @@ export function AccountPage({ currentUser }) {
               </div>
               <div>
                 <p className="account-card__eyebrow">Profile</p>
-                <h2>{currentUser?.name || 'DealBazaar member'}</h2>
+                <h2>{currentUser?.name || 'DealGrab member'}</h2>
                 <p className="account-card__description">{currentUser?.email || 'Not available'}</p>
               </div>
             </div>

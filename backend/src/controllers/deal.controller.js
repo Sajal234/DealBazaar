@@ -9,7 +9,7 @@ import { serializeDeal } from '../utils/serializers.js';
 const streamUpload = (buffer) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder: 'dealbazaar_deals' },
+      { folder: 'dealgrab_deals' },
       (error, result) => {
         if (result) resolve(result);
         else reject(error);
@@ -597,7 +597,10 @@ export const getDealById = async (req, res) => {
       }).catch(err => console.error('[View Update Error]', err));
     }
 
-    return res.status(200).json({ success: true, data: serializeDeal(deal) });
+    return res.status(200).json({
+      success: true,
+      data: serializeDeal(deal, { includeMetrics: true, includeLifecycle: true }),
+    });
   } catch (error) {
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ success: false, message: 'Invalid Deal ID string' });

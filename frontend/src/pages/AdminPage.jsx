@@ -1,37 +1,159 @@
 import { useEffect, useState } from 'react';
-import { AlertCircle, BadgeCheck, Clock3, LoaderCircle, ShieldAlert, ShieldCheck, Store as StoreIcon } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { AdminConfirmActionButton } from '../features/admin/AdminConfirmActionButton';
-import { AdminDealMedia } from '../features/admin/AdminDealMedia';
-import { AdminStoreOwnerSummary } from '../features/admin/AdminStoreOwnerSummary';
-import { AdminStoreContextLinks } from '../features/admin/AdminStoreContextLinks';
+import { MaterialIcon, StitchBottomNav, StitchDesktopHeader, StitchMobileHeader } from '../components/StitchChrome';
+import { StitchAvatar, StitchMediaFrame } from '../components/StitchDataVisuals';
 import { createAdminSearchParams, readAdminSearchParams } from '../features/admin/admin.searchParams';
 import {
   useActiveDealsQuery,
   useApprovedStoresQuery,
   useDealModerationMutation,
-  useDealRemovalMutation,
   usePendingDealsQuery,
   usePendingStoresQuery,
   useStoreModerationMutation,
-  useStoreRemovalMutation,
 } from '../features/admin/admin.queries';
 import { DealsPagination } from '../features/deals/DealsPagination';
-import '../styles/admin.css';
 
-const moderationCopy = {
-  approveStore: 'Approve',
-  rejectStore: 'Reject',
-  approveDeal: 'Approve',
-  rejectDeal: 'Reject',
-  removeStore: 'Remove store',
-  removeDeal: 'Remove deal',
-};
+function ModerationState({ currentUser, title, description }) {
+  return (
+    <div className="stitch-page">
+      <StitchDesktopHeader active="workspace" currentUser={currentUser} />
+      <main className="stitch-canvas stitch-canvas--admin">
+        <section className="stitch-state-card">
+          <div className="stitch-state-card__icon">
+            <MaterialIcon name="gavel" />
+          </div>
+          <div className="stitch-state-card__copy">
+            <h2>{title}</h2>
+            <p>{description}</p>
+            <Link to="/deals" className="stitch-pill-button stitch-pill-button--primary">
+              Back to Deals
+            </Link>
+          </div>
+        </section>
+      </main>
+      <StitchBottomNav active="workspace" currentUser={currentUser} />
+    </div>
+  );
+}
 
-const emptyPagination = { page: 1, pages: 1, total: 0 };
+function QueueState({ title, description, tone = 'default' }) {
+  return (
+    <section className={`stitch-state-card${tone === 'error' ? ' stitch-state-card--error' : ''}`}>
+      <div className="stitch-state-card__icon">
+        <MaterialIcon name={tone === 'error' ? 'warning' : 'inventory_2'} />
+      </div>
+      <div className="stitch-state-card__copy">
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
+    </section>
+  );
+}
 
-const getSafePage = (requestedPage, pagination) =>
-  Math.min(Math.max(1, pagination.page || requestedPage), Math.max(1, pagination.pages || 1));
+function PendingStoreCard({ store, onApprove, onReject, isPending }) {
+  return (
+    <article className="stitch-admin-card stitch-admin-card--textual">
+      <div className="stitch-admin-card__body">
+        <div className="stitch-admin-card__heading">
+          <div className="stitch-admin-card__title-cluster">
+            <StitchAvatar label={store.name} size="sm" className="stitch-admin-card__avatar" />
+            <div>
+              <h3>{store.name}</h3>
+              <p>{store.address || `${store.cityLabel}, ${store.stateLabel}`}</p>
+            </div>
+          </div>
+
+          <span className="stitch-admin-card__status">
+            <MaterialIcon name="storefront" className="stitch-admin-card__status-icon" />
+            <span>Pending Store</span>
+          </span>
+        </div>
+
+        <div className="stitch-admin-card__grid">
+          <div>
+            <small>Location</small>
+            <strong>{store.cityLabel}, {store.stateLabel}</strong>
+          </div>
+          <div>
+            <small>Contact</small>
+            <strong>{store.phoneLabel}</strong>
+          </div>
+        </div>
+
+        <div className="stitch-admin-card__actions">
+          <button type="button" className="stitch-action-button stitch-action-button--secondary stitch-action-button--full" onClick={onReject} disabled={isPending}>
+            Reject
+          </button>
+          <button type="button" className="stitch-action-button stitch-action-button--primary stitch-action-button--full" onClick={onApprove} disabled={isPending}>
+            {isPending ? 'Updating...' : 'Approve Store'}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function PendingDealCard({ deal, onApprove, onReject, isPending }) {
+  const alertMessage =
+    deal.storeIsVerified
+      ? 'Merchant is already verified. Review the description and expiry window before approval.'
+      : 'Store identity is not yet verified. Review authenticity carefully before approval.';
+
+  return (
+    <article className="stitch-admin-card">
+      <div className="stitch-admin-card__split">
+        <div className="stitch-admin-card__media">
+          <StitchMediaFrame
+            src={deal.imageUrl}
+            alt={deal.title}
+            title={deal.title}
+            subtitle="No product photo uploaded"
+            icon="sell"
+          />
+        </div>
+
+        <div className="stitch-admin-card__body">
+          <div>
+            <div className="stitch-admin-card__heading">
+              <h3>{deal.title}</h3>
+              <span className="stitch-admin-card__status">
+                <MaterialIcon name="sell" className="stitch-admin-card__status-icon" />
+                <span>Pending Deal</span>
+              </span>
+            </div>
+
+            <p>{deal.description}</p>
+
+            <div className="stitch-admin-card__grid">
+              <div>
+                <small>Store</small>
+                <strong>{deal.storeName}</strong>
+              </div>
+              <div>
+                <small>Offer</small>
+                <strong>{deal.priceLabel}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="stitch-admin-flag">
+            <MaterialIcon name="warning" className="stitch-admin-flag__icon" />
+            <p>{alertMessage}</p>
+          </div>
+
+          <div className="stitch-admin-card__actions">
+            <button type="button" className="stitch-action-button stitch-action-button--secondary stitch-action-button--full" onClick={onReject} disabled={isPending}>
+              Reject
+            </button>
+            <button type="button" className="stitch-action-button stitch-action-button--primary stitch-action-button--full" onClick={onApprove} disabled={isPending}>
+              {isPending ? 'Updating...' : 'Approve'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 export function AdminPage({ currentUser }) {
   const isAdmin = currentUser?.role === 'admin';
@@ -40,125 +162,44 @@ export function AdminPage({ currentUser }) {
   const [feedback, setFeedback] = useState('');
   const [activeAction, setActiveAction] = useState(null);
 
-  const storesQuery = usePendingStoresQuery({ enabled: isAdmin, page: filters.storesPage, limit: 6 });
-  const dealsQuery = usePendingDealsQuery({ enabled: isAdmin, page: filters.dealsPage, limit: 6 });
-  const approvedStoresQuery = useApprovedStoresQuery({ enabled: isAdmin, page: filters.approvedStoresPage, limit: 6 });
-  const activeDealsQuery = useActiveDealsQuery({ enabled: isAdmin, page: filters.activeDealsPage, limit: 6 });
+  const storesQuery = usePendingStoresQuery({ enabled: isAdmin, page: filters.storesPage, limit: 3 });
+  const dealsQuery = usePendingDealsQuery({ enabled: isAdmin, page: filters.dealsPage, limit: 4 });
+  const approvedStoresQuery = useApprovedStoresQuery({ enabled: isAdmin, page: 1, limit: 1 });
+  const activeDealsQuery = useActiveDealsQuery({ enabled: isAdmin, page: 1, limit: 1 });
   const storeModerationMutation = useStoreModerationMutation();
   const dealModerationMutation = useDealModerationMutation();
-  const storeRemovalMutation = useStoreRemovalMutation();
-  const dealRemovalMutation = useDealRemovalMutation();
 
-  const storesPagination = storesQuery.data?.pagination || emptyPagination;
-  const dealsPagination = dealsQuery.data?.pagination || emptyPagination;
-  const approvedStoresPagination = approvedStoresQuery.data?.pagination || emptyPagination;
-  const activeDealsPagination = activeDealsQuery.data?.pagination || emptyPagination;
   const pendingStores = storesQuery.data?.items || [];
   const pendingDeals = dealsQuery.data?.items || [];
-  const approvedStores = approvedStoresQuery.data?.items || [];
-  const activeDeals = activeDealsQuery.data?.items || [];
+  const pendingStoresPagination = storesQuery.data?.pagination || { page: 1, pages: 1, total: 0 };
+  const pendingDealsPagination = dealsQuery.data?.pagination || { page: 1, pages: 1, total: 0 };
+  const approvedStoreTotal = approvedStoresQuery.data?.pagination?.total || 0;
+  const activeDealTotal = activeDealsQuery.data?.pagination?.total || 0;
 
   useEffect(() => {
-    const safeStoresPage = getSafePage(filters.storesPage, storesPagination);
+    const safeStoresPage = Math.min(Math.max(1, pendingStoresPagination.page || filters.storesPage), Math.max(1, pendingStoresPagination.pages || 1));
+    const safeDealsPage = Math.min(Math.max(1, pendingDealsPagination.page || filters.dealsPage), Math.max(1, pendingDealsPagination.pages || 1));
 
-    if (safeStoresPage !== filters.storesPage) {
+    if (safeStoresPage !== filters.storesPage || safeDealsPage !== filters.dealsPage) {
       setSearchParams(
         createAdminSearchParams({
           storesPage: safeStoresPage,
-          dealsPage: filters.dealsPage,
-          approvedStoresPage: filters.approvedStoresPage,
-          activeDealsPage: filters.activeDealsPage,
-          hours: filters.hours,
-        }),
-        { replace: true }
-      );
-    }
-  }, [
-    filters.activeDealsPage,
-    filters.approvedStoresPage,
-    filters.dealsPage,
-    filters.hours,
-    filters.storesPage,
-    setSearchParams,
-    storesPagination.page,
-    storesPagination.pages,
-  ]);
-
-  useEffect(() => {
-    const safeDealsPage = getSafePage(filters.dealsPage, dealsPagination);
-
-    if (safeDealsPage !== filters.dealsPage) {
-      setSearchParams(
-        createAdminSearchParams({
-          storesPage: filters.storesPage,
           dealsPage: safeDealsPage,
-          approvedStoresPage: filters.approvedStoresPage,
-          activeDealsPage: filters.activeDealsPage,
+          approvedStoresPage: 1,
+          activeDealsPage: 1,
           hours: filters.hours,
         }),
         { replace: true }
       );
     }
   }, [
-    dealsPagination.page,
-    dealsPagination.pages,
-    filters.activeDealsPage,
-    filters.approvedStoresPage,
     filters.dealsPage,
     filters.hours,
     filters.storesPage,
-    setSearchParams,
-  ]);
-
-  useEffect(() => {
-    const safeApprovedStoresPage = getSafePage(filters.approvedStoresPage, approvedStoresPagination);
-
-    if (safeApprovedStoresPage !== filters.approvedStoresPage) {
-      setSearchParams(
-        createAdminSearchParams({
-          storesPage: filters.storesPage,
-          dealsPage: filters.dealsPage,
-          approvedStoresPage: safeApprovedStoresPage,
-          activeDealsPage: filters.activeDealsPage,
-          hours: filters.hours,
-        }),
-        { replace: true }
-      );
-    }
-  }, [
-    approvedStoresPagination.page,
-    approvedStoresPagination.pages,
-    filters.activeDealsPage,
-    filters.approvedStoresPage,
-    filters.dealsPage,
-    filters.hours,
-    filters.storesPage,
-    setSearchParams,
-  ]);
-
-  useEffect(() => {
-    const safeActiveDealsPage = getSafePage(filters.activeDealsPage, activeDealsPagination);
-
-    if (safeActiveDealsPage !== filters.activeDealsPage) {
-      setSearchParams(
-        createAdminSearchParams({
-          storesPage: filters.storesPage,
-          dealsPage: filters.dealsPage,
-          approvedStoresPage: filters.approvedStoresPage,
-          activeDealsPage: safeActiveDealsPage,
-          hours: filters.hours,
-        }),
-        { replace: true }
-      );
-    }
-  }, [
-    activeDealsPagination.page,
-    activeDealsPagination.pages,
-    filters.activeDealsPage,
-    filters.approvedStoresPage,
-    filters.dealsPage,
-    filters.hours,
-    filters.storesPage,
+    pendingDealsPagination.page,
+    pendingDealsPagination.pages,
+    pendingStoresPagination.page,
+    pendingStoresPagination.pages,
     setSearchParams,
   ]);
 
@@ -169,8 +210,8 @@ export function AdminPage({ currentUser }) {
     try {
       const result = await storeModerationMutation.mutateAsync({ storeId, status });
       setFeedback(result.message);
-    } catch (error) {
-      setFeedback(error.message || 'Could not update store status right now.');
+    } catch (mutationError) {
+      setFeedback(mutationError.message || 'Could not update store status right now.');
     } finally {
       setActiveAction(null);
     }
@@ -187,36 +228,8 @@ export function AdminPage({ currentUser }) {
         hoursValid: Number(filters.hours) || 48,
       });
       setFeedback(result.message);
-    } catch (error) {
-      setFeedback(error.message || 'Could not update deal status right now.');
-    } finally {
-      setActiveAction(null);
-    }
-  };
-
-  const handleStoreRemoval = async (storeId) => {
-    setActiveAction({ type: 'remove-store', targetId: storeId });
-    setFeedback('');
-
-    try {
-      const result = await storeRemovalMutation.mutateAsync({ storeId });
-      setFeedback(result.message);
-    } catch (error) {
-      setFeedback(error.message || 'Could not remove this store right now.');
-    } finally {
-      setActiveAction(null);
-    }
-  };
-
-  const handleDealRemoval = async (dealId) => {
-    setActiveAction({ type: 'remove-deal', targetId: dealId });
-    setFeedback('');
-
-    try {
-      const result = await dealRemovalMutation.mutateAsync({ dealId });
-      setFeedback(result.message);
-    } catch (error) {
-      setFeedback(error.message || 'Could not remove this deal right now.');
+    } catch (mutationError) {
+      setFeedback(mutationError.message || 'Could not update deal status right now.');
     } finally {
       setActiveAction(null);
     }
@@ -224,651 +237,341 @@ export function AdminPage({ currentUser }) {
 
   if (!isAdmin) {
     return (
-      <main className="page-shell">
-        <section className="state-card state-card--error" aria-live="polite">
-          <ShieldAlert size={18} />
-          <div>
-            <h2>Admin access only</h2>
-            <p>This moderation workspace is only available to administrator accounts.</p>
-            <div className="state-card__actions">
-              <Link to="/deals" className="button button--secondary">
-                Back to deals
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
+      <ModerationState
+        currentUser={currentUser}
+        title="Admin access only"
+        description="This moderation workspace is only available to administrator accounts."
+      />
     );
   }
 
   return (
-    <main className="page-shell admin-page">
-      <section className="page-header">
-        <div>
-          <p className="page-header__eyebrow">Admin moderation</p>
-          <h1>Review pending and live marketplace activity.</h1>
-          <p>Approve trusted sellers and offers, then pull down anything that should no longer stay public.</p>
-        </div>
-      </section>
+    <>
+      <div className="stitch-page stitch-page--desktop">
+        <StitchDesktopHeader active="workspace" currentUser={currentUser} />
 
-      {feedback ? (
-        <p className="admin-feedback" role="status">
-          {feedback}
-        </p>
-      ) : null}
-
-      <section className="admin-overview" aria-label="Moderation summary">
-        <article className="admin-overview__card">
-          <span className="admin-overview__label">Pending stores</span>
-          <strong>{storesPagination.total}</strong>
-        </article>
-        <article className="admin-overview__card">
-          <span className="admin-overview__label">Pending deals</span>
-          <strong>{dealsPagination.total}</strong>
-        </article>
-        <article className="admin-overview__card">
-          <span className="admin-overview__label">Approved stores</span>
-          <strong>{approvedStoresPagination.total}</strong>
-        </article>
-        <article className="admin-overview__card">
-          <span className="admin-overview__label">Live deals</span>
-          <strong>{activeDealsPagination.total}</strong>
-        </article>
-        <article className="admin-overview__card">
-          <span className="admin-overview__label">Deal approval window</span>
-          <strong>{filters.hours} hours</strong>
-        </article>
-      </section>
-
-      <div className="admin-layout">
-        <section className="admin-queue">
-          <div className="admin-queue__header">
+        <main className="stitch-canvas stitch-canvas--admin">
+          <div className="stitch-section__header">
             <div>
-              <p className="store-card__eyebrow">Store applications</p>
-              <h2>Pending seller verification</h2>
-              <p>Approve real local stores and reject incomplete or untrusted submissions.</p>
+              <h1>Moderation Queue</h1>
+              <p>Review pending stores and deals to keep the marketplace accurate, verified, and current.</p>
             </div>
           </div>
 
-          {storesQuery.isLoading ? (
-            <section className="state-card" aria-live="polite">
-              <LoaderCircle size={18} className="state-card__spinner" />
-              <div>
-                <h2>Loading pending stores</h2>
-                <p>Fetching the next batch of seller applications for review.</p>
-              </div>
-            </section>
-          ) : null}
+          {feedback ? <p className="stitch-feedback-banner">{feedback}</p> : null}
 
-          {!storesQuery.isLoading && storesQuery.error ? (
-            <section className="state-card state-card--error" aria-live="polite">
-              <AlertCircle size={18} />
-              <div>
-                <h2>Could not load pending stores</h2>
-                <p>{storesQuery.error.message || 'Something went wrong while loading store applications.'}</p>
-                <div className="state-card__actions">
-                  <button type="button" className="button button--secondary" onClick={() => storesQuery.refetch()}>
-                    Try again
-                  </button>
+          <section className="stitch-merchant-stats">
+            <div className="stitch-merchant-stat-card">
+              <span>Pending Stores</span>
+              <strong>{pendingStoresPagination.total}</strong>
+            </div>
+            <div className="stitch-merchant-stat-card">
+              <span>Pending Deals</span>
+              <strong>{pendingDealsPagination.total}</strong>
+            </div>
+          </section>
+
+          <div className="stitch-admin-grid">
+            <div className="stitch-admin-main">
+              <section className="stitch-section">
+                <div className="stitch-section__header stitch-section__header--bordered">
+                  <div>
+                    <h2>Pending Stores</h2>
+                    <p>{pendingStoresPagination.total} applications waiting for review.</p>
+                  </div>
                 </div>
-              </div>
-            </section>
-          ) : null}
 
-          {!storesQuery.isLoading && !storesQuery.error && pendingStores.length === 0 ? (
-            <section className="state-card" aria-live="polite">
-              <ShieldCheck size={18} />
-              <div>
-                <h2>No pending store applications</h2>
-                <p>New seller applications will appear here when review is required.</p>
-              </div>
-            </section>
-          ) : null}
+                {storesQuery.isLoading ? (
+                  <QueueState title="Loading pending stores" description="Fetching seller applications awaiting moderation." />
+                ) : null}
 
-          {!storesQuery.isLoading && !storesQuery.error && pendingStores.length > 0 ? (
-            <div className="admin-cards">
-              {pendingStores.map((store) => {
-                const isApproving =
-                  activeAction?.type === 'store' && activeAction?.targetId === store.id && activeAction?.status === 'approved';
-                const isRejecting =
-                  activeAction?.type === 'store' && activeAction?.targetId === store.id && activeAction?.status === 'rejected';
+                {!storesQuery.isLoading && storesQuery.error ? (
+                  <QueueState title="Could not load pending stores" description={storesQuery.error.message || 'Please try again in a moment.'} tone="error" />
+                ) : null}
 
-                return (
-                  <article key={store.id} className="admin-card">
-                    <div className="admin-card__header">
-                      <div>
-                        <h3>{store.name}</h3>
-                        <p>{store.address}</p>
-                      </div>
-                      <span className="admin-chip admin-chip--pending">Pending</span>
-                    </div>
+                {!storesQuery.isLoading && !storesQuery.error && pendingStores.length === 0 ? (
+                  <QueueState title="No pending stores" description="All current store applications have already been reviewed." />
+                ) : null}
 
-                    <div className="admin-card__meta">
-                      <span>{store.cityLabel}, {store.stateLabel}</span>
-                      <span>{store.phoneLabel}</span>
-                      <span>Submitted {store.submittedAtLabel}</span>
-                      <span>{store.ratingLabel}</span>
-                    </div>
-
-                    <div className="admin-card__note">
-                      <StoreIcon size={16} />
-                      <span>Application owner</span>
-                    </div>
-
-                    <AdminStoreOwnerSummary
-                      ownerName={store.ownerName}
-                      ownerEmail={store.ownerEmail}
-                      ownerId={store.ownerId}
+                {!storesQuery.isLoading && !storesQuery.error && pendingStores.length > 0 ? (
+                  pendingStores.map((store) => (
+                    <PendingStoreCard
+                      key={store.id}
+                      store={store}
+                      onApprove={() => {
+                        handleStoreModeration(store.id, 'approved');
+                      }}
+                      onReject={() => {
+                        handleStoreModeration(store.id, 'rejected');
+                      }}
+                      isPending={activeAction?.type === 'store' && activeAction?.targetId === store.id}
                     />
+                  ))
+                ) : null}
 
-                    <AdminStoreContextLinks phone={store.phone} viewLabel="Open public store page" />
+                {pendingStoresPagination.pages > 1 ? (
+                  <DealsPagination
+                    page={pendingStoresPagination.page}
+                    pages={pendingStoresPagination.pages}
+                    total={pendingStoresPagination.total}
+                    onPageChange={(nextPage) => {
+                      setSearchParams(
+                        createAdminSearchParams({
+                          storesPage: nextPage,
+                          dealsPage: filters.dealsPage,
+                          approvedStoresPage: 1,
+                          activeDealsPage: 1,
+                          hours: filters.hours,
+                        })
+                      );
+                    }}
+                  />
+                ) : null}
+              </section>
 
-                    <div className="admin-card__actions">
-                      <AdminConfirmActionButton
-                        icon={<BadgeCheck />}
-                        className="button button--primary"
-                        onConfirm={() => {
-                          handleStoreModeration(store.id, 'approved');
-                        }}
-                        disabled={isApproving || isRejecting}
-                        isPending={isApproving}
-                        label={moderationCopy.approveStore}
-                        confirmLabel="Confirm approve"
-                        pendingLabel="Approving..."
-                      />
-                      <AdminConfirmActionButton
-                        className="button button--secondary"
-                        onConfirm={() => {
-                          handleStoreModeration(store.id, 'rejected');
-                        }}
-                        disabled={isApproving || isRejecting}
-                        isPending={isRejecting}
-                        label={moderationCopy.rejectStore}
-                        confirmLabel="Confirm reject"
-                        pendingLabel="Rejecting..."
-                      />
+              <section className="stitch-section">
+                <div className="stitch-section__header stitch-section__header--bordered">
+                  <div>
+                    <h2>Pending Deals</h2>
+                    <p>{pendingDealsPagination.total} listings waiting for approval.</p>
+                  </div>
+                </div>
+
+                {dealsQuery.isLoading ? (
+                  <QueueState title="Loading pending deals" description="Fetching listings awaiting moderation." />
+                ) : null}
+
+                {!dealsQuery.isLoading && dealsQuery.error ? (
+                  <QueueState title="Could not load pending deals" description={dealsQuery.error.message || 'Please try again in a moment.'} tone="error" />
+                ) : null}
+
+                {!dealsQuery.isLoading && !dealsQuery.error && pendingDeals.length === 0 ? (
+                  <QueueState title="No pending deals" description="All current deal submissions have already been reviewed." />
+                ) : null}
+
+                {!dealsQuery.isLoading && !dealsQuery.error && pendingDeals.length > 0 ? (
+                  pendingDeals.map((deal) => (
+                    <PendingDealCard
+                      key={deal.id}
+                      deal={deal}
+                      onApprove={() => {
+                        handleDealModeration(deal.id, 'active');
+                      }}
+                      onReject={() => {
+                        handleDealModeration(deal.id, 'rejected');
+                      }}
+                      isPending={activeAction?.type === 'deal' && activeAction?.targetId === deal.id}
+                    />
+                  ))
+                ) : null}
+
+                {pendingDealsPagination.pages > 1 ? (
+                  <DealsPagination
+                    page={pendingDealsPagination.page}
+                    pages={pendingDealsPagination.pages}
+                    total={pendingDealsPagination.total}
+                    onPageChange={(nextPage) => {
+                      setSearchParams(
+                        createAdminSearchParams({
+                          storesPage: filters.storesPage,
+                          dealsPage: nextPage,
+                          approvedStoresPage: 1,
+                          activeDealsPage: 1,
+                          hours: filters.hours,
+                        })
+                      );
+                    }}
+                  />
+                ) : null}
+              </section>
+            </div>
+
+            <aside className="stitch-admin-sidepanel">
+              <div className="stitch-admin-metric-card">
+                <MaterialIcon name="verified_user" className="stitch-admin-metric-card__watermark" />
+                <h4>Marketplace Status</h4>
+                <div className="stitch-admin-metric-card__bars">
+                  <div>
+                    <div>
+                      <span>Approved Stores</span>
+                      <strong>{approvedStoreTotal}</strong>
                     </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : null}
-
-          {!storesQuery.isLoading && !storesQuery.error && storesPagination.pages > 1 ? (
-            <DealsPagination
-              page={storesPagination.page}
-              pages={storesPagination.pages}
-              total={storesPagination.total}
-              onPageChange={(nextPage) => {
-                const safePage = Math.min(Math.max(1, nextPage), Math.max(1, storesPagination.pages || 1));
-
-                if (safePage !== storesPagination.page) {
-                  setSearchParams(
-                    createAdminSearchParams({
-                      storesPage: safePage,
-                      dealsPage: filters.dealsPage,
-                      approvedStoresPage: filters.approvedStoresPage,
-                      activeDealsPage: filters.activeDealsPage,
-                      hours: filters.hours,
-                    })
-                  );
-                }
-              }}
-              isDisabled={storesQuery.isFetching}
-            />
-          ) : null}
-        </section>
-
-        <section className="admin-queue">
-          <div className="admin-queue__header admin-queue__header--split">
-            <div>
-              <p className="store-card__eyebrow">Deal moderation</p>
-              <h2>Pending listing approvals</h2>
-              <p>Approve genuine offers quickly and reject anything that should not go live.</p>
-            </div>
-
-            <label className="admin-window-field">
-              <span className="admin-window-field__label">Active for</span>
-              <select
-                value={filters.hours}
-                onChange={(event) => {
-                  setSearchParams(
-                    createAdminSearchParams({
-                      storesPage: filters.storesPage,
-                      dealsPage: filters.dealsPage,
-                      approvedStoresPage: filters.approvedStoresPage,
-                      activeDealsPage: filters.activeDealsPage,
-                      hours: event.target.value,
-                    })
-                  );
-                }}
-              >
-                <option value="24">24h</option>
-                <option value="48">48h</option>
-                <option value="72">72h</option>
-              </select>
-            </label>
-          </div>
-
-          {dealsQuery.isLoading ? (
-            <section className="state-card" aria-live="polite">
-              <LoaderCircle size={18} className="state-card__spinner" />
-              <div>
-                <h2>Loading pending deals</h2>
-                <p>Pulling the next set of store listings waiting for moderation.</p>
-              </div>
-            </section>
-          ) : null}
-
-          {!dealsQuery.isLoading && dealsQuery.error ? (
-            <section className="state-card state-card--error" aria-live="polite">
-              <AlertCircle size={18} />
-              <div>
-                <h2>Could not load pending deals</h2>
-                <p>{dealsQuery.error.message || 'Something went wrong while loading deal moderation items.'}</p>
-                <div className="state-card__actions">
-                  <button type="button" className="button button--secondary" onClick={() => dealsQuery.refetch()}>
-                    Try again
-                  </button>
+                    <div className="stitch-admin-progress">
+                      <span style={{ width: `${Math.min(100, Math.max(12, approvedStoreTotal * 4))}%` }} />
+                    </div>
+                  </div>
+                  <div>
+                    <div>
+                      <span>Active Deals</span>
+                      <strong>{activeDealTotal}</strong>
+                    </div>
+                    <div className="stitch-admin-progress">
+                      <span style={{ width: `${Math.min(100, Math.max(12, activeDealTotal * 2))}%` }} />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </section>
-          ) : null}
 
-          {!dealsQuery.isLoading && !dealsQuery.error && pendingDeals.length === 0 ? (
-            <section className="state-card" aria-live="polite">
-              <ShieldCheck size={18} />
-              <div>
-                <h2>No pending deals</h2>
-                <p>Fresh submissions will appear here when they are waiting for approval.</p>
+              <div className="stitch-admin-filter-card">
+                <h4>Approval Window</h4>
+                <p className="stitch-admin-filter-card__copy">Choose how long approved deals should stay active by default.</p>
+                <div className="stitch-chip-row stitch-chip-row--wrap">
+                  {['24', '48', '72'].map((hours) => (
+                    <button
+                      key={hours}
+                      type="button"
+                      className={`stitch-chip-button${filters.hours === hours ? ' stitch-chip-button--active' : ''}`}
+                      onClick={() => {
+                        setSearchParams(
+                          createAdminSearchParams({
+                            storesPage: filters.storesPage,
+                            dealsPage: filters.dealsPage,
+                            approvedStoresPage: 1,
+                            activeDealsPage: 1,
+                            hours,
+                          })
+                        );
+                      }}
+                    >
+                      {hours}h
+                    </button>
+                  ))}
+                </div>
               </div>
-            </section>
-          ) : null}
+            </aside>
+          </div>
+        </main>
 
-          {!dealsQuery.isLoading && !dealsQuery.error && pendingDeals.length > 0 ? (
-            <div className="admin-cards">
-              {pendingDeals.map((deal) => {
-                const isApproving =
-                  activeAction?.type === 'deal' && activeAction?.targetId === deal.id && activeAction?.status === 'active';
-                const isRejecting =
-                  activeAction?.type === 'deal' && activeAction?.targetId === deal.id && activeAction?.status === 'rejected';
-
-                return (
-                  <article key={deal.id} className="admin-card">
-                    <AdminDealMedia title={deal.title} imageUrl={deal.imageUrl} imageCount={deal.imageCount} />
-
-                    <div className="admin-card__header">
-                      <div>
-                        <h3>{deal.title}</h3>
-                        <p>{deal.description}</p>
-                      </div>
-                      <span className="admin-chip admin-chip--pending">Pending</span>
-                    </div>
-
-                    <div className="admin-card__meta">
-                      <span>{deal.priceLabel}</span>
-                      <span>{deal.cityLabel}</span>
-                      <span>Submitted {deal.submittedAtLabel}</span>
-                      <span>Updated {deal.updatedAtLabel}</span>
-                    </div>
-
-                    <div className="admin-card__note">
-                      <BadgeCheck size={16} />
-                      <span>
-                        {deal.storeName} • {deal.storeCityLabel} • {deal.storeRatingLabel}
-                      </span>
-                    </div>
-
-                    <AdminStoreContextLinks storeId={deal.storeId} phone={deal.storePhone} />
-
-                    <div className="admin-card__metrics">
-                      <span>
-                        <Clock3 size={14} />
-                        {deal.views} views
-                      </span>
-                      <span>
-                        <ShieldCheck size={14} />
-                        {deal.clicks} clicks
-                      </span>
-                      <span>{deal.imageCount} image{deal.imageCount === 1 ? '' : 's'}</span>
-                    </div>
-
-                    <div className="admin-card__actions">
-                      <AdminConfirmActionButton
-                        icon={<BadgeCheck />}
-                        className="button button--primary"
-                        onConfirm={() => {
-                          handleDealModeration(deal.id, 'active');
-                        }}
-                        disabled={isApproving || isRejecting}
-                        isPending={isApproving}
-                        label={`${moderationCopy.approveDeal} (${filters.hours}h)`}
-                        confirmLabel={`Confirm approve (${filters.hours}h)`}
-                        pendingLabel="Approving..."
-                      />
-                      <AdminConfirmActionButton
-                        className="button button--secondary"
-                        onConfirm={() => {
-                          handleDealModeration(deal.id, 'rejected');
-                        }}
-                        disabled={isApproving || isRejecting}
-                        isPending={isRejecting}
-                        label={moderationCopy.rejectDeal}
-                        confirmLabel="Confirm reject"
-                        pendingLabel="Rejecting..."
-                      />
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : null}
-
-          {!dealsQuery.isLoading && !dealsQuery.error && dealsPagination.pages > 1 ? (
-            <DealsPagination
-              page={dealsPagination.page}
-              pages={dealsPagination.pages}
-              total={dealsPagination.total}
-              onPageChange={(nextPage) => {
-                const safePage = Math.min(Math.max(1, nextPage), Math.max(1, dealsPagination.pages || 1));
-
-                if (safePage !== dealsPagination.page) {
-                  setSearchParams(
-                    createAdminSearchParams({
-                      storesPage: filters.storesPage,
-                      dealsPage: safePage,
-                      approvedStoresPage: filters.approvedStoresPage,
-                      activeDealsPage: filters.activeDealsPage,
-                      hours: filters.hours,
-                    })
-                  );
-                }
-              }}
-              isDisabled={dealsQuery.isFetching}
-            />
-          ) : null}
-        </section>
+        <StitchBottomNav active="workspace" currentUser={currentUser} />
       </div>
 
-      <section className="admin-section-intro" aria-label="Live marketplace controls">
-        <div>
-          <p className="store-card__eyebrow">Live marketplace controls</p>
-          <h2>Remove stores or deals after approval when needed.</h2>
-          <p>These actions pull listings out of the public marketplace without hard-deleting the history.</p>
-        </div>
-      </section>
+      <div className="stitch-page stitch-page--mobile">
+        <StitchMobileHeader
+          currentUser={currentUser}
+          title="Moderation"
+          subtitle="Pending stores and deals"
+        />
 
-      <div className="admin-layout">
-        <section className="admin-queue">
-          <div className="admin-queue__header">
-            <div>
-              <p className="store-card__eyebrow">Approved stores</p>
-              <h2>Verified sellers currently public</h2>
-              <p>Use this when a store should no longer appear publicly or keep seller access.</p>
+        <main className="stitch-canvas stitch-canvas--mobile-admin">
+          <section className="stitch-section">
+            <div className="stitch-section__header">
+              <div>
+                <h1>Moderation Queue</h1>
+                <p>Pending stores: {pendingStoresPagination.total}. Pending deals: {pendingDealsPagination.total}.</p>
+              </div>
             </div>
-          </div>
 
-          {approvedStoresQuery.isLoading ? (
-            <section className="state-card" aria-live="polite">
-              <LoaderCircle size={18} className="state-card__spinner" />
-              <div>
-                <h2>Loading approved stores</h2>
-                <p>Fetching currently verified stores from the live marketplace.</p>
-              </div>
-            </section>
-          ) : null}
+            {feedback ? <p className="stitch-feedback-banner">{feedback}</p> : null}
+          </section>
 
-          {!approvedStoresQuery.isLoading && approvedStoresQuery.error ? (
-            <section className="state-card state-card--error" aria-live="polite">
-              <AlertCircle size={18} />
-              <div>
-                <h2>Could not load approved stores</h2>
-                <p>{approvedStoresQuery.error.message || 'Something went wrong while loading live store listings.'}</p>
-                <div className="state-card__actions">
-                  <button
-                    type="button"
-                    className="button button--secondary"
-                    onClick={() => approvedStoresQuery.refetch()}
-                  >
-                    Try again
-                  </button>
-                </div>
-              </div>
-            </section>
-          ) : null}
-
-          {!approvedStoresQuery.isLoading && !approvedStoresQuery.error && approvedStores.length === 0 ? (
-            <section className="state-card" aria-live="polite">
-              <ShieldCheck size={18} />
-              <div>
-                <h2>No approved stores live right now</h2>
-                <p>Once stores are approved, they will show up here for post-approval control.</p>
-              </div>
-            </section>
-          ) : null}
-
-          {!approvedStoresQuery.isLoading && !approvedStoresQuery.error && approvedStores.length > 0 ? (
-            <div className="admin-cards">
-              {approvedStores.map((store) => {
-                const isRemoving = activeAction?.type === 'remove-store' && activeAction?.targetId === store.id;
-
-                return (
-                  <article key={store.id} className="admin-card">
-                    <div className="admin-card__header">
-                      <div>
-                        <h3>{store.name}</h3>
-                        <p>{store.address}</p>
-                      </div>
-                      <span className="admin-chip admin-chip--approved">Approved</span>
-                    </div>
-
-                    <div className="admin-card__meta">
-                      <span>{store.cityLabel}, {store.stateLabel}</span>
-                      <span>{store.phoneLabel}</span>
-                      <span>Listed since {store.submittedAtLabel}</span>
-                      <span>{store.ratingLabel}</span>
-                    </div>
-
-                    <div className="admin-card__note">
-                      <ShieldCheck size={16} />
-                      <span>Public store with seller access enabled</span>
-                    </div>
-
-                    <AdminStoreOwnerSummary
-                      ownerName={store.ownerName}
-                      ownerEmail={store.ownerEmail}
-                      ownerId={store.ownerId}
-                    />
-
-                    <AdminStoreContextLinks storeId={store.id} phone={store.phone} viewLabel="Open public store page" />
-
-                    <p className="admin-card__impact">
-                      Removing this store will also pull down its currently active deals from the public marketplace.
-                    </p>
-
-                    <div className="admin-card__actions">
-                      <AdminConfirmActionButton
-                        icon={<ShieldAlert />}
-                        className="button button--secondary"
-                        onConfirm={() => {
-                          handleStoreRemoval(store.id);
-                        }}
-                        disabled={isRemoving}
-                        isPending={isRemoving}
-                        label={moderationCopy.removeStore}
-                        confirmLabel="Confirm remove store"
-                        pendingLabel="Removing..."
-                      />
-                    </div>
-                  </article>
-                );
-              })}
+          <section className="stitch-merchant-stats">
+            <div className="stitch-merchant-stat-card">
+              <span>Approved Stores</span>
+              <strong>{approvedStoreTotal}</strong>
             </div>
-          ) : null}
-
-          {!approvedStoresQuery.isLoading && !approvedStoresQuery.error && approvedStoresPagination.pages > 1 ? (
-            <DealsPagination
-              page={approvedStoresPagination.page}
-              pages={approvedStoresPagination.pages}
-              total={approvedStoresPagination.total}
-              onPageChange={(nextPage) => {
-                const safePage = Math.min(Math.max(1, nextPage), Math.max(1, approvedStoresPagination.pages || 1));
-
-                if (safePage !== approvedStoresPagination.page) {
-                  setSearchParams(
-                    createAdminSearchParams({
-                      storesPage: filters.storesPage,
-                      dealsPage: filters.dealsPage,
-                      approvedStoresPage: safePage,
-                      activeDealsPage: filters.activeDealsPage,
-                      hours: filters.hours,
-                    })
-                  );
-                }
-              }}
-              isDisabled={approvedStoresQuery.isFetching}
-            />
-          ) : null}
-        </section>
-
-        <section className="admin-queue">
-          <div className="admin-queue__header">
-            <div>
-              <p className="store-card__eyebrow">Live deals</p>
-              <h2>Approved offers currently public</h2>
-              <p>Use this to remove active deals that should no longer remain visible to shoppers.</p>
+            <div className="stitch-merchant-stat-card">
+              <span>Active Deals</span>
+              <strong>{activeDealTotal}</strong>
             </div>
-          </div>
+          </section>
 
-          {activeDealsQuery.isLoading ? (
-            <section className="state-card" aria-live="polite">
-              <LoaderCircle size={18} className="state-card__spinner" />
-              <div>
-                <h2>Loading live deals</h2>
-                <p>Fetching active marketplace offers for post-approval review.</p>
-              </div>
-            </section>
-          ) : null}
-
-          {!activeDealsQuery.isLoading && activeDealsQuery.error ? (
-            <section className="state-card state-card--error" aria-live="polite">
-              <AlertCircle size={18} />
-              <div>
-                <h2>Could not load live deals</h2>
-                <p>{activeDealsQuery.error.message || 'Something went wrong while loading public deals.'}</p>
-                <div className="state-card__actions">
-                  <button type="button" className="button button--secondary" onClick={() => activeDealsQuery.refetch()}>
-                    Try again
-                  </button>
-                </div>
-              </div>
-            </section>
-          ) : null}
-
-          {!activeDealsQuery.isLoading && !activeDealsQuery.error && activeDeals.length === 0 ? (
-            <section className="state-card" aria-live="polite">
-              <ShieldCheck size={18} />
-              <div>
-                <h2>No live deals right now</h2>
-                <p>Approved deals will appear here when they are active in the marketplace.</p>
-              </div>
-            </section>
-          ) : null}
-
-          {!activeDealsQuery.isLoading && !activeDealsQuery.error && activeDeals.length > 0 ? (
-            <div className="admin-cards">
-              {activeDeals.map((deal) => {
-                const isRemoving = activeAction?.type === 'remove-deal' && activeAction?.targetId === deal.id;
-
-                return (
-                  <article key={deal.id} className="admin-card">
-                    <AdminDealMedia title={deal.title} imageUrl={deal.imageUrl} imageCount={deal.imageCount} />
-
-                    <div className="admin-card__header">
-                      <div>
-                        <h3>{deal.title}</h3>
-                        <p>{deal.description}</p>
-                      </div>
-                      <span className="admin-chip admin-chip--live">Live</span>
-                    </div>
-
-                    <div className="admin-card__meta">
-                      <span>{deal.priceLabel}</span>
-                      <span>{deal.cityLabel}</span>
-                      <span>Submitted {deal.submittedAtLabel}</span>
-                      <span>Updated {deal.updatedAtLabel}</span>
-                    </div>
-
-                    <div className="admin-card__note">
-                      <BadgeCheck size={16} />
-                      <span>
-                        {deal.storeName} • {deal.storeCityLabel} • {deal.storeRatingLabel}
-                      </span>
-                    </div>
-
-                    <AdminStoreContextLinks storeId={deal.storeId} phone={deal.storePhone} />
-
-                    <div className="admin-card__metrics">
-                      <span>
-                        <Clock3 size={14} />
-                        {deal.views} views
-                      </span>
-                      <span>
-                        <ShieldCheck size={14} />
-                        {deal.clicks} clicks
-                      </span>
-                      <span>{deal.imageCount} image{deal.imageCount === 1 ? '' : 's'}</span>
-                    </div>
-
-                    <p className="admin-card__impact">
-                      Removing this deal takes it out of the public marketplace while preserving moderation history.
-                    </p>
-
-                    <div className="admin-card__actions">
-                      <AdminConfirmActionButton
-                        icon={<ShieldAlert />}
-                        className="button button--secondary"
-                        onConfirm={() => {
-                          handleDealRemoval(deal.id);
-                        }}
-                        disabled={isRemoving}
-                        isPending={isRemoving}
-                        label={moderationCopy.removeDeal}
-                        confirmLabel="Confirm remove deal"
-                        pendingLabel="Removing..."
-                      />
-                    </div>
-                  </article>
-                );
-              })}
+          <section className="stitch-admin-filter-card">
+            <h4>Approval Window</h4>
+            <div className="stitch-chip-row stitch-chip-row--wrap">
+              {['24', '48', '72'].map((hours) => (
+                <button
+                  key={hours}
+                  type="button"
+                  className={`stitch-chip-button${filters.hours === hours ? ' stitch-chip-button--active' : ''}`}
+                  onClick={() => {
+                    setSearchParams(
+                      createAdminSearchParams({
+                        storesPage: filters.storesPage,
+                        dealsPage: filters.dealsPage,
+                        approvedStoresPage: 1,
+                        activeDealsPage: 1,
+                        hours,
+                      })
+                    );
+                  }}
+                >
+                  {hours}h
+                </button>
+              ))}
             </div>
-          ) : null}
+          </section>
 
-          {!activeDealsQuery.isLoading && !activeDealsQuery.error && activeDealsPagination.pages > 1 ? (
-            <DealsPagination
-              page={activeDealsPagination.page}
-              pages={activeDealsPagination.pages}
-              total={activeDealsPagination.total}
-              onPageChange={(nextPage) => {
-                const safePage = Math.min(Math.max(1, nextPage), Math.max(1, activeDealsPagination.pages || 1));
+          <section className="stitch-section">
+            <div className="stitch-section__header">
+              <h2>Pending Stores</h2>
+            </div>
 
-                if (safePage !== activeDealsPagination.page) {
-                  setSearchParams(
-                    createAdminSearchParams({
-                      storesPage: filters.storesPage,
-                      dealsPage: filters.dealsPage,
-                      approvedStoresPage: filters.approvedStoresPage,
-                      activeDealsPage: safePage,
-                      hours: filters.hours,
-                    })
-                  );
-                }
-              }}
-              isDisabled={activeDealsQuery.isFetching}
-            />
-          ) : null}
-        </section>
+            {storesQuery.isLoading ? (
+              <QueueState title="Loading pending stores" description="Fetching seller applications awaiting moderation." />
+            ) : null}
+
+            {!storesQuery.isLoading && storesQuery.error ? (
+              <QueueState title="Could not load pending stores" description={storesQuery.error.message || 'Please try again in a moment.'} tone="error" />
+            ) : null}
+
+            {!storesQuery.isLoading && !storesQuery.error && pendingStores.length === 0 ? (
+              <QueueState title="No pending stores" description="All current store applications have already been reviewed." />
+            ) : null}
+
+            {!storesQuery.isLoading && !storesQuery.error && pendingStores.length > 0 ? (
+              pendingStores.map((store) => (
+                <PendingStoreCard
+                  key={store.id}
+                  store={store}
+                  onApprove={() => {
+                    handleStoreModeration(store.id, 'approved');
+                  }}
+                  onReject={() => {
+                    handleStoreModeration(store.id, 'rejected');
+                  }}
+                  isPending={activeAction?.type === 'store' && activeAction?.targetId === store.id}
+                />
+              ))
+            ) : null}
+          </section>
+
+          <section className="stitch-section">
+            <div className="stitch-section__header">
+              <h2>Pending Deals</h2>
+            </div>
+
+            {dealsQuery.isLoading ? (
+              <QueueState title="Loading pending deals" description="Fetching listings awaiting moderation." />
+            ) : null}
+
+            {!dealsQuery.isLoading && dealsQuery.error ? (
+              <QueueState title="Could not load pending deals" description={dealsQuery.error.message || 'Please try again in a moment.'} tone="error" />
+            ) : null}
+
+            {!dealsQuery.isLoading && !dealsQuery.error && pendingDeals.length === 0 ? (
+              <QueueState title="No pending deals" description="All current deal submissions have already been reviewed." />
+            ) : null}
+
+            {!dealsQuery.isLoading && !dealsQuery.error && pendingDeals.length > 0 ? (
+              pendingDeals.map((deal) => (
+                <PendingDealCard
+                  key={deal.id}
+                  deal={deal}
+                  onApprove={() => {
+                    handleDealModeration(deal.id, 'active');
+                  }}
+                  onReject={() => {
+                    handleDealModeration(deal.id, 'rejected');
+                  }}
+                  isPending={activeAction?.type === 'deal' && activeAction?.targetId === deal.id}
+                />
+              ))
+            ) : null}
+          </section>
+        </main>
+
+        <StitchBottomNav active="workspace" currentUser={currentUser} />
       </div>
-    </main>
+    </>
   );
 }

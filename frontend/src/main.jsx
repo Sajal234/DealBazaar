@@ -7,6 +7,7 @@ import { AuthSessionSync } from './features/auth/AuthSessionSync';
 import { AppErrorBoundary } from './layout/AppErrorBoundary';
 import './styles/index.css';
 import './styles/commerce.css';
+import './styles/stitch.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

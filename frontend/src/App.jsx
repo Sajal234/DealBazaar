@@ -19,7 +19,7 @@ import { StorePublicDetailPage } from './pages/StorePublicDetailPage';
 import { StorePage } from './pages/StorePage';
 import { StoresPage } from './pages/StoresPage';
 
-const themeStorageKey = 'dealbazaar.theme';
+const themeStorageKey = 'dealgrab.theme';
 
 function getInitialTheme() {
   if (typeof window === 'undefined') {
@@ -63,10 +63,10 @@ export function App() {
   return (
     <AppLayout theme={theme} setTheme={setTheme} currentUser={currentUser}>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/deals" element={<DealsPage />} />
+        <Route path="/" element={<HomePage currentUser={currentUser} />} />
+        <Route path="/deals" element={<DealsPage currentUser={currentUser} />} />
         <Route path="/deals/:dealId" element={<DealDetailPage currentUser={currentUser} />} />
-        <Route path="/stores" element={<StoresPage />} />
+        <Route path="/stores" element={<StoresPage currentUser={currentUser} />} />
         <Route path="/stores/:storeId" element={<StorePublicDetailPage currentUser={currentUser} />} />
         <Route
           path="/login"

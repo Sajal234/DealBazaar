@@ -45,7 +45,7 @@ export function ForgotPasswordPage({ currentUser }) {
       <section className="login-panel">
         <div className="login-panel__intro">
           <p className="login-panel__eyebrow">Password recovery</p>
-          <h1>Reset your DealBazaar password</h1>
+          <h1>Reset your DealGrab password</h1>
           <p>Enter your account email and we will prepare a password reset link for that account.</p>
         </div>
 

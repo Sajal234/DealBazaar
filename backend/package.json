@@ -1,7 +1,7 @@
 {
-  "name": "dealbazaar-backend",
+  "name": "dealgrab-backend",
   "version": "1.0.0",
-  "description": "Backend API for DealBazaar Hyperlocal Marketplace",
+  "description": "Backend API for DealGrab Hyperlocal Marketplace",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

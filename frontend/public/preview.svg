@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="DealBazaar social preview">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="DealGrab social preview">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0c0f12" />
@@ -22,15 +22,10 @@
   </g>
   <g transform="translate(96 96)">
     <rect width="84" height="84" rx="24" fill="#11151a" stroke="rgba(255,255,255,0.08)" />
-    <g transform="translate(14 14)" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5">
-      <path d="M6 8v28h8.5c7.5 0 12.5-5.7 12.5-14S22 8 14.5 8H6Z" stroke="#f4f1eb" />
-      <path d="M29.8 8v28" stroke="#d6b18a" />
-      <path d="M27.2 6.6v30.8" stroke="#11151a" stroke-width="2.2" />
-      <path d="M29.8 8H36c4.8 0 7.8 2.8 7.8 6.6 0 3.7-3 6.2-7.8 6.2h-6.2" stroke="#d6b18a" />
-      <path d="M29.8 20.8h6.8c5 0 8.2 2.8 8.2 7S41.6 36 36.2 36h-6.4" stroke="#d6b18a" />
-    </g>
+    <rect x="12" y="12" width="60" height="60" rx="20" fill="#0f241f" stroke="#2b413b" />
+    <text x="42" y="51" text-anchor="middle" fill="#f4f1eb" font-family="Georgia, serif" font-size="28" font-weight="700">DG</text>
   </g>
-  <text x="206" y="145" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700">DealBazaar</text>
+  <text x="206" y="145" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700">DealGrab</text>
   <text x="96" y="276" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="86" font-weight="700" letter-spacing="-3">
     Verified local deals,
   </text>

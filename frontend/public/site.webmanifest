@@ -1,6 +1,6 @@
 {
-  "name": "DealBazaar",
-  "short_name": "DealBazaar",
+  "name": "DealGrab",
+  "short_name": "DealGrab",
   "description": "Discover time-limited local deals from real stores only, with moderation, verification, and none of the marketplace clutter.",
   "start_url": "/",
   "display": "standalone",

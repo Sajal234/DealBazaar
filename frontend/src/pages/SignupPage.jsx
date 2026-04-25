@@ -97,7 +97,7 @@ export function SignupPage({ currentUser, hasSavedSession, isAuthLoading }) {
       <section className="login-panel">
         <div className="login-panel__intro">
           <p className="login-panel__eyebrow">Create account</p>
-          <h1>Set up your DealBazaar account</h1>
+          <h1>Set up your DealGrab account</h1>
           <p>Create one account to browse deals, rate stores, and unlock seller access when you are ready.</p>
         </div>
 
